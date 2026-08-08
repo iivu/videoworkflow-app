@@ -9,9 +9,11 @@ import app from '@adonisjs/core/services/app';
 import logger from '@adonisjs/core/services/logger';
 import { Job } from '@adonisjs/queue';
 import type { JobOptions } from '@adonisjs/queue/types';
+import db from '@adonisjs/lucid/services/db';
 import { v4 as uuidv4 } from 'uuid';
 
 import VideoToVoiceTask from '#models/video-to-voice-task';
+import Voice from '#models/voice';
 import { type BailianCloneVoiceParams, BailianVoiceService } from '#services/bailian-voice-service';
 import { type MinimaxiCloneVoiceParams, MinimaxiService } from '#services/minimaxi-service';
 
@@ -63,12 +65,26 @@ export default class VideoToVoiceJob extends Job<JobPayload> {
 
       const oss = await app.container.make('oss');
       const ossResponse = await oss.putStream(createReadStream(audioPath), `video-to-voice/${uuidv4()}.wav`);
-      const voiceId = await this.cloneVoice(provider, config, audioPath, ossResponse.url);
-      await VideoToVoiceTask.query().where('id', taskId).update({
-        status: VIDEO_TO_VOICE_TASK_STATUS.COMPLETED,
-        audioUrl: ossResponse.url,
-        voiceId,
-        reason: null,
+      const cloned = await this.cloneVoice(provider, config, audioPath, ossResponse.url);
+      await db.transaction(async (trx) => {
+        await Voice.create(
+          {
+            userId,
+            provider,
+            model: cloned.model,
+            voiceId: cloned.voiceId,
+            name: cloned.voiceId,
+            config: JSON.stringify(config),
+            demoUrl: cloned.demoUrl,
+          },
+          { client: trx },
+        );
+        await VideoToVoiceTask.query({ client: trx }).where('id', taskId).update({
+          status: VIDEO_TO_VOICE_TASK_STATUS.COMPLETED,
+          audioUrl: ossResponse.url,
+          voiceId: cloned.voiceId,
+          reason: null,
+        });
       });
     } finally {
       await rm(tempDir, { recursive: true, force: true });
@@ -92,12 +108,12 @@ export default class VideoToVoiceJob extends Job<JobPayload> {
   private async cloneVoice(provider: Provider, config: Record<string, unknown>, audioPath: string, audioUrl: string) {
     if (provider === 'bailian') {
       const result = await this.bailianVoiceService.cloneVoice({ ...(config as Omit<BailianCloneVoiceParams, 'audioUrl'>), audioUrl });
-      return result.voiceId;
+      return { voiceId: result.voiceId, model: result.targetModel, demoUrl: null };
     }
     if (provider !== 'minimaxi') throw new Error(`Unsupported voice provider: ${provider}`);
     const file = new Blob([new Uint8Array(await readFile(audioPath))], { type: 'audio/wav' });
     const upload = await this.minimaxiService.uploadCloneAudio({ file, filename: basename(audioPath) });
     const result = await this.minimaxiService.cloneVoice({ ...(config as Omit<MinimaxiCloneVoiceParams, 'fileId'>), fileId: upload.fileId });
-    return result.voiceId;
+    return { voiceId: result.voiceId, model: config.model as string, demoUrl: result.demoAudio };
   }
 }
