@@ -1,4 +1,5 @@
 import {
+  Button,
   Separator,
   Sidebar,
   SidebarContent,
@@ -14,12 +15,13 @@ import {
   SidebarTrigger,
 } from '@r/ui';
 import { Link, useLocation, useMatches } from '@tanstack/react-router';
-import { AudioLinesIcon, VideoIcon } from 'lucide-react';
+import { AudioLinesIcon, MicIcon, VideoIcon } from 'lucide-react';
 import { useMemo } from 'react';
 import { BreadcrumbBar } from '#/components/breadcrumb-bar';
 import { Now } from '#/components/now';
 import { ThemeSwitch } from '#/components/theme-switch';
 import { UserProfileDropdown } from '#/components/user-profile-dropdown';
+import { useVoiceListDialog } from '#/providers/voice-list-dialog-provider';
 
 const CONTENT_NAV_ITEMS = [{ to: '/videos', label: '视频库', icon: VideoIcon }];
 const CREATIVE_NAV_ITEMS = [{ to: '/audios', label: '音频', icon: AudioLinesIcon }];
@@ -98,6 +100,7 @@ function AppLayoutSidebarMenuItem({ nav }: AppLayoutSidebarMenuItemProps) {
 
 function ApplayoutHeader() {
   const matches = useMatches();
+  const { openVoiceList } = useVoiceListDialog();
 
   const crumbs = useMemo(
     () =>
@@ -115,6 +118,9 @@ function ApplayoutHeader() {
       <Separator orientation="vertical" className="my-3" />
       <BreadcrumbBar crumbs={crumbs} />
       <div className="flex ml-auto items-center justify-between gap-4">
+        <Button variant="outline" size="icon" aria-label="音色列表" title="音色列表" onClick={openVoiceList}>
+          <MicIcon />
+        </Button>
         <ThemeSwitch />
         <UserProfileDropdown />
       </div>

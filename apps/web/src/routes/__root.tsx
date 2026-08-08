@@ -9,6 +9,7 @@ import TanStackQueryDevtools from '#/integrations/tanstack-query/devtools';
 import { AuthProvider } from '#/providers/auth-provider';
 import { ConfirmDialogProvider } from '#/providers/confirm-dialog-provider';
 import { ThemeProvider } from '#/providers/theme-provider';
+import { VoiceListDialogProvider } from '#/providers/voice-list-dialog-provider';
 
 interface AppRouterContext {
   queryClient: QueryClient;
@@ -83,7 +84,9 @@ function RootComponent() {
       <ConfirmDialogProvider>
         <AuthProvider>
           <ThemeProvider>
-            <Outlet />
+            <VoiceListDialogProvider>
+              <Outlet />
+            </VoiceListDialogProvider>
           </ThemeProvider>
         </AuthProvider>
       </ConfirmDialogProvider>

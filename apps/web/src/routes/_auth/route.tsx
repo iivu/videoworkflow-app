@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { LoginPage } from '#/features/login-page';
-import { VoiceCloningDialog } from '#/features/voice-cloning/voice-cloning-dialog';
+import { VoiceCloningDialog } from '#/features/voice/voice-cloning-dialog';
 import { AppLayout } from '#/layouts/app-layout';
 import { useAuth } from '#/providers/auth-provider';
 
