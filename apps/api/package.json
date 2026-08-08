@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node bin/server.js",
-    "start:queue-worker": "node ace queue:work --queue=crawler-video-queue",
+    "start:queue-worker": "node ace queue:work --queue=crawler-video-queue,video-to-voice-queue",
     "build": "node ace build",
     "dev": "node ace serve --hmr",
     "test": "node ace test",

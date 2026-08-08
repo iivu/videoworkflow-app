@@ -27,7 +27,7 @@ export function VideoEditor({ draft, errors, busy, error, onUpdate }: VideoEdito
   if (!draft) {
     return (
       <main className="min-w-0 overflow-y-auto p-4 sm:p-6">
-        <div className="flex min-h-72 flex-col items-center justify-center gap-3 text-center text-muted-foreground">
+        <div className="flex h-[60vh] flex-col items-center justify-center gap-3 text-center text-muted-foreground">
           <FileVideo className="size-10" />
           <p className="text-sm">添加视频后即可编辑创建信息</p>
         </div>
