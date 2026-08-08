@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { EVENT_OPEN_VOICE_CLONING_DIALOG, emitter, type VoiceCloningOpenPayload } from '#/shared/mitt';
 import { AssetsPreview } from './assets-preview';
 import { VoiceCloningForm } from './form';
-import { createDraft } from './types';
+import { createDraft, type Draft } from './types';
 import { useVoiceCloningDialogForm } from './use-voice-cloning-form';
 
 export function VoiceCloningDialog() {
@@ -36,7 +36,9 @@ export function VoiceCloningDialog() {
     const handler = (payload?: VoiceCloningOpenPayload) => {
       if (busy) return;
       clearUploadCache();
-      form.reset(createDraft(payload));
+      Object.entries(createDraft(payload)).forEach(([key, value]) => {
+        form.setFieldValue(key as keyof Draft, value);
+      });
       setOpen(true);
       setFormError('');
     };
