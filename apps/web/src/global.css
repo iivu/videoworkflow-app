@@ -1,0 +1,4 @@
+:root {
+  --header-height: 48px;
+  --content-min-height: calc(100vh - var(--header-height));
+}
