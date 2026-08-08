@@ -1,3 +1,4 @@
+import { inject } from '@adonisjs/core';
 import type { Infer } from '@vinejs/vine/types';
 import { customAlphabet } from 'nanoid';
 import BusinessException from '#exceptions/business-exception';
@@ -38,6 +39,7 @@ function removeUndefined(config: VoiceCloneOptions): VoiceCloneOptions {
   return Object.fromEntries(Object.entries(config).filter(([, value]) => value !== undefined));
 }
 
+@inject()
 export class VoiceService {
   constructor(
     private readonly bailian: BailianVoiceService,
