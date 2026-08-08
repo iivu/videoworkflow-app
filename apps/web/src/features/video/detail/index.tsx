@@ -123,7 +123,7 @@ function TranscriptionPanel({ videoId }: { videoId: string }) {
           />
         ) : null}
 
-        {task && ACTIVE_STATUSES.has(task.status) ? (
+        {task && !taskQuery.error && ACTIVE_STATUSES.has(task.status) ? (
           <EmptyState icon={<LoaderCircle className="animate-spin" />} title={task.status === 'PENDING' ? '等待转录' : '正在转录'} description="转录完成后会自动显示结果" />
         ) : null}
 

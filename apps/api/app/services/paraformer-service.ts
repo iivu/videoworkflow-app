@@ -88,8 +88,6 @@ export class ParaformerService {
 
   async checkTask(params: { taskId: string }): Promise<ParaformerTaskUpdate> {
     const fetchClient = await this.getFetchClient();
-    console.log(`${API_BASE_URL}/tasks/${encodeURIComponent(params.taskId)}`)
-    console.log('Checking task with ID:', params.taskId); // Debugging log
     const response = await fetchClient.json<unknown>(`${API_BASE_URL}/tasks/${encodeURIComponent(params.taskId)}`, {
       headers: this.buildApiHeaders(false),
     });
