@@ -24,7 +24,7 @@ import { UserProfileDropdown } from '#/components/user-profile-dropdown';
 import { useVoiceListDialog } from '#/providers/voice-list-dialog-provider';
 
 const CONTENT_NAV_ITEMS = [{ to: '/videos', label: '视频库', icon: VideoIcon }];
-const CREATIVE_NAV_ITEMS = [{ to: '/audios', label: '音频', icon: AudioLinesIcon }];
+const CREATIVE_NAV_ITEMS = [{ to: '/creative/audio', label: '音频', icon: AudioLinesIcon }];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (

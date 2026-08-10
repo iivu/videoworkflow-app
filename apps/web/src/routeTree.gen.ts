@@ -14,6 +14,7 @@ import { Route as AuthIndexRouteImport } from './routes/_auth/index'
 import { Route as AuthVideosIndexRouteImport } from './routes/_auth/videos/index'
 import { Route as AuthVideosIdRouteImport } from './routes/_auth/videos/$id'
 import { Route as AuthVideosCreateRouteImport } from './routes/_auth/videos/create'
+import { Route as AuthCreativeAudioIndexRouteImport } from './routes/_auth/creative/audio/index'
 
 const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/_auth',
@@ -39,18 +40,25 @@ const AuthVideosCreateRoute = AuthVideosCreateRouteImport.update({
   path: '/videos/create',
   getParentRoute: () => AuthRouteRoute,
 } as any)
+const AuthCreativeAudioIndexRoute = AuthCreativeAudioIndexRouteImport.update({
+  id: '/creative/audio/',
+  path: '/creative/audio/',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthIndexRoute
   '/videos/$id': typeof AuthVideosIdRoute
   '/videos/create': typeof AuthVideosCreateRoute
   '/videos/': typeof AuthVideosIndexRoute
+  '/creative/audio/': typeof AuthCreativeAudioIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthIndexRoute
   '/videos/$id': typeof AuthVideosIdRoute
   '/videos/create': typeof AuthVideosCreateRoute
   '/videos': typeof AuthVideosIndexRoute
+  '/creative/audio': typeof AuthCreativeAudioIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -59,12 +67,14 @@ export interface FileRoutesById {
   '/_auth/videos/$id': typeof AuthVideosIdRoute
   '/_auth/videos/create': typeof AuthVideosCreateRoute
   '/_auth/videos/': typeof AuthVideosIndexRoute
+  '/_auth/creative/audio/': typeof AuthCreativeAudioIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/videos/$id' | '/videos/create' | '/videos/'
+  fullPaths:
+    '/' | '/videos/$id' | '/videos/create' | '/videos/' | '/creative/audio/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/videos/$id' | '/videos/create' | '/videos'
+  to: '/' | '/videos/$id' | '/videos/create' | '/videos' | '/creative/audio'
   id:
     | '__root__'
     | '/_auth'
@@ -72,6 +82,7 @@ export interface FileRouteTypes {
     | '/_auth/videos/$id'
     | '/_auth/videos/create'
     | '/_auth/videos/'
+    | '/_auth/creative/audio/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -115,6 +126,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthVideosCreateRouteImport
       parentRoute: typeof AuthRouteRoute
     }
+    '/_auth/creative/audio/': {
+      id: '/_auth/creative/audio/'
+      path: '/creative/audio'
+      fullPath: '/creative/audio/'
+      preLoaderRoute: typeof AuthCreativeAudioIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
   }
 }
 
@@ -123,6 +141,7 @@ interface AuthRouteRouteChildren {
   AuthVideosIdRoute: typeof AuthVideosIdRoute
   AuthVideosCreateRoute: typeof AuthVideosCreateRoute
   AuthVideosIndexRoute: typeof AuthVideosIndexRoute
+  AuthCreativeAudioIndexRoute: typeof AuthCreativeAudioIndexRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
@@ -130,6 +149,7 @@ const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthVideosIdRoute: AuthVideosIdRoute,
   AuthVideosCreateRoute: AuthVideosCreateRoute,
   AuthVideosIndexRoute: AuthVideosIndexRoute,
+  AuthCreativeAudioIndexRoute: AuthCreativeAudioIndexRoute,
 }
 
 const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
