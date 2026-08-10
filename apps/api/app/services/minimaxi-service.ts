@@ -103,7 +103,7 @@ export class MinimaxiService {
     const file = asRecord(record.file);
     const fileId = file?.file_id;
     if (typeof fileId !== 'number' || !Number.isSafeInteger(fileId)) {
-      throw new BusinessException('MiniMax 音频上传响应格式无效');
+      throw new BusinessException('MiniMaxi 音频上传响应格式无效');
     }
     return { fileId };
   }
@@ -160,19 +160,19 @@ export class MinimaxiService {
   }
 
   async listVoices(params: { page: number; size: number }) {
-    const response = await (await this.getFetchClient()).json<unknown>(this.endpoint('/v1/voice/list'), {
-      method: 'GET',
-      headers: { Authorization: `Bearer ${env.get('MINIMAXI_API_KEY')}` },
+    const response = await (await this.getFetchClient()).json<unknown>(this.endpoint('/v1/get_voice'), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${env.get('MINIMAXI_API_KEY')}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ voice_type: 'system' }),
     });
     const record = asRecord(response);
     const base = asRecord(record?.base_resp);
     if (base && typeof base.status_code === 'number' && base.status_code !== 0) {
-      throw new BusinessException(`MiniMax 请求失败: ${optionalString(base, 'status_msg') || base.status_code}`);
+      throw new BusinessException(`MiniMaxi 请求失败: ${optionalString(base, 'status_msg') || base.status_code}`);
     }
-    const rawList = record?.voice_list ?? asRecord(record?.data)?.voice_list;
+    const rawList = record?.system_voice ?? asRecord(record?.data)?.system_voice;
     if (!Array.isArray(rawList)) throw new BusinessException('MiniMax 音色列表响应格式无效');
-    const start = (params.page - 1) * params.size;
-    const pageList = rawList.slice(start, start + params.size).flatMap((item) => {
+    const pageList = rawList.flatMap((item) => {
       const voice = asRecord(item);
       const voiceId = optionalString(voice, 'voice_id') || optionalString(voice, 'voiceId');
       if (!voiceId) return [];
@@ -181,6 +181,7 @@ export class MinimaxiService {
           provider: 'minimaxi' as const,
           model: optionalString(voice, 'model') || 'speech-2.8-turbo',
           voiceId,
+          description: optionalString(voice, 'description') || null,
           name: optionalString(voice, 'voice_name') || optionalString(voice, 'name') || voiceId,
           demoUrl: optionalString(voice, 'demo_audio') || null,
           createdAt: optionalString(voice, 'created_at') || null,
@@ -226,7 +227,7 @@ export class MinimaxiService {
     const audio = optionalString(data, 'audio');
     const status = data?.status;
     if (!data || !audio || typeof status !== 'number') {
-      throw new BusinessException('MiniMax 语音合成响应格式无效');
+      throw new BusinessException('MiniMaxi 语音合成响应格式无效');
     }
     return {
       audio,

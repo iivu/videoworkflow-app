@@ -7,9 +7,9 @@ import { promisify } from 'node:util';
 import { inject } from '@adonisjs/core';
 import app from '@adonisjs/core/services/app';
 import logger from '@adonisjs/core/services/logger';
+import db from '@adonisjs/lucid/services/db';
 import { Job } from '@adonisjs/queue';
 import type { JobOptions } from '@adonisjs/queue/types';
-import db from '@adonisjs/lucid/services/db';
 import { v4 as uuidv4 } from 'uuid';
 
 import VideoToVoiceTask from '#models/video-to-voice-task';

@@ -391,7 +391,7 @@ export class VideoSchema extends BaseModel {
 }
 
 export class VoiceSchema extends BaseModel {
-  static $columns = ['config', 'createdAt', 'demoUrl', 'id', 'model', 'name', 'provider', 'updatedAt', 'userId', 'voiceId'] as const
+  static $columns = ['config', 'createdAt', 'demoUrl', 'description', 'id', 'model', 'name', 'provider', 'updatedAt', 'userId', 'voiceId'] as const
   $columns = VoiceSchema.$columns
   @column()
   declare config: string
@@ -399,6 +399,8 @@ export class VoiceSchema extends BaseModel {
   declare createdAt: DateTime
   @column()
   declare demoUrl: string | null
+  @column()
+  declare description: string | null
   @column({ isPrimary: true })
   declare id: number
   @column()

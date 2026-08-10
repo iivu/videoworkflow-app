@@ -1,6 +1,7 @@
 import app from '@adonisjs/core/services/app';
 import logger from '@adonisjs/core/services/logger';
 
+import type { FetchClient } from '#providers/fetch-provider';
 import env from '#start/env';
 
 type VideoItem = {
@@ -87,6 +88,10 @@ function mapVideoInfo(data: ShanhaiApiData, videoUrl: string, title: string): Sh
 }
 
 export class ShanhaiApiService {
+  protected async getFetchClient(): Promise<Pick<FetchClient, 'json' | 'formData'>> {
+    return app.container.make('fetch');
+  }
+
   async fetchVideoInfo(url: string): Promise<ShanhaiVideoInfo> {
     const apiUrl = new URL(env.get('SHANHAI_API_HOST'));
     const path = [apiUrl.pathname, env.get('SHANHAI_API_PREFIX'), 'video6']
@@ -97,7 +102,7 @@ export class ShanhaiApiService {
     apiUrl.search = '';
     apiUrl.searchParams.set('key', env.get('SHANHAI_API_KEY'));
     apiUrl.searchParams.set('url', url);
-    const fetchClient = await app.container.make('fetch');
+    const fetchClient = await this.getFetchClient();
     const response = await fetchClient.json<ShanhaiApiResponse | null>(apiUrl);
 
     if (!response) throw new Error('Response body is empty');

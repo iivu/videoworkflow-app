@@ -11,6 +11,7 @@ export default class extends BaseSchema {
       table.string('model', 128).notNullable();
       table.string('voice_id', 256).notNullable();
       table.string('name', 128).notNullable();
+      table.string('description', 512).nullable();
       table.string('demo_url', 512).nullable();
       table.text('config').notNullable();
       table.datetime('created_at', { precision: 3 }).notNullable();

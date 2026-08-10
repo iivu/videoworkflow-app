@@ -3,6 +3,6 @@ import type Voice from '#models/voice';
 
 export default class VoiceTransformer extends BaseTransformer<Voice> {
   toObject() {
-    return this.pick(this.resource, ['id', 'provider', 'model', 'voiceId', 'name', 'config', 'demoUrl', 'createdAt', 'updatedAt']);
+    return this.pick(this.resource, ['id', 'provider', 'model', 'voiceId', 'name', 'description', 'config', 'demoUrl', 'createdAt', 'updatedAt']);
   }
 }

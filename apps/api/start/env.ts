@@ -41,7 +41,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   OSS_BUCKET: Env.schema.string(),
   OSS_DIR: Env.schema.string(),
   MINIMAXI_GROUP_ID: Env.schema.string(),
-  MINIMAXI_API_KEY: Env.schema.secret(),
+  MINIMAXI_API_KEY: Env.schema.string(),
   MINIMAXI_BASE_URL: Env.schema.string({ format: 'url' }),
   JWT_SECRET_KEY: Env.schema.string(),
   JWT_ALGORITHM: Env.schema.string(),
