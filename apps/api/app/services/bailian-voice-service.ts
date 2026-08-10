@@ -104,6 +104,7 @@ export class BailianVoiceService {
           voiceId,
           name: voiceId,
           demoUrl: null,
+          description: null,
           createdAt: optionalString(record, 'gmt_create') || null,
           updatedAt: optionalString(record, 'gmt_modified') || null,
           status: optionalString(record, 'status') || null,

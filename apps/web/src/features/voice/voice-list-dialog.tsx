@@ -21,7 +21,6 @@ import type { Route } from '@tuyau/core/types';
 import dayjs from 'dayjs';
 import { Pause, Play } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Pagination } from '#/components/pagination';
 import { providerOptions } from '#/features/voice/voice-cloning-dialog/constants';
 import { normalizeApiFailedMessage, query } from '#/services/api';
 
@@ -35,6 +34,8 @@ const sourceTabs: Array<{ label: string; value: VoiceSource }> = [
   { label: '我的音色', value: 'user' },
   { label: '系统音色', value: 'system' },
 ];
+// 目前只有minimaxti提供系统音色
+const availableSystemProviderOptions = providerOptions.filter((option) => ['minimaxi'].includes(option.value));
 
 function providerLabel(provider: string) {
   return providerOptions.find((option) => option.value === provider)?.label ?? provider;
@@ -42,7 +43,7 @@ function providerLabel(provider: string) {
 
 export function VoiceListDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [source, setSource] = useState<VoiceSource>('user');
-  const [provider, setProvider] = useState<VoiceProvider>('bailian');
+  const [provider, setProvider] = useState<VoiceProvider>(() => availableSystemProviderOptions[0].value);
   const [page, setPage] = useState(1);
   const [playingUrl, setPlayingUrl] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -101,13 +102,13 @@ export function VoiceListDialog({ open, onOpenChange }: { open: boolean; onOpenC
               ))}
             </TabsList>
             {source === 'system' ? (
-              <Select items={providerOptions} value={provider} onValueChange={(value) => changeProvider(value === 'minimaxi' ? 'minimaxi' : 'bailian')}>
+              <Select items={availableSystemProviderOptions} value={provider} onValueChange={(value) => changeProvider(value === 'minimaxi' ? 'minimaxi' : 'bailian')}>
                 <SelectTrigger size="sm" className="ml-auto" aria-label="服务商">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {providerOptions.map((option) => (
+                    {availableSystemProviderOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
@@ -137,16 +138,6 @@ export function VoiceListDialog({ open, onOpenChange }: { open: boolean; onOpenC
             </ul>
           )}
         </div>
-        <Pagination
-          className="w-fit self-center"
-          size={PAGE_SIZE}
-          currentPage={page}
-          total={data?.data.meta.total ?? 0}
-          onPageChange={(next) => {
-            stopPlaying();
-            setPage(next);
-          }}
-        />
         {/* biome-ignore lint/a11y/useMediaCaption: Remote demo audios do not include a separate caption track. */}
         <audio ref={audioRef} className="hidden" onEnded={() => setPlayingUrl(null)} />
       </DialogContent>
@@ -156,7 +147,10 @@ export function VoiceListDialog({ open, onOpenChange }: { open: boolean; onOpenC
 
 function VoiceRow({ voice, source, playing, onPlay }: { voice: VoiceItem; source: VoiceSource; playing: boolean; onPlay: (url: string) => void }) {
   const demoUrl = voice.demoUrl;
-  const subtitle = [providerLabel(voice.provider), voice.model, dayjs(voice.createdAt).format('YYYY-MM-DD')].filter(Boolean).join(' · ');
+  const subtitle = [
+    providerLabel(voice.provider),
+    voice.model, voice.createdAt ? dayjs(voice.createdAt).format('YYYY-MM-DD') : ''
+  ].filter(Boolean).join(' · ');
   return (
     <li className="flex items-center gap-3 border-b py-3 last:border-b-0">
       {demoUrl ? (
@@ -166,6 +160,7 @@ function VoiceRow({ voice, source, playing, onPlay }: { voice: VoiceItem; source
       ) : null}
       <div className="min-w-0 flex-1">
         <div className="truncate font-medium">{voice.name}</div>
+        <div className="truncate text-muted-foreground">{voice.description}</div>
         <div className="truncate text-xs text-muted-foreground">{subtitle}</div>
       </div>
       <Badge variant="secondary">{source === 'user' ? '克隆' : '公共'}</Badge>

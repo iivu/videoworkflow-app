@@ -10,7 +10,7 @@ export const sourceModeOptions = [
 
 export const providerOptions: Array<{ label: string; value: 'bailian' | 'minimaxi' }> = [
   { label: '阿里云百炼', value: 'bailian' },
-  { label: 'MiniMaxi', value: 'minimaxi' },
+  { label: 'MiniMax', value: 'minimaxi' },
 ];
 
 export const BAILIAN_MODELS = [
