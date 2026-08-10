@@ -160,7 +160,6 @@ function VoiceRow({ voice, source, playing, onPlay }: { voice: VoiceItem; source
         <div className="truncate text-muted-foreground">{voice.description}</div>
         <div className="truncate text-xs text-muted-foreground">{subtitle}</div>
       </div>
-      <Badge variant="secondary">{source === 'user' ? '克隆' : '公共'}</Badge>
     </li>
   );
 }
