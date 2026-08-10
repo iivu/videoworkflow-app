@@ -10,8 +10,8 @@ import logger from '@adonisjs/core/services/logger';
 import db from '@adonisjs/lucid/services/db';
 import { Job } from '@adonisjs/queue';
 import type { JobOptions } from '@adonisjs/queue/types';
+import { nanoid } from 'nanoid';
 import { v4 as uuidv4 } from 'uuid';
-
 import VideoToVoiceTask from '#models/video-to-voice-task';
 import Voice from '#models/voice';
 import { type BailianCloneVoiceParams, BailianVoiceService } from '#services/bailian-voice-service';
@@ -48,6 +48,21 @@ export default class VideoToVoiceJob extends Job<JobPayload> {
     super();
   }
 
+  private async getOssClient() {
+    return app.container.make('oss');
+  }
+
+  private async silentPutUrlToOss(url: string) {
+    const ossClient = await this.getOssClient();
+    try {
+      const result = await ossClient.putURL(url, `voice-clone-sample/${nanoid(6)}.mp3`);
+      return result.url;
+    } catch (error) {
+      logger.warn(`上传音频到OSS失败: ${error instanceof Error ? error.message : String(error)}`);
+      return null;
+    }
+  }
+
   async execute() {
     const { taskId, videoUrl, userId, provider, name, config } = this.payload;
     const tempDir = app.tmpPath(`video-to-voice/${uuidv4()}`);
@@ -67,6 +82,10 @@ export default class VideoToVoiceJob extends Job<JobPayload> {
       const oss = await app.container.make('oss');
       const ossResponse = await oss.putStream(createReadStream(audioPath), `video-to-voice/${uuidv4()}.wav`);
       const cloned = await this.cloneVoice(provider, config, audioPath, ossResponse.url);
+      if (cloned.demoUrl) {
+        const ossDemoUrl = await this.silentPutUrlToOss(cloned.demoUrl);
+        cloned.demoUrl = ossDemoUrl || cloned.demoUrl;
+      }
       await db.transaction(async (trx) => {
         await Voice.create(
           {

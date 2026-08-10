@@ -1,6 +1,8 @@
 import { inject } from '@adonisjs/core';
+import app from '@adonisjs/core/services/app';
+import logger from '@adonisjs/core/services/logger';
 import type { Infer } from '@vinejs/vine/types';
-import { customAlphabet } from 'nanoid';
+import { customAlphabet, nanoid } from 'nanoid';
 import BusinessException from '#exceptions/business-exception';
 import VideoToVoiceJob, { QUEUE_NAME, VIDEO_TO_VOICE_TASK_STATUS } from '#jobs/video-to-voice-job';
 import VideoToVoiceTask from '#models/video-to-voice-task';
@@ -47,6 +49,21 @@ export class VoiceService {
     private readonly minimaxi: MinimaxiService,
   ) {}
 
+  private async getOssClient() {
+    return app.container.make('oss');
+  }
+
+  private async silentPutUrlToOss(url: string) {
+    const ossClient = await this.getOssClient();
+    try {
+      const result = await ossClient.putURL(url, `voice-clone-sample/${nanoid(6)}.mp3`);
+      return result.url;
+    } catch (error) {
+      logger.warn(`上传音频到 OSS 失败: ${error instanceof Error ? error.message : String(error)}`);
+      return null;
+    }
+  }
+
   async list(params: { userId: string; payload: Infer<typeof listVoiceValidator> }) {
     const { source, provider, page = 1, size = 20 } = params.payload;
     if (source === 'user') {
@@ -68,6 +85,10 @@ export class VoiceService {
     } else {
       const upload = await this.minimaxi.uploadCloneAudioUrl(sourceUrl);
       const cloned = await this.minimaxi.cloneVoice({ ...(config as unknown as Omit<MinimaxiCloneVoiceParams, 'fileId'>), fileId: upload.fileId });
+      if (cloned.demoAudio) {
+        const oss = await this.silentPutUrlToOss(cloned.demoAudio);
+        cloned.demoAudio = oss || cloned.demoAudio;
+      }
       result = { voiceId: cloned.voiceId, model: params.payload.model, demoUrl: cloned.demoAudio };
     }
     return await Voice.create({

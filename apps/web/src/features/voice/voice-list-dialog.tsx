@@ -21,9 +21,9 @@ import type { Route } from '@tuyau/core/types';
 import dayjs from 'dayjs';
 import { Pause, Play } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { Pagination } from '#/components/pagination';
 import { providerOptions } from '#/features/voice/voice-cloning-dialog/constants';
 import { normalizeApiFailedMessage, query } from '#/services/api';
-import { Pagination } from '#/components/pagination';
 
 const PAGE_SIZE = 20;
 
@@ -139,16 +139,18 @@ export function VoiceListDialog({ open, onOpenChange }: { open: boolean; onOpenC
             </ul>
           )}
         </div>
-        {source === 'user' ? <Pagination
-          className="w-fit self-center"
-          size={PAGE_SIZE}
-          currentPage={page}
-          total={data?.data.meta.total ?? 0}
-          onPageChange={(next) => {
-            stopPlaying();
-            setPage(next);
-          }}
-        /> : null}
+        {source === 'user' ? (
+          <Pagination
+            className="w-fit self-center"
+            size={PAGE_SIZE}
+            currentPage={page}
+            total={data?.data.meta.total ?? 0}
+            onPageChange={(next) => {
+              stopPlaying();
+              setPage(next);
+            }}
+          />
+        ) : null}
         {/* biome-ignore lint/a11y/useMediaCaption: Remote demo audios do not include a separate caption track. */}
         <audio ref={audioRef} className="hidden" onEnded={() => setPlayingUrl(null)} />
       </DialogContent>
