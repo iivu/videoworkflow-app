@@ -25,6 +25,7 @@ import { useVoiceListDialog } from '#/providers/voice-list-dialog-provider';
 
 const CONTENT_NAV_ITEMS = [{ to: '/videos', label: '视频库', icon: VideoIcon }];
 const CREATIVE_NAV_ITEMS = [{ to: '/creative/audio', label: '音频', icon: AudioLinesIcon }];
+const TOOLS_NAV_ITEMS = [{ to: '/tools', label: '视频拆解', icon: AudioLinesIcon }];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -44,6 +45,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarGroupLabel>创作</SidebarGroupLabel>
             <SidebarMenu>
               {CREATIVE_NAV_ITEMS.map((item) => (
+                <AppLayoutSidebarMenuItem key={item.to} nav={item} />
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupLabel>工具</SidebarGroupLabel>
+            <SidebarMenu>
+              {TOOLS_NAV_ITEMS.map((item) => (
                 <AppLayoutSidebarMenuItem key={item.to} nav={item} />
               ))}
             </SidebarMenu>
@@ -80,7 +89,7 @@ function AppLayoutSidebarHeader() {
 }
 
 type AppLayoutSidebarMenuItemProps = {
-  nav: (typeof CONTENT_NAV_ITEMS)[number] | (typeof CREATIVE_NAV_ITEMS)[number];
+  nav: (typeof CONTENT_NAV_ITEMS)[number] | (typeof CREATIVE_NAV_ITEMS)[number] | (typeof TOOLS_NAV_ITEMS)[number];
 };
 function AppLayoutSidebarMenuItem({ nav }: AppLayoutSidebarMenuItemProps) {
   const currentPath = useLocation({ select: (l) => l.pathname });
