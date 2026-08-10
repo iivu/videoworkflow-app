@@ -8,3 +8,8 @@ export function optionalString(record: JsonRecord | null, key: string): string |
   const value = record?.[key];
   return typeof value === 'string' && value.trim().length > 0 ? value : undefined;
 }
+
+export function optionalArray<T>(record: JsonRecord | null, key: string) {
+  const value = record?.[key];
+  return Array.isArray(value) ? (value as T[]) : [];
+}

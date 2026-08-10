@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import BusinessException from '#exceptions/business-exception';
 import type { FetchClient } from '#providers/fetch-provider';
 import env from '#start/env';
-import { asRecord, type JsonRecord, optionalString } from '#utils/type-guards';
+import { asRecord, type JsonRecord, optionalString, optionalArray } from '#utils/type-guards';
 
 const API_BASE_URL = env.get('MINIMAXI_BASE_URL');
 export const MINIMAXI_CLONE_MODELS = ['speech-2.8-turbo', 'speech-2.8-hd'] as const;
@@ -181,7 +181,7 @@ export class MinimaxiService {
           provider: 'minimaxi' as const,
           model: optionalString(voice, 'model') || 'speech-2.8-turbo',
           voiceId,
-          description: optionalString(voice, 'description') || null,
+          description: optionalArray<string>(voice, 'description').join(';'),
           name: optionalString(voice, 'voice_name') || optionalString(voice, 'name') || voiceId,
           demoUrl: optionalString(voice, 'demo_audio') || null,
           createdAt: optionalString(voice, 'created_at') || null,
