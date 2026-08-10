@@ -32,7 +32,8 @@ export function buildVoiceCloneConfig(params: { provider: VoiceCloneProvider; mo
   }
 
   if (!isMinimaxiCloneModel(params.model)) throw new BusinessException('声音克隆模型与 provider 不匹配');
-  return { ...config, model: params.model, voiceId: createMinimaxiVoiceId() } as Omit<MinimaxiCloneVoiceParams, 'fileId'>;
+  // Minimaxi 的 voiceId 首位必须是字母
+  return { ...config, model: params.model, voiceId: `Voice-${createMinimaxiVoiceId()}` } as Omit<MinimaxiCloneVoiceParams, 'fileId'>;
 }
 
 function removeUndefined(config: VoiceCloneOptions): VoiceCloneOptions {
