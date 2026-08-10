@@ -12,6 +12,7 @@ export type Draft = {
   sourceMode: SourceMode;
   provider: '' | Provider;
   model: string;
+  name: string;
   selectedFile?: File[] | null;
   url?: string;
   languageHints?: string;
@@ -30,6 +31,7 @@ export const EMPTY_DRAFT: Draft = {
   url: '',
   provider: '',
   model: '',
+  name: '',
   languageHints: 'zh',
   maxPromptAudioLength: '10.0',
   text: '来潮汕别只知道在市区里面逛哈。广东的最美村寨之一龙湖古寨，古香古色，非常原生态，还有汕头的陈思红故居，用900万银元打造的潮汕小故宫也非常值得一看。我是大麦，更多潮汕实用攻略记得关注我哟。',

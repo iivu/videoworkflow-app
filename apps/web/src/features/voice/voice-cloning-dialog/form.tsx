@@ -31,6 +31,7 @@ export function VoiceCloningForm({ onSubmit, error, form, busy = false, onFileCh
   return (
     <form id="voice-cloning-form" className="min-h-0 w-full flex-1 space-y-5 overflow-y-auto px-1 md:px-4" onSubmit={onSubmit}>
       {error ? <ErrorMessage errorMessage={error || ''} /> : null}
+      <form.AppField name="name">{(field) => <field.FieldInput disabled={busy} placeholder="请输入音色名称" label="音色名称" maxLength={128} />}</form.AppField>
       <div className="grid gap-4 sm:grid-cols-2">
         <form.AppField
           name="mediaKind"

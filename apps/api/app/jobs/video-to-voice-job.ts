@@ -33,6 +33,7 @@ type JobPayload = {
   videoUrl: string;
   userId: string;
   provider: Provider;
+  name: string;
   config: Record<string, unknown>;
 };
 
@@ -48,7 +49,7 @@ export default class VideoToVoiceJob extends Job<JobPayload> {
   }
 
   async execute() {
-    const { taskId, videoUrl, userId, provider, config } = this.payload;
+    const { taskId, videoUrl, userId, provider, name, config } = this.payload;
     const tempDir = app.tmpPath(`video-to-voice/${uuidv4()}`);
     const videoPath = join(tempDir, 'source-video');
     const audioPath = join(tempDir, 'voice-sample.wav');
@@ -73,7 +74,7 @@ export default class VideoToVoiceJob extends Job<JobPayload> {
             provider,
             model: cloned.model,
             voiceId: cloned.voiceId,
-            name: cloned.voiceId,
+            name,
             config: JSON.stringify(config),
             demoUrl: cloned.demoUrl,
           },

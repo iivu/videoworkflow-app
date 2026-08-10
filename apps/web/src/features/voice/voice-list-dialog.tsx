@@ -147,10 +147,7 @@ export function VoiceListDialog({ open, onOpenChange }: { open: boolean; onOpenC
 
 function VoiceRow({ voice, source, playing, onPlay }: { voice: VoiceItem; source: VoiceSource; playing: boolean; onPlay: (url: string) => void }) {
   const demoUrl = voice.demoUrl;
-  const subtitle = [
-    providerLabel(voice.provider),
-    voice.model, voice.createdAt ? dayjs(voice.createdAt).format('YYYY-MM-DD') : ''
-  ].filter(Boolean).join(' · ');
+  const subtitle = [providerLabel(voice.provider), voice.model, voice.createdAt ? dayjs(voice.createdAt).format('YYYY-MM-DD') : ''].filter(Boolean).join(' · ');
   return (
     <li className="flex items-center gap-3 border-b py-3 last:border-b-0">
       {demoUrl ? (

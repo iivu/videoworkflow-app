@@ -74,7 +74,7 @@ export class VoiceService {
       provider: params.payload.provider,
       model: result.model,
       voiceId: result.voiceId,
-      name: result.voiceId,
+      name: params.payload.name,
       config: JSON.stringify(config),
       demoUrl: result.demoUrl || null,
     });
@@ -91,7 +91,14 @@ export class VoiceService {
       config: JSON.stringify(config),
     });
     try {
-      await VideoToVoiceJob.dispatch({ taskId: task.id, videoUrl, userId: params.userId, provider: params.payload.provider, config }).toQueue(QUEUE_NAME);
+      await VideoToVoiceJob.dispatch({
+        taskId: task.id,
+        videoUrl,
+        userId: params.userId,
+        provider: params.payload.provider,
+        name: params.payload.name,
+        config,
+      }).toQueue(QUEUE_NAME);
     } catch (error) {
       await task.merge({ status: VIDEO_TO_VOICE_TASK_STATUS.FAILED, reason: error instanceof Error ? error.message.slice(0, 512) : String(error) }).save();
       throw error;

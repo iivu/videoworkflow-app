@@ -28,6 +28,7 @@ export type VoiceCloneOptions = NonNullable<Infer<typeof voiceCloneConfig>>;
 export const cloneAudioVoiceValidator = vine.create({
   provider: vine.enum(['bailian', 'minimaxi'] as const),
   model: vine.enum([...BAILIAN_VOICE_MODELS, ...MINIMAXI_CLONE_MODELS]),
+  name: vine.string().trim().minLength(1).maxLength(128),
   audioUrl: vine.string().url(),
   config: voiceCloneConfig,
 });
@@ -35,6 +36,7 @@ export const cloneAudioVoiceValidator = vine.create({
 export const cloneVideoVoiceValidator = vine.create({
   provider: vine.enum(['bailian', 'minimaxi'] as const),
   model: vine.enum([...BAILIAN_VOICE_MODELS, ...MINIMAXI_CLONE_MODELS]),
+  name: vine.string().trim().minLength(1).maxLength(128),
   videoUrl: vine.string().url(),
   config: voiceCloneConfig,
 });

@@ -26,6 +26,7 @@ const schema = z
     url: z.string().optional(),
     provider: z.enum(['bailian', 'minimaxi'], '请选择服务商'),
     model: z.string().min(1, '请选择模型'),
+    name: z.string().trim().min(1, '请输入音色名称').max(128, '音色名称不能超过 128 个字符'),
     languageHints: z.string().optional(),
     maxPromptAudioLength: z
       .string()
@@ -112,7 +113,7 @@ export function useVoiceCloningDialogForm(opts: { onSuccess?: () => void } = {})
         if (!mediaUrl) throw new Error('文件上传失败，请重试');
         if (!value.provider || !isVoiceCloneModel(value.model)) throw new Error('请选择有效的服务商和模型');
         const config = buildConfig(value);
-        const common = { provider: value.provider, model: value.model, ...(config ? { config } : {}) };
+        const common = { provider: value.provider, model: value.model, name: value.name.trim(), ...(config ? { config } : {}) };
         if (value.mediaKind === 'audio') {
           const body: AudioCloneBody = { ...common, audioUrl: mediaUrl };
           await audioMutation.mutateAsync({ body });

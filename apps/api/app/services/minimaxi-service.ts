@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import BusinessException from '#exceptions/business-exception';
 import type { FetchClient } from '#providers/fetch-provider';
 import env from '#start/env';
-import { asRecord, type JsonRecord, optionalString, optionalArray } from '#utils/type-guards';
+import { asRecord, type JsonRecord, optionalArray, optionalString } from '#utils/type-guards';
 
 const API_BASE_URL = env.get('MINIMAXI_BASE_URL');
 export const MINIMAXI_CLONE_MODELS = ['speech-2.8-turbo', 'speech-2.8-hd'] as const;
