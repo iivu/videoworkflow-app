@@ -1,20 +1,4 @@
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Skeleton,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from '@r/ui';
+import { Button, Dialog, DialogContent, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, Skeleton, Tabs, TabsList, TabsTrigger } from '@r/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { Route } from '@tuyau/core/types';
 import dayjs from 'dayjs';
@@ -186,16 +170,28 @@ function VoiceRow({
   const subtitle = [providerLabel(voice.provider), voice.model, voice.createdAt ? dayjs(voice.createdAt).format('YYYY-MM-DD') : ''].filter(Boolean).join(' · ');
   return (
     <li className="flex items-center gap-3 border-b py-3 last:border-b-0">
-      {demoUrl ? (
-        <Button type="button" size="icon-sm" variant="ghost" className="shrink-0 rounded-full" aria-label={playing ? '暂停' : '试听'} onClick={() => onPlay(demoUrl)}>
-          {playing ? <Pause /> : <Play />}
-        </Button>
-      ) : null}
       <div className="min-w-0 flex-1">
         <div className="truncate font-medium">{voice.name}</div>
         <div className="truncate text-muted-foreground">{voice.description}</div>
         <div className="truncate text-xs text-muted-foreground">{subtitle}</div>
       </div>
+      {demoUrl ? (
+        <Button
+          type="button"
+          size="icon-sm"
+          variant="ghost"
+          className="shrink-0 rounded-full"
+          aria-label={playing ? '暂停' : '试听'}
+          title={playing ? '暂停' : '试听'}
+          onClick={() => onPlay(demoUrl)}
+        >
+          {playing ? <Pause /> : <Play />}
+        </Button>
+      ) : (
+        <Button type="button" size="sm" variant="ghost" className="shrink-0" disabled>
+          暂无法试听
+        </Button>
+      )}
       {selectable ? (
         <Button type="button" size="sm" variant="outline" className="shrink-0" onClick={() => onSelect?.(voice)}>
           选择
