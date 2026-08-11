@@ -1,5 +1,5 @@
 import { Button } from '@r/ui';
-import { ChevronDown } from 'lucide-react';
+import { ArrowLeftRight } from 'lucide-react';
 import { useState } from 'react';
 import { useVoiceListDialog } from '#/providers/voice-list-dialog-provider';
 import type { VoiceItem } from './types';
@@ -30,7 +30,7 @@ export function VoiceSelect({ voice, onChange }: VoiceSelectProps) {
       <span className="shrink-0 text-muted-foreground">音色</span>
       <span className="h-4 w-px shrink-0 bg-border" />
       <span className={`line-clamp-1 ${voice ? '' : 'text-muted-foreground'}`}>{voice?.name ?? '选择音色'}</span>
-      <ChevronDown className="ml-auto size-4 shrink-0 text-muted-foreground" />
+      <ArrowLeftRight className="ml-auto size-4 shrink-0 text-muted-foreground" />
     </Button>
   );
 }
