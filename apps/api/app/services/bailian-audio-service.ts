@@ -167,3 +167,10 @@ export class BailianAudioService {
 export function isBailianVoiceModel(value: string): value is BailianVoiceModel {
   return (BAILIAN_VOICE_MODELS as readonly string[]).includes(value);
 }
+
+/** 百炼音色所属系列：百炼限制合成模型必须与生成音色的模型同系列（qwen/cosyvoice） */
+export function bailianModelFamily(model: string): 'qwen' | 'cosyvoice' | null {
+  if (model.startsWith('qwen')) return 'qwen';
+  if (model.startsWith('cosyvoice')) return 'cosyvoice';
+  return null;
+}

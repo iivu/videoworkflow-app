@@ -110,7 +110,7 @@ export function AudioCreatePage() {
                 </Button>
               </ButtonGroup>
               <VoiceSelect voice={selectedVoice} onChange={handleVoiceChange} />
-              <ModelSelect provider={provider} value={model} onChange={setModel} />
+              <ModelSelect provider={provider} voiceModel={selectedVoice?.model ?? null} value={model} onChange={setModel} />
             </div>
           </div>
           <EditorCard text={text} busy={busy} onTextChange={setText} onPolish={handlePolish} onFixTypos={handleFixTypos} onGenerate={handleGenerate} />

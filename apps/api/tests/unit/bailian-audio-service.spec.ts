@@ -3,7 +3,7 @@ import { test } from '@japa/runner';
 import BusinessException from '#exceptions/business-exception';
 import type { FetchClient } from '#providers/fetch-provider';
 import type { OssClient } from '#providers/oss-provider';
-import { BailianAudioService } from '#services/bailian-audio-service';
+import { BailianAudioService, bailianModelFamily } from '#services/bailian-audio-service';
 import env from '#start/env';
 
 class TestBailianAudioService extends BailianAudioService {
@@ -38,6 +38,14 @@ class TestBailianAudioService extends BailianAudioService {
     };
   }
 }
+
+test.group('Bailian model family', () => {
+  test('detects qwen and cosyvoice families', ({ assert }) => {
+    assert.equal(bailianModelFamily('qwen-audio-3.0-tts-plus'), 'qwen');
+    assert.equal(bailianModelFamily('cosyvoice-v2'), 'cosyvoice');
+    assert.isNull(bailianModelFamily('speech-2.8-turbo'));
+  });
+});
 
 test.group('Bailian audio service', () => {
   test('clones a Qwen-Audio-TTS/CosyVoice voice', async ({ assert }) => {
