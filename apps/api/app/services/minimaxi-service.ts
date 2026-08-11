@@ -213,6 +213,7 @@ export class MinimaxiService {
       model: params.model,
       text: params.text,
       stream: false,
+      output_format: 'url',
       voice_setting: voiceSetting,
       ...(params.audioSetting && {
         audio_setting: {
@@ -238,7 +239,7 @@ export class MinimaxiService {
       throw new BusinessException('MiniMaxi 语音合成响应格式无效');
     }
     const format = params.audioSetting?.format || 'mp3';
-    const key = params.key || `audio/voice/${uuidv4()}.${format}`;
+    const key = params.key || `creative-audio/${uuidv4()}.${format}`;
     const oss = await this.getOssClient();
     let ossUrl = audio;
     try {

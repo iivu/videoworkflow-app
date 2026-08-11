@@ -1,6 +1,6 @@
-import { randomUUID } from 'node:crypto';
 import app from '@adonisjs/core/services/app';
 import logger from '@adonisjs/core/services/logger';
+import { v4 as uuidv4 } from 'uuid';
 
 import BusinessException from '#exceptions/business-exception';
 import type { FetchClient } from '#providers/fetch-provider';
@@ -144,7 +144,7 @@ export class BailianAudioService {
     const remoteAudioUrl = optionalString(audio, 'url');
     if (!remoteAudioUrl) throw providerError('语音合成响应缺少音频地址');
     const format = params.format || 'mp3';
-    const key = params.key || `audio/voice/${randomUUID()}.${format}`;
+    const key = params.key || `creative-audio/${uuidv4()}.${format}`;
     const oss = await this.getOssClient();
     let ossUrl = remoteAudioUrl;
     try {
