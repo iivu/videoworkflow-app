@@ -85,12 +85,8 @@ export function AudioCreatePage() {
   }
 
   function handleSelectHistory(item: CreativeAudioItem) {
+    // 点击历史音频仅回填文案并播放，不回填音色和模型
     setText(item.text);
-    setModel(item.model);
-    // 尝试从音色查询缓存中找回音色对象，找不到则需用户重新选择
-    const cached = queryClient.getQueriesData<{ data: { list: VoiceItem[] } }>({ queryKey: query.voices.list.queryKey() });
-    const voice = cached.flatMap(([, data]) => data?.data.list ?? []).find((entry) => entry.voiceId === item.voiceId);
-    setSelectedVoice(voice ?? null);
     setCurrent(item);
   }
 
