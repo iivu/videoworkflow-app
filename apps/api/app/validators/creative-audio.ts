@@ -13,7 +13,6 @@ export const creativeAudioConfigs = vine
     pitch: vine.number().optional(),
     enableSsml: vine.boolean().optional(),
     languageHints: vine.array(vine.string()).optional(),
-    instruction: vine.string().optional(),
     speed: vine.number().min(0.5).max(2).optional(),
     vol: vine.number().positive().optional(),
     emotion: vine.string().optional(),

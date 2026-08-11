@@ -28,8 +28,6 @@ export type BailianAudioConfigs = {
   /** 音调倍率 0.5-2 */
   pitch: number;
   enableSsml: boolean;
-  /** 千问 TTS 模型的风格指令，留空则不传 */
-  instruction: string;
 };
 
 /** Minimaxi 合成配置，字段与后端 MINIMAXI_CONFIG_KEYS 一一对齐 */

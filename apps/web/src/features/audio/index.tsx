@@ -58,7 +58,7 @@ export function AudioCreatePage() {
           voiceId: selectedVoice.voiceId,
           configs:
             audioProvider === 'bailian'
-              ? { ...bailianConfigs, format: 'mp3' as const, instruction: bailianConfigs.instruction.trim() || undefined }
+              ? { ...bailianConfigs, format: 'mp3' as const }
               : { ...minimaxiConfigs, format: 'mp3' as const },
         },
       },
@@ -119,7 +119,6 @@ export function AudioCreatePage() {
             <TabsContent value="config" className="min-h-0 flex-1 overflow-y-auto p-4">
               <ConfigPanel
                 provider={provider}
-                model={model}
                 bailianConfigs={bailianConfigs}
                 minimaxiConfigs={minimaxiConfigs}
                 onBailianChange={(patch) => setBailianConfigs((prev) => ({ ...prev, ...patch }))}

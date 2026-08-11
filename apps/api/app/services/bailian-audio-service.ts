@@ -42,10 +42,6 @@ export type BailianSynthesizeParams = {
   pitch?: number;
   enableSsml?: boolean;
   languageHints?: string[];
-  instruction?: string;
-  enableAigcTag?: boolean;
-  aigcPropagator?: string;
-  aigcPropagateId?: string;
   key?: string;
 };
 
@@ -129,10 +125,6 @@ export class BailianAudioService {
       ...(params.pitch !== undefined && { pitch: params.pitch }),
       ...(params.enableSsml !== undefined && { enable_ssml: params.enableSsml }),
       ...(params.languageHints !== undefined && { language_hints: params.languageHints }),
-      ...(params.instruction !== undefined && { instruction: params.instruction }),
-      ...(params.enableAigcTag !== undefined && { enable_aigc_tag: params.enableAigcTag }),
-      ...(params.aigcPropagator !== undefined && { aigc_propagator: params.aigcPropagator }),
-      ...(params.aigcPropagateId !== undefined && { aigc_propagate_id: params.aigcPropagateId }),
     };
     const response = await (await this.getFetchClient()).json<unknown>(this.endpoint('/SpeechSynthesizer'), {
       method: 'POST',

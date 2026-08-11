@@ -50,7 +50,6 @@ export const BAILIAN_DEFAULT_CONFIGS: BailianAudioConfigs = {
   bitRate: 128,
   pitch: 1,
   enableSsml: false,
-  instruction: '',
 };
 
 /** 与后端 MINIMAXI_DEFAULT_CONFIGS 对齐，UI 侧补齐可选字段的默认值 */
@@ -68,7 +67,7 @@ export const MINIMAXI_DEFAULT_CONFIGS: MinimaxiAudioConfigs = {
 export const BAILIAN_SAMPLE_RATE_OPTIONS = [8000, 16000, 22050, 24000, 44100, 48000];
 export const MINIMAXI_SAMPLE_RATE_OPTIONS = [8000, 16000, 22050, 24000, 32000, 44100];
 /** 百炼比特率选项（kbps，后端范围 6-510） */
-export const BAILIAN_BIT_RATE_OPTIONS = [64, 96, 128, 192, 256, 320];
+export const BAILIAN_BIT_RATE_OPTIONS = [32, 64, 96, 128, 192, 256, 320];
 /** Minimaxi 比特率选项（bps） */
 export const MINIMAXI_BIT_RATE_OPTIONS = [32000, 64000, 128000, 256000];
 
@@ -76,9 +75,6 @@ export const CHANNEL_OPTIONS: Array<{ label: string; value: string }> = [
   { label: '单声道', value: '1' },
   { label: '双声道', value: '2' },
 ];
-
-/** 支持 instruction 风格指令的千问 TTS 模型前缀 */
-export const INSTRUCTION_MODEL_PREFIX = 'qwen-audio-3.0-tts';
 
 export function providerOfModel(model: string): 'bailian' | 'minimaxi' {
   return (BAILIAN_VOICE_MODELS as readonly string[]).includes(model) ? 'bailian' : 'minimaxi';

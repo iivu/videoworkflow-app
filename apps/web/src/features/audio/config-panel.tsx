@@ -1,10 +1,9 @@
-import { Label, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, Slider, Switch, Textarea } from '@r/ui';
+import { Label, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, Slider, Switch } from '@r/ui';
 import {
   BAILIAN_BIT_RATE_OPTIONS,
   BAILIAN_SAMPLE_RATE_OPTIONS,
   CHANNEL_OPTIONS,
   EMOTION_OPTIONS,
-  INSTRUCTION_MODEL_PREFIX,
   MINIMAXI_BIT_RATE_OPTIONS,
   MINIMAXI_SAMPLE_RATE_OPTIONS,
 } from './constants';
@@ -12,7 +11,6 @@ import type { AudioProvider, BailianAudioConfigs, MinimaxiAudioConfigs } from '.
 
 type ConfigPanelProps = {
   provider: AudioProvider | null;
-  model: string;
   bailianConfigs: BailianAudioConfigs;
   minimaxiConfigs: MinimaxiAudioConfigs;
   onBailianChange: (patch: Partial<BailianAudioConfigs>) => void;
@@ -81,7 +79,7 @@ function numberOptions(values: number[], unit?: string) {
   return values.map((value) => ({ label: unit ? `${value} ${unit}` : String(value), value: String(value) }));
 }
 
-export function ConfigPanel({ provider, model, bailianConfigs, minimaxiConfigs, onBailianChange, onMinimaxiChange }: ConfigPanelProps) {
+export function ConfigPanel({ provider, bailianConfigs, minimaxiConfigs, onBailianChange, onMinimaxiChange }: ConfigPanelProps) {
   if (!provider) {
     return <p className="py-8 text-center text-sm text-muted-foreground">请先选择音色，配置项将按服务商展示</p>;
   }
@@ -136,23 +134,11 @@ export function ConfigPanel({ provider, model, bailianConfigs, minimaxiConfigs, 
           />
           <SwitchField
             id="config-ssml"
-            label="启用 SSML"
-            description="按 SSML 标记解析文案"
+            label="启用SSML"
+            description="按SSML标记解析文案"
             checked={bailianConfigs.enableSsml}
             onChange={(enableSsml) => onBailianChange({ enableSsml })}
           />
-          {model.startsWith(INSTRUCTION_MODEL_PREFIX) ? (
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="config-instruction">风格指令</Label>
-              <Textarea
-                id="config-instruction"
-                rows={3}
-                placeholder="例如：用温柔亲切的语气朗读"
-                value={bailianConfigs.instruction}
-                onChange={(event) => onBailianChange({ instruction: event.target.value })}
-              />
-            </div>
-          ) : null}
         </>
       ) : (
         <>

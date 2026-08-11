@@ -11,7 +11,7 @@ export type CreativeAudioProvider = 'bailian' | 'minimaxi';
 export const BAILIAN_DEFAULT_CONFIGS = { format: 'mp3', sampleRate: 22050, volume: 50, rate: 1, pitch: 1 } as const;
 export const MINIMAXI_DEFAULT_CONFIGS = { speed: 1, vol: 1, format: 'mp3', sampleRate: 32000, bitrate: 128000, channel: 1 } as const;
 
-const BAILIAN_CONFIG_KEYS = new Set(['format', 'sampleRate', 'volume', 'rate', 'bitRate', 'pitch', 'enableSsml', 'languageHints', 'instruction']);
+const BAILIAN_CONFIG_KEYS = new Set(['format', 'sampleRate', 'volume', 'rate', 'bitRate', 'pitch', 'enableSsml', 'languageHints']);
 const MINIMAXI_CONFIG_KEYS = new Set(['speed', 'vol', 'emotion', 'format', 'sampleRate', 'bitrate', 'channel', 'subtitleEnable', 'pitch']);
 
 export function buildCreativeAudioSynthesizeConfig(params: { provider: CreativeAudioProvider; model: string; configs?: CreativeAudioConfigOptions }) {
