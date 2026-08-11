@@ -3,10 +3,10 @@ import { test } from '@japa/runner';
 import BusinessException from '#exceptions/business-exception';
 import type { FetchClient } from '#providers/fetch-provider';
 import type { OssClient } from '#providers/oss-provider';
-import { BailianVoiceService } from '#services/bailian-voice-service';
+import { BailianAudioService } from '#services/bailian-audio-service';
 import env from '#start/env';
 
-class TestBailianVoiceService extends BailianVoiceService {
+class TestBailianAudioService extends BailianAudioService {
   readonly requests: Array<{ input: unknown; init?: Parameters<FetchClient['json']>[1] }> = [];
   readonly uploads: Array<{ url: string; key: string }> = [];
 
@@ -39,9 +39,9 @@ class TestBailianVoiceService extends BailianVoiceService {
   }
 }
 
-test.group('Bailian voice service', () => {
+test.group('Bailian audio service', () => {
   test('clones a Qwen-Audio-TTS/CosyVoice voice', async ({ assert }) => {
-    const service = new TestBailianVoiceService({ output: { voice_id: 'cosyvoice-v3-flash-demo' }, request_id: 'req-1' });
+    const service = new TestBailianAudioService({ output: { voice_id: 'cosyvoice-v3-flash-demo' }, request_id: 'req-1' });
     const result = await service.cloneVoice({
       targetModel: 'cosyvoice-v3-flash',
       prefix: 'demo1',
@@ -69,7 +69,7 @@ test.group('Bailian voice service', () => {
   });
 
   test('synthesizes non-streaming audio and transfers the temporary URL to OSS', async ({ assert }) => {
-    const service = new TestBailianVoiceService({
+    const service = new TestBailianAudioService({
       request_id: 'req-2',
       output: { audio: { url: 'https://dashscope.example.com/audio.wav?sig=secret', id: 'audio-1', expires_at: 1772697707 } },
     });
@@ -98,14 +98,14 @@ test.group('Bailian voice service', () => {
   });
 
   test('rejects unsupported models and malformed audio responses', async ({ assert }) => {
-    const unsupported = await new TestBailianVoiceService({}).synthesize({ model: 'qwen3-tts-vc-realtime-2026-01-15' as never, text: 'x', voice: 'v' }).catch((error) => error);
+    const unsupported = await new TestBailianAudioService({}).synthesize({ model: 'qwen3-tts-vc-realtime-2026-01-15' as never, text: 'x', voice: 'v' }).catch((error) => error);
     assert.instanceOf(unsupported, BusinessException);
-    const malformed = await new TestBailianVoiceService({ output: { audio: {} } }).synthesize({ model: 'cosyvoice-v2', text: 'x', voice: 'v' }).catch((error) => error);
+    const malformed = await new TestBailianAudioService({ output: { audio: {} } }).synthesize({ model: 'cosyvoice-v2', text: 'x', voice: 'v' }).catch((error) => error);
     assert.instanceOf(malformed, BusinessException);
   });
 
   test('converts OSS failures to a business error', async ({ assert }) => {
-    const error = await new TestBailianVoiceService({ output: { audio: { url: 'https://example.com/a.mp3' } } }, true)
+    const error = await new TestBailianAudioService({ output: { audio: { url: 'https://example.com/a.mp3' } } }, true)
       .synthesize({ model: 'cosyvoice-v2', text: 'x', voice: 'v' })
       .catch((caught) => caught);
     assert.instanceOf(error, BusinessException);

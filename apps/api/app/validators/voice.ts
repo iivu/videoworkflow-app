@@ -1,6 +1,6 @@
 import vine from '@vinejs/vine';
 import type { Infer } from '@vinejs/vine/types';
-import { BAILIAN_VOICE_MODELS } from '#services/bailian-voice-service';
+import { BAILIAN_VOICE_MODELS } from '#services/bailian-audio-service';
 import { MINIMAXI_CLONE_MODELS } from '#services/minimaxi-service';
 
 export const listVoiceValidator = vine.create({

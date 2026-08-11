@@ -14,7 +14,7 @@ import { nanoid } from 'nanoid';
 import { v4 as uuidv4 } from 'uuid';
 import VideoToVoiceTask from '#models/video-to-voice-task';
 import Voice from '#models/voice';
-import { type BailianCloneVoiceParams, BailianVoiceService } from '#services/bailian-voice-service';
+import { BailianAudioService, type BailianCloneVoiceParams } from '#services/bailian-audio-service';
 import { type MinimaxiCloneVoiceParams, MinimaxiService } from '#services/minimaxi-service';
 
 const execFileAsync = promisify(execFile);
@@ -42,7 +42,7 @@ export default class VideoToVoiceJob extends Job<JobPayload> {
   static options: JobOptions = { queue: QUEUE_NAME };
 
   constructor(
-    private readonly bailianVoiceService: BailianVoiceService,
+    private readonly bailianAudioService: BailianAudioService,
     private readonly minimaxiService: MinimaxiService,
   ) {
     super();
@@ -127,7 +127,7 @@ export default class VideoToVoiceJob extends Job<JobPayload> {
 
   private async cloneVoice(provider: Provider, config: Record<string, unknown>, audioPath: string, audioUrl: string) {
     if (provider === 'bailian') {
-      const result = await this.bailianVoiceService.cloneVoice({ ...(config as Omit<BailianCloneVoiceParams, 'audioUrl'>), audioUrl });
+      const result = await this.bailianAudioService.cloneVoice({ ...(config as Omit<BailianCloneVoiceParams, 'audioUrl'>), audioUrl });
       return { voiceId: result.voiceId, model: result.targetModel, demoUrl: null };
     }
     if (provider !== 'minimaxi') throw new Error(`Unsupported voice provider: ${provider}`);

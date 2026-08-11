@@ -52,7 +52,7 @@ function providerError(message: string): BusinessException {
   return new BusinessException(`阿里云百炼语音服务失败: ${message}`);
 }
 
-export class BailianVoiceService {
+export class BailianAudioService {
   protected async getFetchClient(): Promise<Pick<FetchClient, 'json'>> {
     return app.container.make('fetch');
   }

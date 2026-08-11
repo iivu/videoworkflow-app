@@ -23,7 +23,7 @@ test.group('Voice clone config', () => {
     });
 
     assert.deepInclude(config, { model: 'speech-2.8-hd', text: '示例', languageBoost: 'auto', needNoiseReduction: false });
-    assert.match('voiceId' in config ? config.voiceId : '', /^[A-Za-z0-9]{24}$/);
+    assert.match('voiceId' in config ? config.voiceId : '', /^Voice-[A-Za-z0-9]{24}$/);
   });
 
   test('rejects unsupported and cross-provider models', ({ assert }) => {

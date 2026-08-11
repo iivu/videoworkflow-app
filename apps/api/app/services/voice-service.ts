@@ -7,7 +7,7 @@ import BusinessException from '#exceptions/business-exception';
 import VideoToVoiceJob, { QUEUE_NAME, VIDEO_TO_VOICE_TASK_STATUS } from '#jobs/video-to-voice-job';
 import VideoToVoiceTask from '#models/video-to-voice-task';
 import Voice from '#models/voice';
-import { type BailianCloneVoiceParams, BailianVoiceService, isBailianVoiceModel } from '#services/bailian-voice-service';
+import { BailianAudioService, type BailianCloneVoiceParams, isBailianVoiceModel } from '#services/bailian-audio-service';
 import { isMinimaxiCloneModel, type MinimaxiCloneVoiceParams, MinimaxiService } from '#services/minimaxi-service';
 import type { cloneAudioVoiceValidator, cloneVideoVoiceValidator, listVoiceValidator, VoiceCloneOptions } from '#validators/voice';
 
@@ -45,7 +45,7 @@ function removeUndefined(config: VoiceCloneOptions): VoiceCloneOptions {
 @inject()
 export class VoiceService {
   constructor(
-    private readonly bailian: BailianVoiceService,
+    private readonly bailian: BailianAudioService,
     private readonly minimaxi: MinimaxiService,
   ) {}
 
