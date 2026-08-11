@@ -32,7 +32,7 @@ export type VoiceItem = Route.Response<'voices.list'>['data']['list'][number];
 
 const sourceTabs: Array<{ label: string; value: VoiceSource }> = [
   { label: '我的音色', value: 'user' },
-  { label: '系统音色', value: 'system' },
+  // { label: '系统音色', value: 'system' },
 ];
 // 目前只有minimaxti提供系统音色
 const availableSystemProviderOptions = providerOptions.filter((option) => ['minimaxi'].includes(option.value));
