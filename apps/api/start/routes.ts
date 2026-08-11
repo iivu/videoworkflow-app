@@ -22,6 +22,8 @@ r.group(() => {
     r.post('/videos/:id', [controllers.Videos, 'update']);
     r.get('/videos', [controllers.Videos, 'list']);
     r.get('/voices', [controllers.Voices, 'list']);
+    r.post('/creative-audios', [controllers.CreativeAudios, 'create']);
+    r.get('/creative-audios', [controllers.CreativeAudios, 'list']);
     r.post('/voices/clone/audio', [controllers.Voices, 'cloneAudio']);
     r.post('/voices/clone/video', [controllers.Voices, 'cloneVideo']);
     r.get('/voices/clone/tasks/:id', [controllers.Voices, 'cloneTask']);

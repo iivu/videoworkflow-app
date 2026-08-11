@@ -54,6 +54,18 @@ const routes = {
     tokens: [{"old":"/api/v1/voices","type":0,"val":"api","end":""},{"old":"/api/v1/voices","type":0,"val":"v1","end":""},{"old":"/api/v1/voices","type":0,"val":"voices","end":""}],
     types: placeholder as Registry['voices.list']['types'],
   },
+  'creative_audios.create': {
+    methods: ["POST"],
+    pattern: '/api/v1/creative-audios',
+    tokens: [{"old":"/api/v1/creative-audios","type":0,"val":"api","end":""},{"old":"/api/v1/creative-audios","type":0,"val":"v1","end":""},{"old":"/api/v1/creative-audios","type":0,"val":"creative-audios","end":""}],
+    types: placeholder as Registry['creative_audios.create']['types'],
+  },
+  'creative_audios.list': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/creative-audios',
+    tokens: [{"old":"/api/v1/creative-audios","type":0,"val":"api","end":""},{"old":"/api/v1/creative-audios","type":0,"val":"v1","end":""},{"old":"/api/v1/creative-audios","type":0,"val":"creative-audios","end":""}],
+    types: placeholder as Registry['creative_audios.list']['types'],
+  },
   'voices.clone_audio': {
     methods: ["POST"],
     pattern: '/api/v1/voices/clone/audio',

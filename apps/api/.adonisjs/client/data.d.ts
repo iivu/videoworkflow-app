@@ -6,6 +6,7 @@
 /// <reference path="./manifest.d.ts" />
 import type { InferData, InferVariants } from '@adonisjs/core/types/transformers'
 import type CrawlerVideoTaskTransformer from '#transformers/crawler-video-task-transformer'
+import type CreativeAudioTransformer from '#transformers/creative-audio-transformer'
 import type ParaformerTaskTransformer from '#transformers/paraformer-task-transformer'
 import type UserTransformer from '#transformers/user-transformer'
 import type VideoToVoiceTaskTransformer from '#transformers/video-to-voice-task-transformer'
@@ -16,6 +17,10 @@ export namespace Data {
   export type CrawlerVideoTask = InferData<CrawlerVideoTaskTransformer>
   export namespace CrawlerVideoTask {
     export type Variants = InferVariants<CrawlerVideoTaskTransformer>
+  }
+  export type CreativeAudio = InferData<CreativeAudioTransformer>
+  export namespace CreativeAudio {
+    export type Variants = InferVariants<CreativeAudioTransformer>
   }
   export type ParaformerTask = InferData<ParaformerTaskTransformer>
   export namespace ParaformerTask {

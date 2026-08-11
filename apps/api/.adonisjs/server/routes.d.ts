@@ -12,6 +12,8 @@ export type ScannedRoutes = {
     'videos.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list': { paramsTuple?: []; params?: {} }
     'voices.list': { paramsTuple?: []; params?: {} }
+    'creative_audios.create': { paramsTuple?: []; params?: {} }
+    'creative_audios.list': { paramsTuple?: []; params?: {} }
     'voices.clone_audio': { paramsTuple?: []; params?: {} }
     'voices.clone_video': { paramsTuple?: []; params?: {} }
     'voices.clone_task': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -37,6 +39,7 @@ export type ScannedRoutes = {
     'videos.create': { paramsTuple?: []; params?: {} }
     'videos.delete': { paramsTuple?: []; params?: {} }
     'videos.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'creative_audios.create': { paramsTuple?: []; params?: {} }
     'voices.clone_audio': { paramsTuple?: []; params?: {} }
     'voices.clone_video': { paramsTuple?: []; params?: {} }
     'videos.create_crawler_task': { paramsTuple?: []; params?: {} }
@@ -55,6 +58,7 @@ export type ScannedRoutes = {
     'videos.check': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list': { paramsTuple?: []; params?: {} }
     'voices.list': { paramsTuple?: []; params?: {} }
+    'creative_audios.list': { paramsTuple?: []; params?: {} }
     'voices.clone_task': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list_crawler_tasks': { paramsTuple?: []; params?: {} }
     'paraformer.check_task': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
@@ -68,6 +72,7 @@ export type ScannedRoutes = {
     'videos.check': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list': { paramsTuple?: []; params?: {} }
     'voices.list': { paramsTuple?: []; params?: {} }
+    'creative_audios.list': { paramsTuple?: []; params?: {} }
     'voices.clone_task': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list_crawler_tasks': { paramsTuple?: []; params?: {} }
     'paraformer.check_task': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }

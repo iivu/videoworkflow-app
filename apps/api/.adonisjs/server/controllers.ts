@@ -4,6 +4,7 @@
  */
 
 export const controllers = {
+  CreativeAudios: () => import('#controllers/creative-audios-controller'),
   Oss: () => import('#controllers/oss-controller'),
   Paraformer: () => import('#controllers/paraformer-controller'),
   Session: () => import('#controllers/session-controller'),

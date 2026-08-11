@@ -4,10 +4,12 @@ import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import app from '@adonisjs/core/services/app';
+import logger from '@adonisjs/core/services/logger';
 import { v4 as uuidv4 } from 'uuid';
 
 import BusinessException from '#exceptions/business-exception';
 import type { FetchClient } from '#providers/fetch-provider';
+import type { OssClient } from '#providers/oss-provider';
 import env from '#start/env';
 import { asRecord, type JsonRecord, optionalArray, optionalString } from '#utils/type-guards';
 
@@ -44,6 +46,7 @@ export type MinimaxiSynthesizeParams = {
   };
   pronunciationDict?: { tone?: string[] };
   subtitleEnable?: boolean;
+  key?: string;
 };
 
 export type MinimaxiBaseResponse = { statusCode: number; statusMsg?: string };
@@ -58,6 +61,7 @@ export type MinimaxiCloneVoiceResult = {
 
 export type MinimaxiSynthesizeResult = {
   audio: string;
+  ossUrl: string;
   status: number;
   traceId: string | null;
   extraInfo: Record<string, unknown> | null;
@@ -88,6 +92,10 @@ export function isMinimaxiCloneModel(value: string): value is MinimaxiCloneModel
 export class MinimaxiService {
   protected async getFetchClient(): Promise<Pick<FetchClient, 'json' | 'formData'>> {
     return app.container.make('fetch');
+  }
+
+  protected async getOssClient(): Promise<OssClient> {
+    return app.container.make('oss');
   }
 
   async uploadCloneAudio(params: { file: Blob; filename: string }): Promise<MinimaxiUploadedFile> {
@@ -229,8 +237,18 @@ export class MinimaxiService {
     if (!data || !audio || typeof status !== 'number') {
       throw new BusinessException('MiniMaxi 语音合成响应格式无效');
     }
+    const format = params.audioSetting?.format || 'mp3';
+    const key = params.key || `audio/voice/${uuidv4()}.${format}`;
+    const oss = await this.getOssClient();
+    let ossUrl = audio;
+    try {
+      ossUrl = (await oss.putURL(audio, key)).url;
+    } catch (error) {
+      logger.warn(`音频转存 OSS 失败，回退使用原始链接: ${error instanceof Error ? error.message : String(error)}`);
+    }
     return {
       audio,
+      ossUrl,
       status,
       traceId: optionalString(record, 'trace_id') || null,
       extraInfo: asRecord(record.extra_info),

@@ -104,11 +104,12 @@ test.group('Bailian audio service', () => {
     assert.instanceOf(malformed, BusinessException);
   });
 
-  test('converts OSS failures to a business error', async ({ assert }) => {
-    const error = await new TestBailianAudioService({ output: { audio: { url: 'https://example.com/a.mp3' } } }, true)
-      .synthesize({ model: 'cosyvoice-v2', text: 'x', voice: 'v' })
-      .catch((caught) => caught);
-    assert.instanceOf(error, BusinessException);
-    assert.notInclude((error as Error).message, env.get('ALIYUN_BAILIAN_KEY'));
+  test('falls back to the original audio URL when OSS transfer fails', async ({ assert }) => {
+    const result = await new TestBailianAudioService({ output: { audio: { url: 'https://example.com/a.mp3' } } }, true).synthesize({
+      model: 'cosyvoice-v2',
+      text: 'x',
+      voice: 'v',
+    });
+    assert.equal(result.ossUrl, 'https://example.com/a.mp3');
   });
 });

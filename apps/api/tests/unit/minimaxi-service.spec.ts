@@ -2,6 +2,7 @@ import { test } from '@japa/runner';
 
 import BusinessException from '#exceptions/business-exception';
 import type { FetchClient } from '#providers/fetch-provider';
+import type { OssClient } from '#providers/oss-provider';
 import { MinimaxiService } from '#services/minimaxi-service';
 import env from '#start/env';
 
@@ -9,8 +10,12 @@ type Request = { input: unknown; init?: Parameters<FetchClient['json']>[1] };
 
 class TestMinimaxiService extends MinimaxiService {
   readonly requests: Request[] = [];
+  readonly uploads: Array<{ url: string; key: string }> = [];
 
-  constructor(private readonly responses: unknown[]) {
+  constructor(
+    private readonly responses: unknown[],
+    private readonly ossError = false,
+  ) {
     super();
   }
 
@@ -27,6 +32,18 @@ class TestMinimaxiService extends MinimaxiService {
         if (response instanceof Error) throw response;
         return response as T;
       },
+    };
+  }
+
+  protected override async getOssClient(): Promise<OssClient> {
+    return {
+      putURL: async (url, key) => {
+        this.uploads.push({ url, key });
+        if (this.ossError) throw new Error('oss unavailable');
+        return { url: `https://cdn.example.com/${key}`, name: key, res: {} as never };
+      },
+      putStream: async () => ({ url: '', name: '', res: {} as never }),
+      delete: async () => undefined,
     };
   }
 }
@@ -87,31 +104,33 @@ test.group('Minimaxi service', () => {
     assert.deepEqual(result, { fileId: 987 });
   });
 
-  test('synthesizes non-streaming audio and maps metadata', async ({ assert }) => {
+  test('synthesizes non-streaming audio, transfers the audio URL to OSS and maps metadata', async ({ assert }) => {
     const service = new TestMinimaxiService([
       {
-        data: { audio: 'ff00', status: 2 },
+        data: { audio: 'https://minimax.example.com/audio.mp3', status: 2 },
         trace_id: 'trace-1',
         extra_info: { audio_length: 100 },
         base_resp: { status_code: 0 },
       },
     ]);
 
-    assert.deepEqual(
-      await service.synthesize({
-        model: 'speech-2.8-turbo',
-        text: '你好',
-        voiceSetting: { voiceId: 'Voice_123', speed: 1.1 },
-        audioSetting: { format: 'mp3', sampleRate: 32000 },
-      }),
-      {
-        audio: 'ff00',
-        status: 2,
-        traceId: 'trace-1',
-        extraInfo: { audio_length: 100 },
-        baseResp: { statusCode: 0 },
-      },
-    );
+    const result = await service.synthesize({
+      model: 'speech-2.8-turbo',
+      text: '你好',
+      voiceSetting: { voiceId: 'Voice_123', speed: 1.1 },
+      audioSetting: { format: 'mp3', sampleRate: 32000 },
+    });
+
+    assert.deepEqual(result, {
+      audio: 'https://minimax.example.com/audio.mp3',
+      ossUrl: `https://cdn.example.com/${service.uploads[0].key}`,
+      status: 2,
+      traceId: 'trace-1',
+      extraInfo: { audio_length: 100 },
+      baseResp: { statusCode: 0 },
+    });
+    assert.deepEqual(service.uploads, [{ url: 'https://minimax.example.com/audio.mp3', key: service.uploads[0].key }]);
+    assert.match(service.uploads[0].key, /^audio\/voice\/.+\.mp3$/);
     assert.deepEqual(JSON.parse(String(service.requests[0].init?.body)), {
       model: 'speech-2.8-turbo',
       text: '你好',
@@ -119,6 +138,14 @@ test.group('Minimaxi service', () => {
       voice_setting: { voice_id: 'Voice_123', speed: 1.1 },
       audio_setting: { format: 'mp3', sample_rate: 32000 },
     });
+  });
+
+  test('falls back to the original audio URL when OSS transfer fails', async ({ assert }) => {
+    const service = new TestMinimaxiService([{ data: { audio: 'https://minimax.example.com/audio.mp3', status: 2 }, base_resp: { status_code: 0 } }], true);
+
+    const result = await service.synthesize({ model: 'speech-2.8-turbo', text: '你好', voiceSetting: { voiceId: 'Voice_123' } });
+
+    assert.equal(result.ossUrl, 'https://minimax.example.com/audio.mp3');
   });
 
   for (const response of [null, { base_resp: { status_code: 1004, status_msg: 'auth failed' } }, { base_resp: { status_code: 0 }, data: {} }]) {

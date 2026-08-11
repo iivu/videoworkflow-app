@@ -103,6 +103,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/voices-controller').default['list']>>>
     }
   }
+  'creative_audios.create': {
+    methods: ["POST"]
+    pattern: '/api/v1/creative-audios'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/creative-audio').synthesizeCreativeAudioValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/creative-audio').synthesizeCreativeAudioValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/creative-audios-controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/creative-audios-controller').default['create']>>>
+    }
+  }
+  'creative_audios.list': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/creative-audios'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/creative-audio').listCreativeAudioValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/creative-audios-controller').default['list']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/creative-audios-controller').default['list']>>>
+    }
+  }
   'voices.clone_audio': {
     methods: ["POST"]
     pattern: '/api/v1/voices/clone/audio'

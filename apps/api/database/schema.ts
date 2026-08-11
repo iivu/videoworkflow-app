@@ -143,6 +143,31 @@ export class CrawlerVideoTaskSchema extends BaseModel {
   declare userInput: string
 }
 
+export class CreativeAudioSchema extends BaseModel {
+  static $columns = ['audioUrl', 'configs', 'createdAt', 'id', 'model', 'provider', 'text', 'updatedAt', 'userId', 'voiceId'] as const
+  $columns = CreativeAudioSchema.$columns
+  @column()
+  declare audioUrl: string
+  @column()
+  declare configs: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare model: string
+  @column()
+  declare provider: string
+  @column()
+  declare text: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+  @column()
+  declare voiceId: string
+}
+
 export class MinimaxiAudioSchema extends BaseModel {
   static $columns = ['audioUrl', 'createdAt', 'id', 'isDeleted', 'name', 'payload', 'text', 'updatedAt', 'userId'] as const
   $columns = MinimaxiAudioSchema.$columns

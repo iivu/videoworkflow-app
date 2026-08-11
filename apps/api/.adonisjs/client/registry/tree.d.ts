@@ -21,6 +21,10 @@ export interface ApiDefinition {
     cloneVideo: typeof routes['voices.clone_video']
     cloneTask: typeof routes['voices.clone_task']
   }
+  creativeAudios: {
+    create: typeof routes['creative_audios.create']
+    list: typeof routes['creative_audios.list']
+  }
   paraformer: {
     transcription: typeof routes['paraformer.transcription']
     checkTask: typeof routes['paraformer.check_task']

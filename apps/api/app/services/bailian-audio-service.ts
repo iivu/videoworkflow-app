@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import app from '@adonisjs/core/services/app';
+import logger from '@adonisjs/core/services/logger';
 
 import BusinessException from '#exceptions/business-exception';
 import type { FetchClient } from '#providers/fetch-provider';
@@ -145,17 +146,17 @@ export class BailianAudioService {
     const format = params.format || 'mp3';
     const key = params.key || `audio/voice/${randomUUID()}.${format}`;
     const oss = await this.getOssClient();
-    let ossResponse: Awaited<ReturnType<OssClient['putURL']>>;
+    let ossUrl = remoteAudioUrl;
     try {
-      ossResponse = await oss.putURL(remoteAudioUrl, key);
+      ossUrl = (await oss.putURL(remoteAudioUrl, key)).url;
     } catch (error) {
-      throw providerError(`音频转存 OSS 失败: ${error instanceof Error ? error.message : String(error)}`);
+      logger.warn(`音频转存 OSS 失败，回退使用原始链接: ${error instanceof Error ? error.message : String(error)}`);
     }
     return {
       model: params.model,
       voice: params.voice,
       remoteAudioUrl,
-      ossUrl: ossResponse.url,
+      ossUrl,
       audioId: optionalString(audio, 'id') || null,
       expiresAt: typeof audio?.expires_at === 'number' ? audio.expires_at : null,
       requestId: optionalString(asRecord(response), 'request_id') || null,
