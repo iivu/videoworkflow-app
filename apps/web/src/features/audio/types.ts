@@ -1,42 +1,50 @@
-export type BusyAction = 'polish' | 'typo' | 'generate' | null;
+import type { Route } from '@tuyau/core/types';
 
-export type VoiceOption = {
-  id: string;
-  name: string;
-  description: string;
-  tags: string[];
-};
+export type BusyAction = 'generate' | null;
+
+export type AudioProvider = 'bailian' | 'minimaxi';
+
+/** 后端生成历史记录 */
+export type CreativeAudioItem = Route.Response<'creative_audios.list'>['data']['list'][number];
+
+/** 音色列表记录 */
+export type VoiceItem = Route.Response<'voices.list'>['data']['list'][number];
 
 export type ModelOption = {
   label: string;
   value: string;
+  provider: AudioProvider;
 };
 
-export type AudioConfig = {
-  /** 语速倍率 */
-  speechRate: number;
+/** 百炼合成配置，字段与后端 BAILIAN_CONFIG_KEYS 一一对齐 */
+export type BailianAudioConfigs = {
+  sampleRate: number;
   /** 音量 0-100 */
   volume: number;
-  emotion: string;
-  format: string;
-  /** 音频标题，留空则自动生成 */
-  title: string;
-  bgm: boolean;
-  autoplay: boolean;
+  /** 语速 0.5-2 */
+  rate: number;
+  /** 比特率 kbps，6-510 */
+  bitRate: number;
+  /** 音调倍率 0.5-2 */
+  pitch: number;
+  enableSsml: boolean;
+  /** 千问 TTS 模型的风格指令，留空则不传 */
+  instruction: string;
 };
 
-export type AudioHistoryItem = {
-  id: string;
-  text: string;
-  title?: string;
-  voiceId: string;
-  voiceName: string;
-  modelName: string;
-  createdAt: number;
-  /** 生成时使用的语速倍率 */
-  speechRate: number;
-  /** 时长（秒） */
-  duration: number;
-  /** 懒生成，首次播放时合成 */
-  audioUrl?: string;
+/** Minimaxi 合成配置，字段与后端 MINIMAXI_CONFIG_KEYS 一一对齐 */
+export type MinimaxiAudioConfigs = {
+  sampleRate: number;
+  /** 语速 0.5-2 */
+  speed: number;
+  /** 音量倍率 0.1-3 */
+  vol: number;
+  emotion: string;
+  /** 比特率 bps */
+  bitrate: number;
+  /** 声道数 1/2 */
+  channel: number;
+  subtitleEnable: boolean;
+  /** 音调倍率 0.5-2 */
+  pitch: number;
 };

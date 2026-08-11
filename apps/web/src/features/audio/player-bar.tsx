@@ -1,42 +1,32 @@
 import { Button } from '@r/ui';
 import { AudioLines, Download, FastForward, Pause, Play, Rewind, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { formatDuration, hashString } from './mock';
-import type { AudioHistoryItem } from './types';
+import { formatDuration, hashString, parseAudioConfigs } from './constants';
+import type { CreativeAudioItem } from './types';
 
 type PlayerBarProps = {
-  item: AudioHistoryItem & { audioUrl: string };
-  /** 音量 0-1 */
-  volume?: number;
-  autoPlay?: boolean;
+  item: CreativeAudioItem;
   onClose: () => void;
 };
 
-export function PlayerBar({ item, volume = 0.8, autoPlay = true, onClose }: PlayerBarProps) {
+export function PlayerBar({ item, onClose }: PlayerBarProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.src = item.audioUrl;
     setCurrentTime(0);
-    if (autoPlay) {
-      audio.play().then(
-        () => setPlaying(true),
-        () => setPlaying(false),
-      );
-    } else {
-      setPlaying(false);
-    }
-  }, [item.id, item.audioUrl, autoPlay]);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (audio) audio.volume = Math.min(Math.max(volume, 0), 1);
-  }, [volume]);
+    setDuration(0);
+    audio.play().then(
+      () => setPlaying(true),
+      () => setPlaying(false),
+    );
+  }, [item.id, item.audioUrl]);
 
   function togglePlay() {
     const audio = audioRef.current;
@@ -55,7 +45,7 @@ export function PlayerBar({ item, volume = 0.8, autoPlay = true, onClose }: Play
   function skip(offset: number) {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.currentTime = Math.min(Math.max(audio.currentTime + offset, 0), item.duration);
+    audio.currentTime = Math.min(Math.max(audio.currentTime + offset, 0), audio.duration || 0);
   }
 
   function seek(event: React.MouseEvent<HTMLDivElement>) {
@@ -73,7 +63,10 @@ export function PlayerBar({ item, volume = 0.8, autoPlay = true, onClose }: Play
     if (event.key === 'ArrowLeft') skip(-5);
   }
 
-  const progress = item.duration > 0 ? Math.min(currentTime / item.duration, 1) : 0;
+  const configs = parseAudioConfigs(item.configs);
+  const format = typeof configs.format === 'string' ? configs.format : 'mp3';
+  const title = `${item.model}-${item.id}`;
+  const progress = duration > 0 ? Math.min(currentTime / duration, 1) : 0;
   const hue = hashString(item.voiceId) % 360;
 
   return (
@@ -85,7 +78,7 @@ export function PlayerBar({ item, volume = 0.8, autoPlay = true, onClose }: Play
         <AudioLines className="size-5" />
       </div>
       <div className="w-52 shrink-0">
-        <div className="truncate text-sm font-medium">{item.title ?? item.voiceName}</div>
+        <div className="truncate text-sm font-medium">{item.model}</div>
         <div className="truncate text-xs text-muted-foreground">{item.text}</div>
       </div>
 
@@ -107,7 +100,7 @@ export function PlayerBar({ item, volume = 0.8, autoPlay = true, onClose }: Play
         role="slider"
         aria-label="播放进度"
         aria-valuemin={0}
-        aria-valuemax={Math.round(item.duration)}
+        aria-valuemax={Math.round(duration)}
         aria-valuenow={Math.round(currentTime)}
         tabIndex={0}
         className="relative h-1.5 min-w-0 flex-1 cursor-pointer rounded-full bg-muted"
@@ -116,24 +109,23 @@ export function PlayerBar({ item, volume = 0.8, autoPlay = true, onClose }: Play
       >
         <div className="absolute inset-y-0 left-0 rounded-full bg-primary" style={{ width: `${progress * 100}%` }} />
       </div>
-      <span className="w-10 shrink-0 text-xs tabular-nums text-muted-foreground">{formatDuration(item.duration)}</span>
+      <span className="w-10 shrink-0 text-xs tabular-nums text-muted-foreground">{formatDuration(duration)}</span>
 
-      <Button
-        type="button"
-        size="icon-sm"
-        variant="ghost"
-        aria-label="下载音频"
-        title="下载音频"
-        render={<a href={item.audioUrl} download={`${item.title ?? item.voiceName}.wav`} />}
-      >
+      <Button type="button" size="icon-sm" variant="ghost" aria-label="下载音频" title="下载音频" render={<a href={item.audioUrl} download={`${title}.${format}`} />}>
         <Download />
       </Button>
       <Button type="button" size="icon-sm" variant="ghost" aria-label="关闭播放器" onClick={onClose}>
         <X />
       </Button>
 
-      {/* biome-ignore lint/a11y/useMediaCaption: Mock 合成的音频没有字幕轨道。 */}
-      <audio ref={audioRef} className="hidden" onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)} onEnded={() => setPlaying(false)} />
+      {/* biome-ignore lint/a11y/useMediaCaption: 生成的语音音频没有字幕轨道。 */}
+      <audio
+        ref={audioRef}
+        className="hidden"
+        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || 0)}
+        onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+        onEnded={() => setPlaying(false)}
+      />
     </div>
   );
 }

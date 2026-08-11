@@ -1,6 +1,6 @@
 import { Button, Textarea } from '@r/ui';
 import { Eraser, LoaderCircle, Sparkles, SpellCheck } from 'lucide-react';
-import { MAX_TEXT_LENGTH } from './mock';
+import { MAX_TEXT_LENGTH } from './constants';
 import type { BusyAction } from './types';
 
 type EditorCardProps = {
@@ -27,12 +27,12 @@ export function EditorCard({ text, busy, onTextChange, onPolish, onFixTypos, onG
       />
 
       <div className="flex items-center gap-2 rounded-b-xl border-t bg-muted/40 px-4 py-3">
-        <Button variant="outline" size="sm" className="rounded-full bg-background" disabled={!canSubmit} onClick={onPolish}>
-          {busy === 'polish' ? <LoaderCircle className="animate-spin" /> : <Sparkles />}
+        <Button variant="outline" size="sm" className="rounded-full bg-background" onClick={onPolish}>
+          <Sparkles />
           AI 润色
         </Button>
-        <Button variant="outline" size="sm" className="rounded-full bg-background" disabled={!canSubmit} onClick={onFixTypos}>
-          {busy === 'typo' ? <LoaderCircle className="animate-spin" /> : <SpellCheck />}
+        <Button variant="outline" size="sm" className="rounded-full bg-background" onClick={onFixTypos}>
+          <SpellCheck />
           修正错别字
         </Button>
         <span className="ml-auto text-xs tabular-nums text-muted-foreground">

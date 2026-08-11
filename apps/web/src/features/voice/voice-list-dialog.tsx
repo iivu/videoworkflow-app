@@ -1,5 +1,4 @@
 import {
-  Badge,
   Button,
   Dialog,
   DialogContent,
@@ -29,7 +28,7 @@ const PAGE_SIZE = 20;
 
 type VoiceSource = 'user' | 'system';
 type VoiceProvider = 'bailian' | 'minimaxi';
-type VoiceItem = Route.Response<'voices.list'>['data']['list'][number];
+export type VoiceItem = Route.Response<'voices.list'>['data']['list'][number];
 
 const sourceTabs: Array<{ label: string; value: VoiceSource }> = [
   { label: '我的音色', value: 'user' },
@@ -42,7 +41,15 @@ function providerLabel(provider: string) {
   return providerOptions.find((option) => option.value === provider)?.label ?? provider;
 }
 
-export function VoiceListDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+type VoiceListDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** select 模式下每行提供「选择」按钮，点击回传音色并关闭弹窗 */
+  mode?: 'browse' | 'select';
+  onSelect?: (voice: VoiceItem) => void;
+};
+
+export function VoiceListDialog({ open, onOpenChange, mode = 'browse', onSelect }: VoiceListDialogProps) {
   const [source, setSource] = useState<VoiceSource>('user');
   const [provider, setProvider] = useState<VoiceProvider>(() => availableSystemProviderOptions[0].value);
   const [page, setPage] = useState(1);
@@ -134,7 +141,14 @@ export function VoiceListDialog({ open, onOpenChange }: { open: boolean; onOpenC
           ) : (
             <ul>
               {voices.map((voice) => (
-                <VoiceRow key={voice.voiceId} voice={voice} source={source} playing={playingUrl !== null && playingUrl === voice.demoUrl} onPlay={togglePlay} />
+                <VoiceRow
+                  key={voice.voiceId}
+                  voice={voice}
+                  playing={playingUrl !== null && playingUrl === voice.demoUrl}
+                  onPlay={togglePlay}
+                  selectable={mode === 'select'}
+                  onSelect={onSelect}
+                />
               ))}
             </ul>
           )}
@@ -158,7 +172,19 @@ export function VoiceListDialog({ open, onOpenChange }: { open: boolean; onOpenC
   );
 }
 
-function VoiceRow({ voice, source, playing, onPlay }: { voice: VoiceItem; source: VoiceSource; playing: boolean; onPlay: (url: string) => void }) {
+function VoiceRow({
+  voice,
+  playing,
+  onPlay,
+  selectable = false,
+  onSelect,
+}: {
+  voice: VoiceItem;
+  playing: boolean;
+  onPlay: (url: string) => void;
+  selectable?: boolean;
+  onSelect?: (voice: VoiceItem) => void;
+}) {
   const demoUrl = voice.demoUrl;
   const subtitle = [providerLabel(voice.provider), voice.model, voice.createdAt ? dayjs(voice.createdAt).format('YYYY-MM-DD') : ''].filter(Boolean).join(' · ');
   return (
@@ -173,6 +199,11 @@ function VoiceRow({ voice, source, playing, onPlay }: { voice: VoiceItem; source
         <div className="truncate text-muted-foreground">{voice.description}</div>
         <div className="truncate text-xs text-muted-foreground">{subtitle}</div>
       </div>
+      {selectable ? (
+        <Button type="button" size="sm" variant="outline" className="shrink-0" onClick={() => onSelect?.(voice)}>
+          选择
+        </Button>
+      ) : null}
     </li>
   );
 }

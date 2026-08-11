@@ -1,99 +1,222 @@
-import { Input, Label, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, Slider, Switch } from '@r/ui';
-import { EMOTION_OPTIONS, FORMAT_OPTIONS } from './mock';
-import type { AudioConfig } from './types';
+import { Label, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, Slider, Switch, Textarea } from '@r/ui';
+import {
+  BAILIAN_BIT_RATE_OPTIONS,
+  BAILIAN_SAMPLE_RATE_OPTIONS,
+  CHANNEL_OPTIONS,
+  EMOTION_OPTIONS,
+  INSTRUCTION_MODEL_PREFIX,
+  MINIMAXI_BIT_RATE_OPTIONS,
+  MINIMAXI_SAMPLE_RATE_OPTIONS,
+} from './constants';
+import type { AudioProvider, BailianAudioConfigs, MinimaxiAudioConfigs } from './types';
 
 type ConfigPanelProps = {
-  config: AudioConfig;
-  onConfigChange: (patch: Partial<AudioConfig>) => void;
+  provider: AudioProvider | null;
+  model: string;
+  bailianConfigs: BailianAudioConfigs;
+  minimaxiConfigs: MinimaxiAudioConfigs;
+  onBailianChange: (patch: Partial<BailianAudioConfigs>) => void;
+  onMinimaxiChange: (patch: Partial<MinimaxiAudioConfigs>) => void;
 };
 
 function sliderValue(value: number | readonly number[]) {
   return Array.isArray(value) ? (value[0] ?? 0) : value;
 }
 
-export function ConfigPanel({ config, onConfigChange }: ConfigPanelProps) {
+function SliderField(props: { id: string; label: string; display: string; min: number; max: number; step: number; value: number; onChange: (value: number) => void }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <Label htmlFor={props.id}>{props.label}</Label>
+        <span className="text-xs tabular-nums text-muted-foreground">{props.display}</span>
+      </div>
+      <Slider
+        id={props.id}
+        aria-label={props.label}
+        min={props.min}
+        max={props.max}
+        step={props.step}
+        value={[props.value]}
+        onValueChange={(value) => props.onChange(sliderValue(value))}
+      />
+    </div>
+  );
+}
+
+function SelectField(props: { id: string; label: string; value: string; options: Array<{ label: string; value: string }>; onChange: (value: string) => void }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor={props.id}>{props.label}</Label>
+      <Select items={props.options} value={props.value} onValueChange={(value) => value && props.onChange(value)}>
+        <SelectTrigger id={props.id} className="w-full" aria-label={props.label}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {props.options.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function SwitchField(props: { id: string; label: string; description: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <Label htmlFor={props.id} className="flex flex-col gap-0.5 items-start">
+        {props.label}
+        <span className="text-xs font-normal text-muted-foreground">{props.description}</span>
+      </Label>
+      <Switch id={props.id} checked={props.checked} onCheckedChange={props.onChange} />
+    </div>
+  );
+}
+
+function numberOptions(values: number[], unit?: string) {
+  return values.map((value) => ({ label: unit ? `${value} ${unit}` : String(value), value: String(value) }));
+}
+
+export function ConfigPanel({ provider, model, bailianConfigs, minimaxiConfigs, onBailianChange, onMinimaxiChange }: ConfigPanelProps) {
+  if (!provider) {
+    return <p className="py-8 text-center text-sm text-muted-foreground">请先选择音色，配置项将按服务商展示</p>;
+  }
+
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="config-speech-rate">语速</Label>
-          <span className="text-xs tabular-nums text-muted-foreground">{config.speechRate.toFixed(1)}x</span>
-        </div>
-        <Slider
-          id="config-speech-rate"
-          aria-label="语速"
-          min={0.5}
-          max={2}
-          step={0.1}
-          value={[config.speechRate]}
-          onValueChange={(value) => onConfigChange({ speechRate: sliderValue(value) })}
-        />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="config-volume">音量</Label>
-          <span className="text-xs tabular-nums text-muted-foreground">{config.volume}%</span>
-        </div>
-        <Slider id="config-volume" aria-label="音量" min={0} max={100} step={1} value={[config.volume]} onValueChange={(value) => onConfigChange({ volume: sliderValue(value) })} />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="config-emotion">情感</Label>
-        <Select items={EMOTION_OPTIONS} value={config.emotion} onValueChange={(value) => value && onConfigChange({ emotion: value })}>
-          <SelectTrigger id="config-emotion" className="w-full" aria-label="情感">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              {EMOTION_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="config-format">输出格式</Label>
-        <Select items={FORMAT_OPTIONS} value={config.format} onValueChange={(value) => value && onConfigChange({ format: value })}>
-          <SelectTrigger id="config-format" className="w-full" aria-label="输出格式">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              {FORMAT_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="config-title">音频名称</Label>
-        <Input id="config-title" value={config.title} maxLength={50} placeholder="留空则自动生成" onChange={(event) => onConfigChange({ title: event.target.value })} />
-      </div>
-
-      <div className="flex items-center justify-between gap-3">
-        <Label htmlFor="config-bgm" className="flex flex-col gap-0.5">
-          背景音乐
-          <span className="text-xs font-normal text-muted-foreground">为生成的音频叠加轻音乐（Mock）</span>
-        </Label>
-        <Switch id="config-bgm" checked={config.bgm} onCheckedChange={(checked) => onConfigChange({ bgm: checked })} />
-      </div>
-
-      <div className="flex items-center justify-between gap-3">
-        <Label htmlFor="config-autoplay" className="flex flex-col gap-0.5">
-          生成后自动播放
-          <span className="text-xs font-normal text-muted-foreground">生成完成后自动开始播放</span>
-        </Label>
-        <Switch id="config-autoplay" checked={config.autoplay} onCheckedChange={(checked) => onConfigChange({ autoplay: checked })} />
-      </div>
+      {provider === 'bailian' ? (
+        <>
+          <SliderField
+            id="config-rate"
+            label="语速"
+            display={`${bailianConfigs.rate.toFixed(1)}x`}
+            min={0.5}
+            max={2}
+            step={0.1}
+            value={bailianConfigs.rate}
+            onChange={(rate) => onBailianChange({ rate })}
+          />
+          <SliderField
+            id="config-volume"
+            label="音量"
+            display={`${bailianConfigs.volume}%`}
+            min={0}
+            max={100}
+            step={1}
+            value={bailianConfigs.volume}
+            onChange={(volume) => onBailianChange({ volume })}
+          />
+          <SliderField
+            id="config-pitch"
+            label="音调"
+            display={`${bailianConfigs.pitch.toFixed(1)}x`}
+            min={0.5}
+            max={2}
+            step={0.1}
+            value={bailianConfigs.pitch}
+            onChange={(pitch) => onBailianChange({ pitch })}
+          />
+          <SelectField
+            id="config-sample-rate"
+            label="采样率"
+            value={String(bailianConfigs.sampleRate)}
+            options={numberOptions(BAILIAN_SAMPLE_RATE_OPTIONS, 'Hz')}
+            onChange={(value) => onBailianChange({ sampleRate: Number(value) })}
+          />
+          <SelectField
+            id="config-bit-rate"
+            label="比特率"
+            value={String(bailianConfigs.bitRate)}
+            options={numberOptions(BAILIAN_BIT_RATE_OPTIONS, 'kbps')}
+            onChange={(value) => onBailianChange({ bitRate: Number(value) })}
+          />
+          <SwitchField
+            id="config-ssml"
+            label="启用 SSML"
+            description="按 SSML 标记解析文案"
+            checked={bailianConfigs.enableSsml}
+            onChange={(enableSsml) => onBailianChange({ enableSsml })}
+          />
+          {model.startsWith(INSTRUCTION_MODEL_PREFIX) ? (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="config-instruction">风格指令</Label>
+              <Textarea
+                id="config-instruction"
+                rows={3}
+                placeholder="例如：用温柔亲切的语气朗读"
+                value={bailianConfigs.instruction}
+                onChange={(event) => onBailianChange({ instruction: event.target.value })}
+              />
+            </div>
+          ) : null}
+        </>
+      ) : (
+        <>
+          <SliderField
+            id="config-speed"
+            label="语速"
+            display={`${minimaxiConfigs.speed.toFixed(1)}x`}
+            min={0.5}
+            max={2}
+            step={0.1}
+            value={minimaxiConfigs.speed}
+            onChange={(speed) => onMinimaxiChange({ speed })}
+          />
+          <SliderField
+            id="config-vol"
+            label="音量"
+            display={`${minimaxiConfigs.vol.toFixed(1)}x`}
+            min={0.1}
+            max={10}
+            step={0.1}
+            value={minimaxiConfigs.vol}
+            onChange={(vol) => onMinimaxiChange({ vol })}
+          />
+          <SliderField
+            id="config-pitch"
+            label="音调"
+            display={`${minimaxiConfigs.pitch.toFixed(1)}x`}
+            min={-12}
+            max={12}
+            step={0.1}
+            value={minimaxiConfigs.pitch}
+            onChange={(pitch) => onMinimaxiChange({ pitch })}
+          />
+          <SelectField id="config-emotion" label="情感" value={minimaxiConfigs.emotion} options={EMOTION_OPTIONS} onChange={(emotion) => onMinimaxiChange({ emotion })} />
+          <SelectField
+            id="config-sample-rate"
+            label="采样率"
+            value={String(minimaxiConfigs.sampleRate)}
+            options={numberOptions(MINIMAXI_SAMPLE_RATE_OPTIONS, 'Hz')}
+            onChange={(value) => onMinimaxiChange({ sampleRate: Number(value) })}
+          />
+          <SelectField
+            id="config-bitrate"
+            label="比特率"
+            value={String(minimaxiConfigs.bitrate)}
+            options={numberOptions(MINIMAXI_BIT_RATE_OPTIONS, 'bps')}
+            onChange={(value) => onMinimaxiChange({ bitrate: Number(value) })}
+          />
+          <SelectField
+            id="config-channel"
+            label="声道"
+            value={String(minimaxiConfigs.channel)}
+            options={CHANNEL_OPTIONS}
+            onChange={(value) => onMinimaxiChange({ channel: Number(value) })}
+          />
+          <SwitchField
+            id="config-subtitle"
+            label="生成字幕"
+            description="同时返回字幕时间轴信息"
+            checked={minimaxiConfigs.subtitleEnable}
+            onChange={(subtitleEnable) => onMinimaxiChange({ subtitleEnable })}
+          />
+        </>
+      )}
     </div>
   );
 }

@@ -1,93 +1,91 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger, toast } from '@r/ui';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { History, Settings2 } from 'lucide-react';
 import { useState } from 'react';
+import { normalizeApiFailedMessage, query } from '#/services/api';
 import { ConfigPanel } from './config-panel';
+import { type AudioModelValue, BAILIAN_DEFAULT_CONFIGS, MINIMAXI_DEFAULT_CONFIGS, providerOfModel } from './constants';
 import { EditorCard } from './editor-card';
 import { HistoryPanel } from './history-panel';
-import { createMockAudioUrl, estimateDuration, fixTypos, MOCK_HISTORY, MOCK_VOICES, MODEL_OPTIONS, polishCopy, wait } from './mock';
 import { ModelSelect } from './model-select';
 import { PlayerBar } from './player-bar';
-import type { AudioConfig, AudioHistoryItem, BusyAction } from './types';
+import type { BailianAudioConfigs, BusyAction, CreativeAudioItem, MinimaxiAudioConfigs, VoiceItem } from './types';
 import { VoiceSelect } from './voice-select';
 
-const DEFAULT_CONFIG: AudioConfig = {
-  speechRate: 1,
-  volume: 80,
-  emotion: 'natural',
-  format: 'mp3',
-  title: '',
-  bgm: false,
-  autoplay: true,
-};
+const HISTORY_PAGE_SIZE = 20;
 
 export function AudioCreatePage() {
+  const queryClient = useQueryClient();
   const [text, setText] = useState('');
-  const [voiceId, setVoiceId] = useState(MOCK_VOICES[0].id);
-  const [model, setModel] = useState(MODEL_OPTIONS[0].value);
-  const [config, setConfig] = useState<AudioConfig>(DEFAULT_CONFIG);
-  const [history, setHistory] = useState<AudioHistoryItem[]>(MOCK_HISTORY);
-  const [current, setCurrent] = useState<(AudioHistoryItem & { audioUrl: string }) | null>(null);
+  const [selectedVoice, setSelectedVoice] = useState<VoiceItem | null>(null);
+  const [model, setModel] = useState('');
+  const [bailianConfigs, setBailianConfigs] = useState<BailianAudioConfigs>(BAILIAN_DEFAULT_CONFIGS);
+  const [minimaxiConfigs, setMinimaxiConfigs] = useState<MinimaxiAudioConfigs>(MINIMAXI_DEFAULT_CONFIGS);
+  const [page, setPage] = useState(1);
+  const [current, setCurrent] = useState<CreativeAudioItem | null>(null);
   const [busy, setBusy] = useState<BusyAction>(null);
 
-  const canSubmit = text.trim().length > 0 && busy === null;
+  const historyQuery = useQuery(query.creativeAudios.list.queryOptions({ query: { page, size: HISTORY_PAGE_SIZE } }));
+  const createMutation = useMutation(query.creativeAudios.create.mutationOptions());
 
-  function updateConfig(patch: Partial<AudioConfig>) {
-    setConfig((prev) => ({ ...prev, ...patch }));
+  const provider = selectedVoice ? providerOfModel(selectedVoice.model) : null;
+  const canSubmit = text.trim().length > 0 && selectedVoice !== null && model !== '' && busy === null && !createMutation.isPending;
+
+  function handleVoiceChange(voice: VoiceItem) {
+    setSelectedVoice(voice);
+    // 切换音色时模型默认重置为音色自身的模型
+    setModel(voice.model);
   }
 
-  async function handlePolish() {
-    if (!canSubmit) return;
-    setBusy('polish');
-    await wait(800);
-    const polished = polishCopy(text);
-    setText(polished);
-    setBusy(null);
-    toast.add({ type: 'success', description: polished === text ? '文案已经很通顺，无需调整' : '文案已润色（示例效果）' });
+  function handlePolish() {
+    // 暂不实现
   }
 
-  async function handleFixTypos() {
-    if (!canSubmit) return;
-    setBusy('typo');
-    await wait(600);
-    const result = fixTypos(text);
-    setText(result.text);
-    setBusy(null);
-    toast.add({ type: 'success', description: result.count > 0 ? `已修正 ${result.count} 处错别字` : '未发现错别字' });
+  function handleFixTypos() {
+    // 暂不实现
   }
 
-  async function handleGenerate() {
-    if (!canSubmit) return;
-    const voice = MOCK_VOICES.find((item) => item.id === voiceId) ?? MOCK_VOICES[0];
-    const modelOption = MODEL_OPTIONS.find((item) => item.value === model) ?? MODEL_OPTIONS[0];
+  function handleGenerate() {
+    if (!canSubmit || !selectedVoice) return;
+    const audioProvider = providerOfModel(model);
     setBusy('generate');
-    await wait(1200);
-    const content = text.trim();
-    const audioUrl = createMockAudioUrl(content, voice.id, config.speechRate);
-    const ready: AudioHistoryItem & { audioUrl: string } = {
-      id: `gen-${Date.now()}`,
-      text: content,
-      title: config.title.trim() || undefined,
-      voiceId: voice.id,
-      voiceName: voice.name,
-      modelName: modelOption.label.split('（')[0],
-      createdAt: Date.now(),
-      speechRate: config.speechRate,
-      duration: estimateDuration(content, config.speechRate),
-      audioUrl,
-    };
-    setHistory((prev) => [ready, ...prev]);
-    setCurrent(ready);
-    setBusy(null);
-    toast.add({ type: 'success', description: '音频已生成（Mock）' });
+    createMutation.mutate(
+      {
+        body: {
+          provider: audioProvider,
+          model: model as AudioModelValue,
+          text: text.trim(),
+          voiceId: selectedVoice.voiceId,
+          configs:
+            audioProvider === 'bailian'
+              ? { ...bailianConfigs, format: 'mp3' as const, instruction: bailianConfigs.instruction.trim() || undefined }
+              : { ...minimaxiConfigs, format: 'mp3' as const },
+        },
+      },
+      {
+        onSuccess: (res) => {
+          setBusy(null);
+          setCurrent(res.data as CreativeAudioItem);
+          setPage(1);
+          void queryClient.invalidateQueries({ queryKey: query.creativeAudios.list.queryKey() });
+          toast.add({ type: 'success', description: '音频已生成' });
+        },
+        onError: (error) => {
+          setBusy(null);
+          toast.add({ type: 'error', description: normalizeApiFailedMessage(error) || '生成失败' });
+        },
+      },
+    );
   }
 
-  function handleSelectHistory(item: AudioHistoryItem) {
-    const audioUrl = item.audioUrl ?? createMockAudioUrl(item.text, item.voiceId, item.speechRate);
-    const ready = { ...item, audioUrl };
-    if (!item.audioUrl) setHistory((prev) => prev.map((entry) => (entry.id === item.id ? ready : entry)));
+  function handleSelectHistory(item: CreativeAudioItem) {
     setText(item.text);
-    setVoiceId(item.voiceId);
-    setCurrent(ready);
+    setModel(item.model);
+    // 尝试从音色查询缓存中找回音色对象，找不到则需用户重新选择
+    const cached = queryClient.getQueriesData<{ data: { list: VoiceItem[] } }>({ queryKey: query.voices.list.queryKey() });
+    const voice = cached.flatMap(([, data]) => data?.data.list ?? []).find((entry) => entry.voiceId === item.voiceId);
+    setSelectedVoice(voice ?? null);
+    setCurrent(item);
   }
 
   return (
@@ -98,8 +96,8 @@ export function AudioCreatePage() {
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-semibold">文字转语音</h1>
             <div className="ml-auto flex items-center gap-2">
-              <VoiceSelect value={voiceId} onChange={setVoiceId} />
-              <ModelSelect value={model} onChange={setModel} />
+              <VoiceSelect voice={selectedVoice} onChange={handleVoiceChange} />
+              <ModelSelect provider={provider} value={model} onChange={setModel} />
             </div>
           </div>
           <EditorCard text={text} busy={busy} onTextChange={setText} onPolish={handlePolish} onFixTypos={handleFixTypos} onGenerate={handleGenerate} />
@@ -107,8 +105,8 @@ export function AudioCreatePage() {
 
         {/* 右侧：配置 / 生成历史 */}
         <aside className="flex w-80 shrink-0 flex-col overflow-hidden border-l bg-muted/30">
-          <Tabs defaultValue="config" className="flex min-h-0 flex-1 flex-col gap-0">
-            <TabsList variant="line" className="w-full shrink-0 border-b px-4">
+          <Tabs defaultValue="config" className="flex min-h-0 flex-1 flex-col">
+            <TabsList variant="line" className="shrink-0 border-b px-4">
               <TabsTrigger value="config" className="flex-1 gap-1.5 text-sm">
                 <Settings2 className="size-4" />
                 配置
@@ -119,17 +117,34 @@ export function AudioCreatePage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="config" className="min-h-0 flex-1 overflow-y-auto p-4">
-              <ConfigPanel config={config} onConfigChange={updateConfig} />
+              <ConfigPanel
+                provider={provider}
+                model={model}
+                bailianConfigs={bailianConfigs}
+                minimaxiConfigs={minimaxiConfigs}
+                onBailianChange={(patch) => setBailianConfigs((prev) => ({ ...prev, ...patch }))}
+                onMinimaxiChange={(patch) => setMinimaxiConfigs((prev) => ({ ...prev, ...patch }))}
+              />
             </TabsContent>
             <TabsContent value="history" className="min-h-0 flex-1 overflow-y-auto p-4">
-              <HistoryPanel history={history} activeId={current?.id} onSelect={handleSelectHistory} />
+              <HistoryPanel
+                items={historyQuery.data?.data.list ?? []}
+                total={historyQuery.data?.data.meta.total ?? 0}
+                page={page}
+                pageSize={HISTORY_PAGE_SIZE}
+                isLoading={historyQuery.isLoading}
+                error={historyQuery.error}
+                activeId={current?.id}
+                onSelect={handleSelectHistory}
+                onPageChange={setPage}
+              />
             </TabsContent>
           </Tabs>
         </aside>
       </div>
 
       {/* 底部播放控制区域 */}
-      {current ? <PlayerBar item={current} volume={config.volume / 100} autoPlay={config.autoplay} onClose={() => setCurrent(null)} /> : null}
+      {current ? <PlayerBar item={current} onClose={() => setCurrent(null)} /> : null}
     </div>
   );
 }
