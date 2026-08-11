@@ -1,8 +1,9 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger, toast } from '@r/ui';
+import { Button, Tabs, TabsContent, TabsList, TabsTrigger, toast } from '@r/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { History, Settings2 } from 'lucide-react';
+import { AudioLines, History, Settings2 } from 'lucide-react';
 import { useState } from 'react';
 import { normalizeApiFailedMessage, query } from '#/services/api';
+import { EVENT_OPEN_VOICE_CLONING_DIALOG, emitter } from '#/shared/mitt';
 import { ConfigPanel } from './config-panel';
 import { type AudioModelValue, BAILIAN_DEFAULT_CONFIGS, MINIMAXI_DEFAULT_CONFIGS, providerOfModel } from './constants';
 import { EditorCard } from './editor-card';
@@ -101,6 +102,10 @@ export function AudioCreatePage() {
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-semibold">文字转语音</h1>
             <div className="ml-auto flex items-center gap-2">
+              <Button type="button" variant="outline" onClick={() => emitter.emit(EVENT_OPEN_VOICE_CLONING_DIALOG, undefined)}>
+                <AudioLines className="size-4" />
+                音色克隆
+              </Button>
               <VoiceSelect voice={selectedVoice} onChange={handleVoiceChange} />
               <ModelSelect provider={provider} value={model} onChange={setModel} />
             </div>

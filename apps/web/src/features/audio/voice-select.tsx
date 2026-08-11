@@ -1,3 +1,4 @@
+import { Button } from '@r/ui';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { useVoiceListDialog } from '#/providers/voice-list-dialog-provider';
@@ -25,16 +26,11 @@ export function VoiceSelect({ voice, onChange }: VoiceSelectProps) {
   }
 
   return (
-    <button
-      type="button"
-      aria-label="音色"
-      onClick={handleClick}
-      className="flex h-8 w-56 items-center gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50"
-    >
+    <Button type="button" variant="outline" aria-label="音色" disabled={pending} onClick={handleClick} className="w-56 justify-start font-normal">
       <span className="shrink-0 text-muted-foreground">音色</span>
       <span className="h-4 w-px shrink-0 bg-border" />
       <span className={`line-clamp-1 ${voice ? '' : 'text-muted-foreground'}`}>{voice?.name ?? '选择音色'}</span>
       <ChevronDown className="ml-auto size-4 shrink-0 text-muted-foreground" />
-    </button>
+    </Button>
   );
 }
