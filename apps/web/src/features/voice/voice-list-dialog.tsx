@@ -97,9 +97,6 @@ export function VoiceListDialog({ open, onOpenChange, mode = 'browse', onSelect 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[calc(100dvh-4rem)] max-w-4xl! grid-rows-[auto_auto_minmax(0,1fr)_auto]">
-        <DialogHeader className="pr-8">
-          <DialogTitle>音色列表</DialogTitle>
-        </DialogHeader>
         <Tabs value={source} onValueChange={(value) => changeSource(value === 'system' ? 'system' : 'user')}>
           <div className="flex items-center gap-2">
             <TabsList variant="line" aria-label="音色来源">
