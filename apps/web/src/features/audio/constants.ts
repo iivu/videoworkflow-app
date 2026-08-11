@@ -50,7 +50,28 @@ export const BAILIAN_DEFAULT_CONFIGS: BailianAudioConfigs = {
   bitRate: 128,
   pitch: 1,
   enableSsml: false,
+  languageHints: [],
 };
+
+/** 百炼 language_hints 可选语言（与文档取值范围一致） */
+export const LANGUAGE_HINT_OPTIONS: Array<{ label: string; value: string }> = [
+  { label: '中文', value: 'zh' },
+  { label: '英语', value: 'en' },
+  { label: '法语', value: 'fr' },
+  { label: '德语', value: 'de' },
+  { label: '日语', value: 'ja' },
+  { label: '韩语', value: 'ko' },
+  { label: '俄语', value: 'ru' },
+  { label: '葡萄牙语', value: 'pt' },
+  { label: '泰语', value: 'th' },
+  { label: '印尼语', value: 'id' },
+  { label: '越南语', value: 'vi' },
+  { label: '西班牙语', value: 'es' },
+  { label: '意大利语', value: 'it' },
+  { label: '马来西亚语', value: 'ms' },
+  { label: '菲律宾语', value: 'fil' },
+  { label: '阿拉伯语', value: 'ar' },
+];
 
 /** 与后端 MINIMAXI_DEFAULT_CONFIGS 对齐，UI 侧补齐可选字段的默认值 */
 export const MINIMAXI_DEFAULT_CONFIGS: MinimaxiAudioConfigs = {

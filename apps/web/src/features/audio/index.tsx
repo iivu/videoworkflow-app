@@ -58,7 +58,12 @@ export function AudioCreatePage() {
           voiceId: selectedVoice.voiceId,
           configs:
             audioProvider === 'bailian'
-              ? { ...bailianConfigs, format: 'mp3' as const }
+              ? {
+                  ...bailianConfigs,
+                  format: 'mp3' as const,
+                  // 空数组不传，避免后端透传空的 language_hints
+                  ...(bailianConfigs.languageHints.length > 0 ? { languageHints: bailianConfigs.languageHints } : {}),
+                }
               : { ...minimaxiConfigs, format: 'mp3' as const },
         },
       },

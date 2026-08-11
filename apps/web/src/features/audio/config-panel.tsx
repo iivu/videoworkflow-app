@@ -4,6 +4,7 @@ import {
   BAILIAN_SAMPLE_RATE_OPTIONS,
   CHANNEL_OPTIONS,
   EMOTION_OPTIONS,
+  LANGUAGE_HINT_OPTIONS,
   MINIMAXI_BIT_RATE_OPTIONS,
   MINIMAXI_SAMPLE_RATE_OPTIONS,
 } from './constants';
@@ -131,6 +132,13 @@ export function ConfigPanel({ provider, bailianConfigs, minimaxiConfigs, onBaili
             value={String(bailianConfigs.bitRate)}
             options={numberOptions(BAILIAN_BIT_RATE_OPTIONS, 'kbps')}
             onChange={(value) => onBailianChange({ bitRate: Number(value) })}
+          />
+          <SelectField
+            id="config-language-hint"
+            label="目标语言"
+            value={bailianConfigs.languageHints[0] || 'auto'}
+            options={[{ label: '自动', value: 'auto' }, ...LANGUAGE_HINT_OPTIONS]}
+            onChange={(value) => onBailianChange({ languageHints: value === 'auto' ? [] : [value] })}
           />
           <SwitchField
             id="config-ssml"

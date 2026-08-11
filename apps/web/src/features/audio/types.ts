@@ -28,6 +28,8 @@ export type BailianAudioConfigs = {
   /** 音调倍率 0.5-2 */
   pitch: number;
   enableSsml: boolean;
+  /** 目标语言提示，空数组表示不指定（后端映射为 language_hints，仅首个元素生效） */
+  languageHints: string[];
 };
 
 /** Minimaxi 合成配置，字段与后端 MINIMAXI_CONFIG_KEYS 一一对齐 */
