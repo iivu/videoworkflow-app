@@ -78,6 +78,12 @@ const routes = {
     tokens: [{"old":"/api/v1/voices/clone/video","type":0,"val":"api","end":""},{"old":"/api/v1/voices/clone/video","type":0,"val":"v1","end":""},{"old":"/api/v1/voices/clone/video","type":0,"val":"voices","end":""},{"old":"/api/v1/voices/clone/video","type":0,"val":"clone","end":""},{"old":"/api/v1/voices/clone/video","type":0,"val":"video","end":""}],
     types: placeholder as Registry['voices.clone_video']['types'],
   },
+  'voices.list_clone_tasks': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/voices/clone/tasks',
+    tokens: [{"old":"/api/v1/voices/clone/tasks","type":0,"val":"api","end":""},{"old":"/api/v1/voices/clone/tasks","type":0,"val":"v1","end":""},{"old":"/api/v1/voices/clone/tasks","type":0,"val":"voices","end":""},{"old":"/api/v1/voices/clone/tasks","type":0,"val":"clone","end":""},{"old":"/api/v1/voices/clone/tasks","type":0,"val":"tasks","end":""}],
+    types: placeholder as Registry['voices.list_clone_tasks']['types'],
+  },
   'voices.clone_task': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/voices/clone/tasks/:id',

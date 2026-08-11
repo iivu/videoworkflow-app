@@ -1,7 +1,8 @@
-import { Button, Tabs, TabsContent, TabsList, TabsTrigger, toast } from '@r/ui';
+import { Button, ButtonGroup, Tabs, TabsContent, TabsList, TabsTrigger, toast } from '@r/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AudioLines, History, Settings2 } from 'lucide-react';
 import { useState } from 'react';
+import { CloneTaskHistoryDialog } from '#/features/voice/clone-task-history-dialog';
 import { normalizeApiFailedMessage, query } from '#/services/api';
 import { EVENT_OPEN_VOICE_CLONING_DIALOG, emitter } from '#/shared/mitt';
 import { ConfigPanel } from './config-panel';
@@ -25,6 +26,7 @@ export function AudioCreatePage() {
   const [page, setPage] = useState(1);
   const [current, setCurrent] = useState<CreativeAudioItem | null>(null);
   const [busy, setBusy] = useState<BusyAction>(null);
+  const [cloneTaskHistoryOpen, setCloneTaskHistoryOpen] = useState(false);
 
   const historyQuery = useQuery(query.creativeAudios.list.queryOptions({ query: { page, size: HISTORY_PAGE_SIZE } }));
   const createMutation = useMutation(query.creativeAudios.create.mutationOptions());
@@ -98,10 +100,15 @@ export function AudioCreatePage() {
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-semibold">文字转语音</h1>
             <div className="ml-auto flex items-center gap-2">
-              <Button type="button" variant="outline" onClick={() => emitter.emit(EVENT_OPEN_VOICE_CLONING_DIALOG, undefined)}>
-                <AudioLines className="size-4" />
-                音色克隆
-              </Button>
+              <ButtonGroup>
+                <Button type="button" variant="outline" onClick={() => emitter.emit(EVENT_OPEN_VOICE_CLONING_DIALOG, undefined)}>
+                  <AudioLines className="size-4" />
+                  音色克隆
+                </Button>
+                <Button size="icon" variant="outline" aria-label="克隆任务记录" onClick={() => setCloneTaskHistoryOpen(true)}>
+                  <History />
+                </Button>
+              </ButtonGroup>
               <VoiceSelect voice={selectedVoice} onChange={handleVoiceChange} />
               <ModelSelect provider={provider} value={model} onChange={setModel} />
             </div>
@@ -150,6 +157,7 @@ export function AudioCreatePage() {
 
       {/* 底部播放控制区域 */}
       {current ? <PlayerBar item={current} onClose={() => setCurrent(null)} /> : null}
+      <CloneTaskHistoryDialog open={cloneTaskHistoryOpen} onOpenChange={setCloneTaskHistoryOpen} />
     </div>
   );
 }

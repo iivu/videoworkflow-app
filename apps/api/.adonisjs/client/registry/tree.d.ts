@@ -19,6 +19,7 @@ export interface ApiDefinition {
     list: typeof routes['voices.list']
     cloneAudio: typeof routes['voices.clone_audio']
     cloneVideo: typeof routes['voices.clone_video']
+    listCloneTasks: typeof routes['voices.list_clone_tasks']
     cloneTask: typeof routes['voices.clone_task']
   }
   creativeAudios: {

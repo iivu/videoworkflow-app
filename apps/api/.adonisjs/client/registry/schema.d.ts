@@ -151,6 +151,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/voices-controller').default['cloneVideo']>>>
     }
   }
+  'voices.list_clone_tasks': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/voices/clone/tasks'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/voice').listCloneVoiceTasksValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/voices-controller').default['listCloneTasks']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/voices-controller').default['listCloneTasks']>>>
+    }
+  }
   'voices.clone_task': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/voices/clone/tasks/:id'

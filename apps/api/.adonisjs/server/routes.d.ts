@@ -16,6 +16,7 @@ export type ScannedRoutes = {
     'creative_audios.list': { paramsTuple?: []; params?: {} }
     'voices.clone_audio': { paramsTuple?: []; params?: {} }
     'voices.clone_video': { paramsTuple?: []; params?: {} }
+    'voices.list_clone_tasks': { paramsTuple?: []; params?: {} }
     'voices.clone_task': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.create_crawler_task': { paramsTuple?: []; params?: {} }
     'videos.list_crawler_tasks': { paramsTuple?: []; params?: {} }
@@ -59,6 +60,7 @@ export type ScannedRoutes = {
     'videos.list': { paramsTuple?: []; params?: {} }
     'voices.list': { paramsTuple?: []; params?: {} }
     'creative_audios.list': { paramsTuple?: []; params?: {} }
+    'voices.list_clone_tasks': { paramsTuple?: []; params?: {} }
     'voices.clone_task': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list_crawler_tasks': { paramsTuple?: []; params?: {} }
     'paraformer.check_task': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
@@ -73,6 +75,7 @@ export type ScannedRoutes = {
     'videos.list': { paramsTuple?: []; params?: {} }
     'voices.list': { paramsTuple?: []; params?: {} }
     'creative_audios.list': { paramsTuple?: []; params?: {} }
+    'voices.list_clone_tasks': { paramsTuple?: []; params?: {} }
     'voices.clone_task': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list_crawler_tasks': { paramsTuple?: []; params?: {} }
     'paraformer.check_task': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }

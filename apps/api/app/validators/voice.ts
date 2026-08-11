@@ -41,6 +41,11 @@ export const cloneVideoVoiceValidator = vine.create({
   config: voiceCloneConfig,
 });
 
+export const listCloneVoiceTasksValidator = vine.create({
+  page: vine.number().positive().optional(),
+  size: vine.number().positive().optional(),
+});
+
 export const cloneVoiceTaskValidator = vine.create({
   params: vine.object({ id: vine.number().positive().withoutDecimals() }),
 });

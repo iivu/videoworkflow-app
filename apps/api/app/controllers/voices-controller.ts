@@ -3,7 +3,7 @@ import type { HttpContext } from '@adonisjs/core/http';
 import { VoiceService } from '#services/voice-service';
 import VideoToVoiceTaskTransformer from '#transformers/video-to-voice-task-transformer';
 import VoiceTransformer from '#transformers/voice-transformer';
-import { cloneAudioVoiceValidator, cloneVideoVoiceValidator, cloneVoiceTaskValidator, listVoiceValidator } from '#validators/voice';
+import { cloneAudioVoiceValidator, cloneVideoVoiceValidator, cloneVoiceTaskValidator, listCloneVoiceTasksValidator, listVoiceValidator } from '#validators/voice';
 
 @inject()
 export default class VoicesController {
@@ -38,5 +38,12 @@ export default class VoicesController {
     const task = await this.voiceService.getCloneTask({ userId: user.id, id: payload.params.id });
     if (!task) return ctx.error('任务不存在');
     return ctx.ok(await ctx.serialize.withoutWrapping(VideoToVoiceTaskTransformer.transform(task)));
+  }
+
+  async listCloneTasks(ctx: HttpContext) {
+    const user = await ctx.auth.getUserOrFail();
+    const payload = await ctx.request.validateUsing(listCloneVoiceTasksValidator);
+    const result = await this.voiceService.listCloneTasks({ userId: user.id, payload });
+    return ctx.ok({ meta: result.meta, list: await ctx.serialize.withoutWrapping(VideoToVoiceTaskTransformer.transform(result.list)) });
   }
 }

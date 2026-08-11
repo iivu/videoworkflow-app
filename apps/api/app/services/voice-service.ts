@@ -9,7 +9,7 @@ import VideoToVoiceTask from '#models/video-to-voice-task';
 import Voice from '#models/voice';
 import { BailianAudioService, type BailianCloneVoiceParams, isBailianVoiceModel } from '#services/bailian-audio-service';
 import { isMinimaxiCloneModel, type MinimaxiCloneVoiceParams, MinimaxiService } from '#services/minimaxi-service';
-import type { cloneAudioVoiceValidator, cloneVideoVoiceValidator, listVoiceValidator, VoiceCloneOptions } from '#validators/voice';
+import type { cloneAudioVoiceValidator, cloneVideoVoiceValidator, listCloneVoiceTasksValidator, listVoiceValidator, VoiceCloneOptions } from '#validators/voice';
 
 export type VoiceCloneProvider = 'bailian' | 'minimaxi';
 
@@ -110,7 +110,7 @@ export class VoiceService {
       videoId: 0,
       provider: params.payload.provider,
       status: VIDEO_TO_VOICE_TASK_STATUS.PROCESSING,
-      config: JSON.stringify(config),
+      config: JSON.stringify({ ...config, name: params.payload.name }),
     });
     try {
       await VideoToVoiceJob.dispatch({
@@ -130,5 +130,11 @@ export class VoiceService {
 
   async getCloneTask(params: { userId: string; id: number }) {
     return await VideoToVoiceTask.query().where('id', params.id).where('user_id', params.userId).first();
+  }
+
+  async listCloneTasks(params: { userId: string; payload: Infer<typeof listCloneVoiceTasksValidator> }) {
+    const { page = 1, size = 10 } = params.payload;
+    const paginated = await VideoToVoiceTask.query().where('user_id', params.userId).orderBy('id', 'desc').paginate(page, size);
+    return { meta: { total: paginated.total, currentPage: paginated.currentPage }, list: paginated.all() };
   }
 }
