@@ -4,11 +4,11 @@ import { useState } from 'react';
 
 import { EmptyState, PanelHeader } from './components';
 
-const CHAT_MODES = ['快速', '进阶'] as const;
+const CHAT_MODELS = ['qwen3.8-max', 'kimi/kimi-k3', 'deepseek-v4-flash-0731'] as const;
 
 function ChatInput() {
   const [message, setMessage] = useState('');
-  const [mode, setMode] = useState<(typeof CHAT_MODES)[number]>('快速');
+  const [model, setModel] = useState<(typeof CHAT_MODELS)[number]>(CHAT_MODELS[0]);
 
   const canSend = message.trim().length > 0;
 
@@ -32,12 +32,12 @@ function ChatInput() {
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
-              <span className="text-foreground">{mode}</span>
+              <span className="text-foreground">{model}</span>
               <ChevronDown className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {CHAT_MODES.map((item) => (
-                <DropdownMenuItem key={item} onSelect={() => setMode(item)}>
+              {CHAT_MODELS.map((item) => (
+                <DropdownMenuItem key={item} onSelect={() => setModel(item)}>
                   {item}
                 </DropdownMenuItem>
               ))}
