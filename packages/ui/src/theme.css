@@ -180,6 +180,8 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) var(--color-background);
   }
   body {
     @apply bg-background text-foreground;
@@ -194,6 +196,7 @@
     display: -webkit-box;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-clamp: 2;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
   }
