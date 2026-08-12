@@ -128,7 +128,7 @@ function TranscriptionPanel({ videoId }: { videoId: string }) {
         ) : null}
 
         {task?.status === 'SUCCEEDED' ? (
-          <article className="whitespace-pre-wrap wrap-break-word text-sm leading-7 text-foreground">{task.result || '转录已完成，但没有返回文本内容'}</article>
+          <article className="whitespace-pre-wrap wrap-break-word text-sm leading-7 text-foreground text-justify">{task.result || '转录已完成，但没有返回文本内容'}</article>
         ) : null}
 
         {task && !taskQuery.error && FAILED_STATUSES.has(task.status) ? (
