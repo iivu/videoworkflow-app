@@ -29,7 +29,7 @@ export class AiService {
     private readonly promptService: PromptService,
   ) {}
 
-  async chat(messages: Message[], { model = 'qwen3.7-max', temperature }: ChatOptions = {}) {
+  async chat(messages: Message[], { model = 'qwen3.8-max', temperature }: ChatOptions = {}) {
     const result = await generateText({
       model: this.getTextModel(model),
       messages,
@@ -38,7 +38,7 @@ export class AiService {
     return result.text;
   }
 
-  streamChat(messages: Message[], { model = 'qwen3.7-max', temperature, abortSignal, onEnd }: StreamChatOptions = {}) {
+  streamChat(messages: Message[], { model = 'qwen3.8-max', temperature, abortSignal, onEnd }: StreamChatOptions = {}) {
     return streamText({
       model: this.getTextModel(model),
       messages,

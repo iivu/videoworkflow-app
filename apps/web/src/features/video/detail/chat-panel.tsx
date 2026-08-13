@@ -4,7 +4,7 @@ import { XMarkdown } from '@ant-design/x-markdown';
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@r/ui';
 import { DefaultChatTransport } from 'ai';
 import { theme as antdTheme } from 'antd';
-import { Bot, ChevronDown, History, LoaderCircle, Plus } from 'lucide-react';
+import { Bot, ChevronDown, History, LoaderCircle } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTheme } from '#/providers/theme-provider';
@@ -13,7 +13,7 @@ import { getToken } from '#/shared/token';
 import { EmptyState, PanelHeader } from './components';
 
 const CHAT_MODELS = ['qwen3.8-max', 'kimi/kimi-k3', 'deepseek-v4-flash-0731'] as const;
-const HISTORY_PAGE_SIZE = 4;
+const HISTORY_PAGE_SIZE = 20;
 
 type HistoryMessage = { id: number; role: string; message: string };
 
@@ -145,7 +145,7 @@ export function ChatPanel({ videoId }: { videoId: string }) {
         return (
           <XMarkdown
             content={markdown}
-            streaming={active ? { hasNextChunk: true, tail: true } : undefined}
+            streaming={active ? { hasNextChunk: true, enableAnimation: true } : undefined}
             rootClassName="[&_p:last-child]:mb-0 [&_ul:last-child]:mb-0 [&_ol:last-child]:mb-0 [&_pre:last-child]:mb-0"
           />
         );
@@ -208,7 +208,7 @@ export function ChatPanel({ videoId }: { videoId: string }) {
             loading={streaming}
             onCancel={stop}
             submitType="enter"
-            placeholder='输入 "/" 唤起插件和技能'
+            placeholder="输入你的需求，比如改写这篇文案..."
             autoSize={{ minRows: 1, maxRows: 6 }}
             suffix={false}
             footer={(actionNode) => (
