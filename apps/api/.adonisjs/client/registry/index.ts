@@ -140,9 +140,15 @@ const routes = {
   },
   'ai.polish_article': {
     methods: ["POST"],
-    pattern: '/api/v1/chat/polish-article',
-    tokens: [{"old":"/api/v1/chat/polish-article","type":0,"val":"api","end":""},{"old":"/api/v1/chat/polish-article","type":0,"val":"v1","end":""},{"old":"/api/v1/chat/polish-article","type":0,"val":"chat","end":""},{"old":"/api/v1/chat/polish-article","type":0,"val":"polish-article","end":""}],
+    pattern: '/api/v1/chat/polish-article/:videoId',
+    tokens: [{"old":"/api/v1/chat/polish-article/:videoId","type":0,"val":"api","end":""},{"old":"/api/v1/chat/polish-article/:videoId","type":0,"val":"v1","end":""},{"old":"/api/v1/chat/polish-article/:videoId","type":0,"val":"chat","end":""},{"old":"/api/v1/chat/polish-article/:videoId","type":0,"val":"polish-article","end":""},{"old":"/api/v1/chat/polish-article/:videoId","type":1,"val":"videoId","end":""}],
     types: placeholder as Registry['ai.polish_article']['types'],
+  },
+  'ai.list_messages': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/chat/polish-article/:videoId/messages',
+    tokens: [{"old":"/api/v1/chat/polish-article/:videoId/messages","type":0,"val":"api","end":""},{"old":"/api/v1/chat/polish-article/:videoId/messages","type":0,"val":"v1","end":""},{"old":"/api/v1/chat/polish-article/:videoId/messages","type":0,"val":"chat","end":""},{"old":"/api/v1/chat/polish-article/:videoId/messages","type":0,"val":"polish-article","end":""},{"old":"/api/v1/chat/polish-article/:videoId/messages","type":1,"val":"videoId","end":""},{"old":"/api/v1/chat/polish-article/:videoId/messages","type":0,"val":"messages","end":""}],
+    types: placeholder as Registry['ai.list_messages']['types'],
   },
   'xhs_sessions.create': {
     methods: ["POST"],

@@ -40,7 +40,8 @@ r.group(() => {
     r.post('/oss/url', [controllers.Oss, 'uploadURL']);
     r.get('/oss/policy', [controllers.Oss, 'getPolicy']);
 
-    r.post('/chat/polish-article', [controllers.Ai, 'polishArticle']);
+    r.post('/chat/polish-article/:videoId', [controllers.Ai, 'polishArticle']);
+    r.get('/chat/polish-article/:videoId/messages', [controllers.Ai, 'listMessages']);
 
     r.post('/xhs/sessions', [controllers.XhsSessions, 'create']);
     r.get('/xhs/sessions', [controllers.XhsSessions, 'list']);

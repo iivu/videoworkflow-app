@@ -38,6 +38,7 @@ export interface ApiDefinition {
   }
   ai: {
     polishArticle: typeof routes['ai.polish_article']
+    listMessages: typeof routes['ai.list_messages']
   }
   xhsSessions: {
     create: typeof routes['xhs_sessions.create']

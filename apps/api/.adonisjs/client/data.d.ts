@@ -8,6 +8,7 @@ import type { InferData, InferVariants } from '@adonisjs/core/types/transformers
 import type CrawlerVideoTaskTransformer from '#transformers/crawler-video-task-transformer'
 import type CreativeAudioTransformer from '#transformers/creative-audio-transformer'
 import type ParaformerTaskTransformer from '#transformers/paraformer-task-transformer'
+import type UserPolishArticleMessageTransformer from '#transformers/user-polish-article-message-transformer'
 import type UserTransformer from '#transformers/user-transformer'
 import type VideoToVoiceTaskTransformer from '#transformers/video-to-voice-task-transformer'
 import type VideoTransformer from '#transformers/video-transformer'
@@ -25,6 +26,10 @@ export namespace Data {
   export type ParaformerTask = InferData<ParaformerTaskTransformer>
   export namespace ParaformerTask {
     export type Variants = InferVariants<ParaformerTaskTransformer>
+  }
+  export type UserPolishArticleMessage = InferData<UserPolishArticleMessageTransformer>
+  export namespace UserPolishArticleMessage {
+    export type Variants = InferVariants<UserPolishArticleMessageTransformer>
   }
   export type User = InferData<UserTransformer>
   export namespace User {

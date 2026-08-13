@@ -36,7 +36,7 @@ export function VideoDetailPage() {
           {videoQuery.data?.data ? <VideoPanel video={videoQuery.data.data} onEdit={() => setEditOpen(true)} /> : <VideoPanelSkeleton />}
           <TranscriptionPanel videoId={id} />
         </div>
-        <ChatPanel />
+        <ChatPanel key={id} videoId={id} />
       </div>
       {videoQuery.data?.data ? (
         <VideoEditDialog

@@ -1,22 +1,26 @@
 import { type UIMessage, useChat } from '@ai-sdk/react';
 import { Bubble, type BubbleListProps, Sender, Think, XProvider } from '@ant-design/x';
 import { XMarkdown } from '@ant-design/x-markdown';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@r/ui';
+import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@r/ui';
 import { DefaultChatTransport } from 'ai';
 import { theme as antdTheme } from 'antd';
-import { Bot, ChevronDown, Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Bot, ChevronDown, History, LoaderCircle, Plus } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTheme } from '#/providers/theme-provider';
+import { client } from '#/services/api';
 import { getToken } from '#/shared/token';
 import { EmptyState, PanelHeader } from './components';
 
 const CHAT_MODELS = ['qwen3.8-max', 'kimi/kimi-k3', 'deepseek-v4-flash-0731'] as const;
-const CHAT_API = `${import.meta.env.VITE_API_URL}/api/v1/chat/polish-article`;
+const HISTORY_PAGE_SIZE = 4;
+
+type HistoryMessage = { id: number; role: string; message: string };
 
 const roleConfig: BubbleListProps['role'] = {
   user: { placement: 'end', variant: 'filled' },
   ai: { placement: 'start', variant: 'outlined' },
+  loadMore: { placement: 'start', variant: 'borderless', styles: { root: { width: '100%', padding: 0, justifyContent: 'center' } } },
 };
 
 function messageText(parts: UIMessage['parts']) {
@@ -33,6 +37,14 @@ function messageReasoning(parts: UIMessage['parts']) {
     .join('\n');
 }
 
+function historyMessageToUIMessage(message: HistoryMessage): UIMessage {
+  return {
+    id: `history-${message.id}`,
+    role: message.role === 'assistant' ? 'assistant' : 'user',
+    parts: [{ type: 'text', text: message.message }],
+  };
+}
+
 function normalizeChatError(error: Error) {
   try {
     const parsed = JSON.parse(error.message) as { message?: string };
@@ -43,23 +55,67 @@ function normalizeChatError(error: Error) {
   return error.message || '请求失败，请稍后重试';
 }
 
-export function ChatPanel() {
+export function ChatPanel({ videoId }: { videoId: string }) {
   const { resolvedTheme } = useTheme();
   const [model, setModel] = useState<(typeof CHAT_MODELS)[number]>(() => CHAT_MODELS[0]);
   const [input, setInput] = useState('');
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const loadingHistoryRef = useRef(false);
+
+  const chatApi = `${import.meta.env.VITE_API_URL}/api/v1/chat/polish-article/${videoId}`;
 
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
-        api: CHAT_API,
+        api: chatApi,
         headers: () => ({ Authorization: `Bearer ${getToken()}` }),
-        body: () => ({ model }),
+        prepareSendMessagesRequest: ({ messages }) => {
+          const lastMessage = messages[messages.length - 1];
+          const text = lastMessage ? messageText(lastMessage.parts) : '';
+          return { body: { message: text, model } };
+        },
       }),
-    [model],
+    [chatApi, model],
   );
 
-  const { messages, sendMessage, status, error, stop } = useChat({ transport });
+  const { messages, setMessages, sendMessage, status, error, stop } = useChat({ transport });
   const streaming = status === 'submitted' || status === 'streaming';
+
+  const loadPage = useCallback(
+    async (targetPage: number) => {
+      if (loadingHistoryRef.current) return;
+      loadingHistoryRef.current = true;
+      setLoadingHistory(true);
+      try {
+        const response = await client.api.ai.listMessages({ params: { videoId }, query: { page: targetPage, size: HISTORY_PAGE_SIZE } });
+        const { list, meta } = response.data;
+        const olderMessages = [...list].reverse().map(historyMessageToUIMessage);
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((item) => item.id));
+          return [...olderMessages.filter((item) => !existingIds.has(item.id)), ...prev];
+        });
+        setPage(targetPage);
+        setHasMore(meta.currentPage < Math.ceil(meta.total / HISTORY_PAGE_SIZE));
+      } catch (err) {
+        console.error('加载润色对话历史失败', err);
+      } finally {
+        loadingHistoryRef.current = false;
+        setLoadingHistory(false);
+      }
+    },
+    [client, setMessages, videoId],
+  );
+
+  const loadOlder = useCallback(() => {
+    if (!hasMore) return;
+    void loadPage(page + 1);
+  }, [hasMore, loadPage, page]);
+
+  useEffect(() => {
+    void loadPage(1);
+  }, [loadPage]);
 
   const items: BubbleListProps['items'] = messages.map((message, index): BubbleListProps['items'][number] => {
     const isLast = index === messages.length - 1;
@@ -97,6 +153,22 @@ export function ChatPanel() {
     };
   });
 
+  // 加载更早的对话按钮放在最顶部（最早消息之前），向上滚动到顶即可看到。
+  if (messages.length > 0 && (hasMore || loadingHistory)) {
+    items.unshift({
+      key: '__load-more__',
+      role: 'loadMore',
+      content: (
+        <div className="flex-center py-2">
+          <Button type="button" variant="ghost" size="xs" disabled={loadingHistory} onClick={loadOlder} className="text-muted-foreground">
+            {loadingHistory ? <LoaderCircle className="size-3 animate-spin" /> : <History className="size-3" />}
+            {loadingHistory ? '正在加载更早的对话' : '加载更早的对话'}
+          </Button>
+        </div>
+      ),
+    });
+  }
+
   // While the request is being submitted there is no assistant message yet,
   // so render a placeholder loading bubble.
   if (streaming && messages[messages.length - 1]?.role !== 'assistant') {
@@ -114,12 +186,18 @@ export function ChatPanel() {
     <XProvider theme={{ algorithm: resolvedTheme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm }}>
       <aside className="flex min-h-0 flex-col border-l bg-background xl:border-l-0" aria-labelledby="chat-panel-title">
         <PanelHeader id="chat-panel-title" icon={<Bot />} title="AI Chat" />
-        <div className="min-h-0 flex-1">
-          {messages.length === 0 ? (
-            <EmptyState icon={<Bot />} title="暂无对话" />
-          ) : (
-            <Bubble.List items={items} role={roleConfig} className="h-full" styles={{ scroll: { height: '100%' } }} />
-          )}
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1">
+            {loadingHistory && messages.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-muted-foreground">
+                <LoaderCircle className="size-5 animate-spin" />
+              </div>
+            ) : messages.length === 0 ? (
+              <EmptyState icon={<Bot />} title="暂无对话" />
+            ) : (
+              <Bubble.List items={items} autoScroll role={roleConfig} className="h-full" styles={{ scroll: { height: '100%' } }} />
+            )}
+          </div>
         </div>
         {error ? <p className="px-4 pb-2 text-center text-sm text-destructive">{normalizeChatError(error)}</p> : null}
         <div className="shrink-0 p-4">
@@ -136,13 +214,6 @@ export function ChatPanel() {
             footer={(actionNode) => (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    aria-label="添加附件"
-                    className="flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  >
-                    <Plus className="size-4" />
-                  </button>
                   <DropdownMenu>
                     <DropdownMenuTrigger className="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
                       <span className="text-foreground">{model}</span>

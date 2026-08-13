@@ -273,14 +273,26 @@ export interface Registry {
   }
   'ai.polish_article': {
     methods: ["POST"]
-    pattern: '/api/v1/chat/polish-article'
+    pattern: '/api/v1/chat/polish-article/:videoId'
     types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/ai').polishArticleValidator)>>
+      paramsTuple: [ParamValue]
+      params: { videoId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/ai').polishArticleValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/ai-controller').default['polishArticle']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/ai-controller').default['polishArticle']>>>
+    }
+  }
+  'ai.list_messages': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/chat/polish-article/:videoId/messages'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { videoId: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/ai').listPolishArticleMessagesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/ai-controller').default['listMessages']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/ai-controller').default['listMessages']>>>
     }
   }
   'xhs_sessions.create': {

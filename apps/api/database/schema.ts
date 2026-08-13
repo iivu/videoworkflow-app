@@ -313,6 +313,25 @@ export class UserConfigSchema extends BaseModel {
   declare value: string | null
 }
 
+export class UserPolishArticleMessageSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'message', 'role', 'updatedAt', 'userId', 'videoId'] as const
+  $columns = UserPolishArticleMessageSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare message: string
+  @column()
+  declare role: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+  @column()
+  declare videoId: number
+}
+
 export class UserSchema extends BaseModel {
   static $columns = ['avatar', 'createdAt', 'email', 'id', 'mobile', 'password', 'updatedAt', 'username'] as const
   $columns = UserSchema.$columns
