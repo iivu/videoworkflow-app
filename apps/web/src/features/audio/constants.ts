@@ -39,7 +39,7 @@ export const EMOTION_OPTIONS: Array<{ label: string; value: string }> = [
   { label: '惊讶', value: 'surprised' },
   { label: '平静', value: 'calm' },
   { label: '生动', value: 'fluent' },
-  { label: '低语言', value: 'whisper' }
+  { label: '低语', value: 'whisper' },
 ];
 
 /** 与后端 BAILIAN_DEFAULT_CONFIGS 对齐，UI 侧补齐可选字段的默认值 */

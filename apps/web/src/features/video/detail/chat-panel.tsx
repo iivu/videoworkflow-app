@@ -1,4 +1,5 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@r/ui';
+// import { useChat } from '@ai-sdk/react';
 import { ArrowUp, Bot, ChevronDown, Plus } from 'lucide-react';
 import { useState } from 'react';
 

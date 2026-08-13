@@ -11,4 +11,5 @@ export const controllers = {
   Videos: () => import('#controllers/videos-controller'),
   Voices: () => import('#controllers/voices-controller'),
   XhsSessions: () => import('#controllers/xhs-sessions-controller'),
+  Ai: () => import('#controllers/ai-controller'),
 }
