@@ -4,6 +4,7 @@
  */
 
 export const controllers = {
+  Ai: () => import('#controllers/ai-controller'),
   CreativeAudios: () => import('#controllers/creative-audios-controller'),
   Oss: () => import('#controllers/oss-controller'),
   Paraformer: () => import('#controllers/paraformer-controller'),
@@ -11,5 +12,4 @@ export const controllers = {
   Videos: () => import('#controllers/videos-controller'),
   Voices: () => import('#controllers/voices-controller'),
   XhsSessions: () => import('#controllers/xhs-sessions-controller'),
-  Ai: () => import('#controllers/ai-controller'),
 }

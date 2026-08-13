@@ -271,6 +271,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/oss-controller').default['getPolicy']>>>
     }
   }
+  'ai.polish_article': {
+    methods: ["POST"]
+    pattern: '/api/v1/chat/polish-article'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/ai-controller').default['polishArticle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/ai-controller').default['polishArticle']>>>
+    }
+  }
   'xhs_sessions.create': {
     methods: ["POST"]
     pattern: '/api/v1/xhs/sessions'

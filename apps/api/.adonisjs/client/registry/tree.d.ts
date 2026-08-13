@@ -36,6 +36,9 @@ export interface ApiDefinition {
     uploadUrl: typeof routes['oss.upload_url']
     getPolicy: typeof routes['oss.get_policy']
   }
+  ai: {
+    polishArticle: typeof routes['ai.polish_article']
+  }
   xhsSessions: {
     create: typeof routes['xhs_sessions.create']
     list: typeof routes['xhs_sessions.list']

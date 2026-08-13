@@ -21,6 +21,8 @@ catalog:
   '@adonisjs/tsconfig': ^2.0.0
   '@ai-sdk/alibaba': ^2.0.20
   '@ai-sdk/moonshotai': ^3.0.21
+  '@ai-sdk/react': ^4.0.67
+  '@ant-design/x': ^2.9.0
   '@ant-design/x-markdown': ^2.9.0
   '@base-ui/react': ^1.6.0
   '@biomejs/biome': ^2.5.5
@@ -54,8 +56,9 @@ catalog:
   '@types/react-dom': ^19.2.0
   '@vinejs/vine': ^4.4.0
   '@vitejs/plugin-react': ^6.0.1
-  ai: ^7.0.42
+  ai: ^7.0.64
   ali-oss: ^6.23.0
+  antd: ^6.6.0
   better-sqlite3: ^12.10.0
   class-variance-authority: ^0.7.1
   clsx: ^2.1.1

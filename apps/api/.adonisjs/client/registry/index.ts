@@ -138,6 +138,12 @@ const routes = {
     tokens: [{"old":"/api/v1/oss/policy","type":0,"val":"api","end":""},{"old":"/api/v1/oss/policy","type":0,"val":"v1","end":""},{"old":"/api/v1/oss/policy","type":0,"val":"oss","end":""},{"old":"/api/v1/oss/policy","type":0,"val":"policy","end":""}],
     types: placeholder as Registry['oss.get_policy']['types'],
   },
+  'ai.polish_article': {
+    methods: ["POST"],
+    pattern: '/api/v1/chat/polish-article',
+    tokens: [{"old":"/api/v1/chat/polish-article","type":0,"val":"api","end":""},{"old":"/api/v1/chat/polish-article","type":0,"val":"v1","end":""},{"old":"/api/v1/chat/polish-article","type":0,"val":"chat","end":""},{"old":"/api/v1/chat/polish-article","type":0,"val":"polish-article","end":""}],
+    types: placeholder as Registry['ai.polish_article']['types'],
+  },
   'xhs_sessions.create': {
     methods: ["POST"],
     pattern: '/api/v1/xhs/sessions',

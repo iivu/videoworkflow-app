@@ -22,6 +22,8 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@ai-sdk/react": "catalog:",
+    "@ant-design/x": "catalog:",
     "@ant-design/x-markdown": "catalog:",
     "@faker-js/faker": "catalog:",
     "@r/ui": "workspace:*",
@@ -39,6 +41,7 @@
     "@tuyau/core": "catalog:",
     "@tuyau/react-query": "catalog:",
     "ai": "catalog:",
+    "antd": "catalog:",
     "api": "workspace:*",
     "better-sqlite3": "catalog:",
     "dayjs": "catalog:",

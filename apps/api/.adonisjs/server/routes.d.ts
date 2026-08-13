@@ -26,6 +26,7 @@ export type ScannedRoutes = {
     'oss.upload': { paramsTuple?: []; params?: {} }
     'oss.upload_url': { paramsTuple?: []; params?: {} }
     'oss.get_policy': { paramsTuple?: []; params?: {} }
+    'ai.polish_article': { paramsTuple?: []; params?: {} }
     'xhs_sessions.create': { paramsTuple?: []; params?: {} }
     'xhs_sessions.list': { paramsTuple?: []; params?: {} }
     'xhs_sessions.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -48,6 +49,7 @@ export type ScannedRoutes = {
     'paraformer.transcription_retry': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
     'oss.upload': { paramsTuple?: []; params?: {} }
     'oss.upload_url': { paramsTuple?: []; params?: {} }
+    'ai.polish_article': { paramsTuple?: []; params?: {} }
     'xhs_sessions.create': { paramsTuple?: []; params?: {} }
     'xhs_sessions.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'xhs_sessions.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
