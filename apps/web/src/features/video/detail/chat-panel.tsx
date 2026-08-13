@@ -200,7 +200,7 @@ export function ChatPanel({ videoId }: { videoId: string }) {
           </div>
         </div>
         {error ? <p className="px-4 pb-2 text-center text-sm text-destructive">{normalizeChatError(error)}</p> : null}
-        <div className="shrink-0 p-4">
+        <div className="shrink-0 px-2 py-4">
           <Sender
             value={input}
             onChange={(value) => setInput(value)}
