@@ -1,11 +1,11 @@
 import { type UIMessage, useChat } from '@ai-sdk/react';
 import { Bubble, type BubbleListProps, Sender, Think, XProvider } from '@ant-design/x';
 import { XMarkdown } from '@ant-design/x-markdown';
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@r/ui';
+import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, toast } from '@r/ui';
 import { DefaultChatTransport } from 'ai';
 import { theme as antdTheme } from 'antd';
-import { Bot, ChevronDown, History, LoaderCircle } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Bot, Check, ChevronDown, Copy, History, LoaderCircle } from 'lucide-react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTheme } from '#/providers/theme-provider';
 import { client } from '#/services/api';
@@ -54,6 +54,39 @@ function normalizeChatError(error: Error) {
   }
   return error.message || '请求失败，请稍后重试';
 }
+
+const CopyButton = memo(function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = window.setTimeout(() => setCopied(false), 1500);
+    return () => window.clearTimeout(timer);
+  }, [copied]);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+    } catch {
+      toast.add({ type: 'error', description: '复制失败，请手动复制' });
+    }
+  }, [text]);
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-xs"
+      aria-label="复制内容"
+      title="复制"
+      className="text-muted-foreground hover:text-foreground"
+      onClick={() => void handleCopy()}
+    >
+      {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+    </Button>
+  );
+});
 
 export function ChatPanel({ videoId }: { videoId: string }) {
   const { resolvedTheme } = useTheme();
@@ -117,63 +150,74 @@ export function ChatPanel({ videoId }: { videoId: string }) {
     void loadPage(1);
   }, [loadPage]);
 
-  const items: BubbleListProps['items'] = messages.map((message, index): BubbleListProps['items'][number] => {
-    const isLast = index === messages.length - 1;
-    const active = streaming && isLast;
+  const items = useMemo<BubbleListProps['items']>(() => {
+    const list: BubbleListProps['items'] = messages.map((message, index): BubbleListProps['items'][number] => {
+      const isLast = index === messages.length - 1;
+      const active = streaming && isLast;
 
-    if (message.role === 'user') {
-      return { key: message.id, role: 'user', content: messageText(message.parts) };
+      if (message.role === 'user') {
+        const text = messageText(message.parts);
+        return {
+          key: message.id,
+          role: 'user',
+          content: text,
+          footer: text ? <CopyButton text={text} /> : undefined,
+        };
+      }
+
+      const text = messageText(message.parts);
+      const reasoning = messageReasoning(message.parts);
+
+      return {
+        key: message.id,
+        role: 'ai',
+        content: text,
+        header: reasoning ? (
+          <Think title="思考过程" defaultExpanded={false} blink={active}>
+            {reasoning}
+          </Think>
+        ) : undefined,
+        footer: text ? <CopyButton text={text} /> : undefined,
+        contentRender: (content) => {
+          const markdown = String(content ?? '');
+          if (!markdown) {
+            return <span className="text-muted-foreground">{active ? '思考中…' : '（空回复）'}</span>;
+          }
+          return (
+            <XMarkdown
+              content={markdown}
+              streaming={active ? { hasNextChunk: true, enableAnimation: true } : undefined}
+              rootClassName="[&_p:last-child]:mb-0 [&_ul:last-child]:mb-0 [&_ol:last-child]:mb-0 [&_pre:last-child]:mb-0"
+            />
+          );
+        },
+      };
+    });
+
+    // 加载更早的对话按钮放在最顶部（最早消息之前），向上滚动到顶即可看到。
+    if (messages.length > 0 && (hasMore || loadingHistory)) {
+      list.unshift({
+        key: '__load-more__',
+        role: 'loadMore',
+        content: (
+          <div className="flex-center py-2">
+            <Button type="button" variant="ghost" size="xs" disabled={loadingHistory} onClick={loadOlder} className="text-muted-foreground">
+              {loadingHistory ? <LoaderCircle className="size-3 animate-spin" /> : <History className="size-3" />}
+              {loadingHistory ? '正在加载更早的对话' : '加载更早的对话'}
+            </Button>
+          </div>
+        ),
+      });
     }
 
-    const text = messageText(message.parts);
-    const reasoning = messageReasoning(message.parts);
+    // While the request is being submitted there is no assistant message yet,
+    // so render a placeholder loading bubble.
+    if (streaming && messages[messages.length - 1]?.role !== 'assistant') {
+      list.push({ key: '__loading__', role: 'ai', content: '', loading: true });
+    }
 
-    return {
-      key: message.id,
-      role: 'ai',
-      content: text,
-      header: reasoning ? (
-        <Think title="思考过程" defaultExpanded={false} blink={active}>
-          {reasoning}
-        </Think>
-      ) : undefined,
-      contentRender: (content) => {
-        const markdown = String(content ?? '');
-        if (!markdown) {
-          return <span className="text-muted-foreground">{active ? '思考中…' : '（空回复）'}</span>;
-        }
-        return (
-          <XMarkdown
-            content={markdown}
-            streaming={active ? { hasNextChunk: true, enableAnimation: true } : undefined}
-            rootClassName="[&_p:last-child]:mb-0 [&_ul:last-child]:mb-0 [&_ol:last-child]:mb-0 [&_pre:last-child]:mb-0"
-          />
-        );
-      },
-    };
-  });
-
-  // 加载更早的对话按钮放在最顶部（最早消息之前），向上滚动到顶即可看到。
-  if (messages.length > 0 && (hasMore || loadingHistory)) {
-    items.unshift({
-      key: '__load-more__',
-      role: 'loadMore',
-      content: (
-        <div className="flex-center py-2">
-          <Button type="button" variant="ghost" size="xs" disabled={loadingHistory} onClick={loadOlder} className="text-muted-foreground">
-            {loadingHistory ? <LoaderCircle className="size-3 animate-spin" /> : <History className="size-3" />}
-            {loadingHistory ? '正在加载更早的对话' : '加载更早的对话'}
-          </Button>
-        </div>
-      ),
-    });
-  }
-
-  // While the request is being submitted there is no assistant message yet,
-  // so render a placeholder loading bubble.
-  if (streaming && messages[messages.length - 1]?.role !== 'assistant') {
-    items.push({ key: '__loading__', role: 'ai', content: '', loading: true });
-  }
+    return list;
+  }, [messages, streaming, hasMore, loadingHistory, loadOlder]);
 
   const handleSend = (message: string) => {
     const text = message.trim();
