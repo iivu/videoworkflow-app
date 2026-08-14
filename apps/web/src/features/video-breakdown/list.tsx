@@ -2,7 +2,7 @@ import { Alert, AlertDescription, AlertTitle, Badge, Button, Card, CardContent, 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { AlertCircle, ArrowRight, Film, Loader2, Plus } from 'lucide-react';
-import { type FormEvent, useState } from 'react';
+import { useState } from 'react';
 import { normalizeApiFailedMessage, query } from '#/services/api';
 
 type Task = { taskId: string; videoUrl: string; status: string; reason?: string | null; createdAt?: string | null };
@@ -24,10 +24,10 @@ export function VideoBreakdownListPage() {
     }),
   );
   const tasks = (tasksQuery.data?.data.list ?? []) as Task[];
-  const submit = (event: FormEvent) => {
+  const submit: React.SubmitEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
     if (!videoUrl.trim() || createMutation.isPending) return;
-    createMutation.mutate({ body: { videoUrl: videoUrl.trim(), model: 'qwen3.8-max' } });
+    createMutation.mutate({ body: { videoUrl: videoUrl.trim(), model: 'qwen3.5-omni-plus' } });
   };
   return (
     <main className="min-h-(--content-min-height) bg-muted/20 p-6">

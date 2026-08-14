@@ -15,8 +15,8 @@ import { PromptService } from '#services/prompt-service';
 import { type VideoBreakdownSegmentDraft, VideoBreakdownService } from '#services/video-breakdown-service';
 
 const SEGMENTS: VideoBreakdownSegmentDraft[] = [
-  { start: 0, end: 12.5, summary: '开场介绍' },
-  { start: 12.5, end: 30, summary: '核心内容讲解' },
+  { start: '00:00:00.000', end: '00:00:12.500', summary: '开场介绍' },
+  { start: '00:00:12.500', end: '00:00:30.000', summary: '核心内容讲解' },
 ];
 
 class StubBreakdownService extends VideoBreakdownService {
@@ -88,41 +88,57 @@ test.group('Video breakdown job', (group) => {
     await task.refresh();
     assert.equal(task.status, VIDEO_BREAKDOWN_TASK_STATUS.COMPLETED);
     assert.deepEqual(JSON.parse(task.result ?? '[]'), [
-      { start: 0, end: 12.5, summary: '开场介绍', file: `video-breakdown/${taskId}/segment-001.mp4` },
-      { start: 12.5, end: 30, summary: '核心内容讲解', file: `video-breakdown/${taskId}/segment-002.mp4` },
+      { start: '00:00:00.000', end: '00:00:12.500', summary: '开场介绍', file: `video-breakdown/${taskId}/segment-001.mp4` },
+      { start: '00:00:12.500', end: '00:00:30.000', summary: '核心内容讲解', file: `video-breakdown/${taskId}/segment-002.mp4` },
     ]);
     assert.deepEqual(job.downloads, [{ videoUrl: 'https://cdn.example.com/video.mp4', destPath: app.tmpPath(`video-breakdown/${taskId}/source-video`) }]);
     assert.deepEqual(job.cuts, [
       [
         '-y',
-        '-ss',
-        '0',
-        '-to',
-        '12.5',
         '-i',
         app.tmpPath(`video-breakdown/${taskId}/source-video`),
+        '-ss',
+        '00:00:00.000',
+        '-to',
+        '00:00:12.500',
         '-map',
         '0:v:0',
         '-map',
         '0:a:0?',
-        '-c',
-        'copy',
+        '-c:v',
+        'libx264',
+        '-crf',
+        '18',
+        '-preset',
+        'fast',
+        '-c:a',
+        'aac',
+        '-b:a',
+        '128k',
         app.tmpPath(`video-breakdown/${taskId}/segments/segment-001.mp4`),
       ],
       [
         '-y',
-        '-ss',
-        '12.5',
-        '-to',
-        '30',
         '-i',
         app.tmpPath(`video-breakdown/${taskId}/source-video`),
+        '-ss',
+        '00:00:12.500',
+        '-to',
+        '00:00:30.000',
         '-map',
         '0:v:0',
         '-map',
         '0:a:0?',
-        '-c',
-        'copy',
+        '-c:v',
+        'libx264',
+        '-crf',
+        '18',
+        '-preset',
+        'fast',
+        '-c:a',
+        'aac',
+        '-b:a',
+        '128k',
         app.tmpPath(`video-breakdown/${taskId}/segments/segment-002.mp4`),
       ],
     ]);

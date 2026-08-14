@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Route } from '#/routes/_auth/video-breakdown/$id';
 import { normalizeApiFailedMessage, query } from '#/services/api';
 
-type Segment = { start: number; end: number; summary?: string; file: string };
+type Segment = { start: string; end: string; summary?: string; file: string };
 type Task = { videoUrl: string; status: string; result?: string | Segment[] | null };
 const statusLabels: Record<string, string> = { pending: '排队中', processing: '处理中', completed: '已完成', failed: '失败' };
 
@@ -150,7 +150,7 @@ function SegmentCard({ segment, index, selected, onSelect }: { segment: Segment;
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/90 to-transparent px-2 pt-12 pb-2 text-white">
           <p className="mb-1 line-clamp-1 text-sm font-medium">{segment.summary || `分片 ${index + 1}`}</p>
           <p className="text-xs text-white/75">
-            {formatTime(segment.start)} - {formatTime(segment.end)}
+            {segment.start} - {segment.end}
           </p>
         </div>
       </div>
@@ -170,10 +170,4 @@ function parseSegments(result: Task['result']): Segment[] {
   } catch {
     return [];
   }
-}
-function formatTime(seconds: number) {
-  if (!Number.isFinite(seconds)) return '--:--';
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${String(secs).padStart(2, '0')}`;
 }

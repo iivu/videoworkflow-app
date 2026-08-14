@@ -49,7 +49,7 @@ export default class VideoBreakdownJob extends Job<JobPayload> {
 
     await mkdir(segmentsDir, { recursive: true });
     await this.download(videoUrl, videoPath);
-    const segments = await this.videoBreakdownService.breakdown({ videoUrl, model });
+    const segments = await this.videoBreakdownService.breakdown({ videoUrl, model, stream: true });
 
     const result = [];
     for (let index = 0; index < segments.length; index++) {

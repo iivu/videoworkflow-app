@@ -13,11 +13,11 @@ import env from '#start/env';
 import { asRecord } from '#utils/type-guards';
 import type { createVideoBreakdownTaskValidator, listVideoBreakdownTasksValidator } from '#validators/video-breakdown';
 
-export const VIDEO_BREAKDOWN_DEFAULT_MODEL = 'qwen-vl-max';
+export const VIDEO_BREAKDOWN_DEFAULT_MODEL = 'qwen3.5-omni-plus';
 
 export type VideoBreakdownSegmentDraft = {
-  start: number;
-  end: number;
+  start: string;
+  end: string;
   summary: string;
 };
 
@@ -36,12 +36,9 @@ export type VideoBreakdownJobPayload = {
 
 const API_BASE_URL = `${env.get('ALIYUN_BAILIAN_BASE_URL')}/compatible-mode/v1`;
 
-function isNonNegativeNumber(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value) && value >= 0;
-}
-
-function toMilliseconds(value: number): number {
-  return Math.round(value * 1000) / 1000;
+export function parseTimestamp(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  return /^(\d{2}):([0-5]\d):([0-5]\d)\.(\d{3})$/.test(value) ? value : null;
 }
 
 export function parseSegmentsFromText(text: string): unknown {
@@ -68,13 +65,15 @@ export function validateSegments(input: unknown): VideoBreakdownSegmentDraft[] {
   const segments = input.map((item, index) => {
     const record = asRecord(item);
     if (!record) throw new BusinessException(`视频拆解失败: 第 ${index + 1} 个片段格式无效`);
-    if (!isNonNegativeNumber(record.start)) throw new BusinessException(`视频拆解失败: 第 ${index + 1} 个片段开始时间无效`);
-    if (!isNonNegativeNumber(record.end)) throw new BusinessException(`视频拆解失败: 第 ${index + 1} 个片段结束时间无效`);
-    if (record.end <= record.start) throw new BusinessException(`视频拆解失败: 第 ${index + 1} 个片段结束时间必须大于开始时间`);
+    const start = parseTimestamp(record.start);
+    const end = parseTimestamp(record.end);
+    if (start === null) throw new BusinessException(`视频拆解失败: 第 ${index + 1} 个片段开始时间无效`);
+    if (end === null) throw new BusinessException(`视频拆解失败: 第 ${index + 1} 个片段结束时间无效`);
+    if (end <= start) throw new BusinessException(`视频拆解失败: 第 ${index + 1} 个片段结束时间必须大于开始时间`);
     if (typeof record.summary !== 'string' || record.summary.trim().length === 0) {
       throw new BusinessException(`视频拆解失败: 第 ${index + 1} 个片段梗概无效`);
     }
-    return { start: toMilliseconds(record.start), end: toMilliseconds(record.end), summary: record.summary.trim() };
+    return { start, end, summary: record.summary.trim() };
   });
 
   for (let index = 1; index < segments.length; index++) {
@@ -89,14 +88,15 @@ export function validateSegments(input: unknown): VideoBreakdownSegmentDraft[] {
   return segments;
 }
 
-export function buildBreakdownRequestBody(videoUrl: string, model: string, prompt: string) {
+export function buildBreakdownRequestBody(videoUrl: string, model: string, prompt: string, stream?: boolean) {
   return {
     model,
+    ...(stream === undefined ? {} : { stream }),
     messages: [
       {
         role: 'user',
         content: [
-          { type: 'video_url', video_url: { url: videoUrl }, fps: 10 },
+          { type: 'video_url', video_url: { url: videoUrl } },
           { type: 'text', text: prompt },
         ],
       },
@@ -125,19 +125,75 @@ export function extractBreakdownContent(response: unknown): string {
   return content;
 }
 
-export async function requestVideoBreakdown(
-  fetchClient: Pick<FetchClient, 'json'>,
-  params: { videoUrl: string; model: string; prompt: string },
-): Promise<VideoBreakdownSegmentDraft[]> {
-  const response = await fetchClient.json<unknown>(`${API_BASE_URL}/chat/completions`, {
-    method: 'POST',
-    headers: buildApiHeaders(),
-    body: JSON.stringify(buildBreakdownRequestBody(params.videoUrl, params.model, params.prompt)),
-  });
-  return validateSegments(parseSegmentsFromText(extractBreakdownContent(response)));
+function extractBreakdownDeltaContent(response: unknown): string {
+  const record = asRecord(response);
+  const choices = record?.choices;
+  if (!Array.isArray(choices) || choices.length === 0) return '';
+
+  const delta = asRecord(asRecord(choices[0])?.delta);
+  return typeof delta?.content === 'string' ? delta.content : '';
 }
 
-export function buildSegmentCommand(params: { videoPath: string; start: number|string; end: number|string; outputPath: string }): string[] {
+export async function extractStreamBreakdownContent(stream: ReadableStream<Uint8Array>): Promise<string> {
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let content = '';
+
+  const consumeLine = (line: string) => {
+    const normalized = line.endsWith('\r') ? line.slice(0, -1) : line;
+    if (!normalized.startsWith('data:')) return;
+
+    const data = normalized.slice(5).trim();
+    if (!data || data === '[DONE]') return;
+
+    try {
+      content += extractBreakdownDeltaContent(JSON.parse(data));
+    } catch {
+      throw new BusinessException('视频拆解失败: 服务流式响应格式无效');
+    }
+  };
+
+  while (true) {
+    const { done, value } = await reader.read();
+    buffer += decoder.decode(value, { stream: !done });
+
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+    for (const line of lines) consumeLine(line);
+
+    if (done) break;
+  }
+  if (buffer) consumeLine(buffer);
+
+  if (content.trim().length === 0) {
+    throw new BusinessException('视频拆解失败: 服务响应内容为空');
+  }
+  return content;
+}
+
+export async function requestVideoBreakdown(
+  fetchClient: Pick<FetchClient, 'json' | 'stream'>,
+  params: { videoUrl: string; model: string; prompt: string; stream?: boolean },
+): Promise<VideoBreakdownSegmentDraft[]> {
+  const request = {
+    method: 'POST',
+    headers: buildApiHeaders(),
+    body: JSON.stringify(buildBreakdownRequestBody(params.videoUrl, params.model, params.prompt, params.stream)),
+  } satisfies RequestInit;
+
+  const endpoint = `${API_BASE_URL}/chat/completions`;
+  let content: string;
+  if (params.stream) {
+    if (!fetchClient.stream) throw new BusinessException('视频拆解失败: 请求客户端不支持流式响应');
+    content = await extractStreamBreakdownContent(await fetchClient.stream(endpoint, request));
+  } else {
+    content = extractBreakdownContent(await fetchClient.json<unknown>(endpoint, request));
+  }
+  return validateSegments(parseSegmentsFromText(content));
+}
+
+export function buildSegmentCommand(params: { videoPath: string; start: string; end: string; outputPath: string }): string[] {
   const { videoPath, start, end, outputPath } = params;
   // return ['-y', '-ss', String(start), '-to', String(end), '-i', videoPath, '-map', '0:v:0', '-map', '0:a:0?', '-c', 'copy', outputPath];
   return [
@@ -203,12 +259,12 @@ export class VideoBreakdownService {
     return VideoBreakdownTask.query().where('taskId', params.taskId).where('userId', params.userId).first();
   }
 
-  async breakdown(params: { videoUrl: string; model: string }): Promise<VideoBreakdownSegmentDraft[]> {
+  async breakdown(params: { videoUrl: string; model: string; stream?: boolean }): Promise<VideoBreakdownSegmentDraft[]> {
     const fetchClient = await this.getFetchClient();
     return requestVideoBreakdown(fetchClient, { ...params, prompt: this.promptService.videoBreakdownSystemPrompt() });
   }
 
-  protected async getFetchClient(): Promise<Pick<FetchClient, 'json'>> {
+  protected async getFetchClient() {
     return app.container.make('fetch');
   }
 
