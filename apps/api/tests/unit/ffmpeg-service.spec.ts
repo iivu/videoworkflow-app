@@ -3,13 +3,21 @@ import { test } from '@japa/runner';
 import {
   buildAudioExtractionCommand,
   buildDurationProbeCommand,
-  buildSceneDetectionCommand,
+  buildSceneScoreCommand,
   buildSegmentCommand,
   buildSegments,
+  detectSceneChangeTimestamps,
   FfmpegService,
+  findGradualSceneChanges,
+  findHardSceneChanges,
   formatFfmpegTimestamp,
-  parseSceneChangeTimestamps,
+  mergeSceneChanges,
+  parseSceneScoreMetadata,
 } from '#services/ffmpeg-service';
+
+function sceneMetadata(scores: number[], fps = 4) {
+  return scores.map((score, frame) => `frame:${frame} pts:${frame} pts_time:${frame / fps}\nlavfi.scd.score=${score}`).join('\n');
+}
 
 class FakeFfmpegService extends FfmpegService {
   readonly commands: Array<{ command: string; args: string[] }> = [];
@@ -18,21 +26,22 @@ class FakeFfmpegService extends FfmpegService {
     this.commands.push({ command, args });
     if (command === 'ffprobe') return { stdout: '12.5\n', stderr: '' };
     return {
-      stdout: '',
-      stderr: ['[Parsed_showinfo_1] n:0 pts:2560 pts_time:2.5 duration:0.04', '[Parsed_showinfo_1] n:1 pts:7168 pts_time:7 duration:0.04'].join('\n'),
+      stdout: sceneMetadata(Array.from({ length: 50 }, (_, index) => (index === 10 || index === 28 ? 50 : 0))),
+      stderr: '',
     };
   }
 }
 
 test.group('FFmpeg service', () => {
-  test('builds commands for scene detection and duration probing', ({ assert }) => {
-    assert.deepEqual(buildSceneDetectionCommand('/tmp/source.mp4'), [
+  test('builds commands for scene score extraction and duration probing', ({ assert }) => {
+    assert.deepEqual(buildSceneScoreCommand('/tmp/source.mp4'), [
       '-hide_banner',
-      '-nostats',
+      '-loglevel',
+      'error',
       '-i',
       '/tmp/source.mp4',
       '-vf',
-      "select='gt(scene,0.3)',showinfo",
+      'fps=4,scdet=t=1,metadata=mode=print:file=-',
       '-an',
       '-f',
       'null',
@@ -87,15 +96,28 @@ test.group('FFmpeg service', () => {
     ]);
   });
 
-  test('parses, deduplicates, and sorts selected frame timestamps', ({ assert }) => {
-    const stderr = [
-      '[Parsed_showinfo_1] n:2 pts_time:10.25 duration:0.04',
-      '[Parsed_showinfo_1] n:0 pts_time:2 duration:0.04',
-      '[Parsed_showinfo_1] n:1 pts_time:2 duration:0.04',
-      'frame=3 fps=0.0',
-    ].join('\n');
+  test('parses frame timestamps and scdet scores', ({ assert }) => {
+    assert.deepEqual(parseSceneScoreMetadata(sceneMetadata([0, 15.5, 0])), [
+      { frame: 0, ptsTime: 0, score: 0 },
+      { frame: 1, ptsTime: 0.25, score: 15.5 },
+      { frame: 2, ptsTime: 0.5, score: 0 },
+    ]);
+  });
 
-    assert.deepEqual(parseSceneChangeTimestamps(stderr), [2, 10.25]);
+  test('detects adaptive hard cuts and gradual transitions', ({ assert }) => {
+    const hardScores = Array.from({ length: 25 }, (_, index) => (index === 12 ? 50 : 0));
+    assert.deepEqual(findHardSceneChanges(hardScores), [{ index: 12, score: 50 }]);
+
+    const gradualScores = [0, 12, 14, 18, 15, 0, 0];
+    assert.deepEqual(findGradualSceneChanges(gradualScores), [{ index: 3, score: 18 }]);
+    assert.deepEqual(findGradualSceneChanges([0, 12, 14, 18, 15]), [{ index: 3, score: 18 }]);
+  });
+
+  test('merges nearby changes and maps them to timestamps', ({ assert }) => {
+    assert.deepEqual(mergeSceneChanges([{ index: 4, score: 20 }], [{ index: 5, score: 30 }], 2), [{ index: 5, score: 30 }]);
+
+    const scores = Array.from({ length: 25 }, (_, index) => (index === 12 ? 50 : 0));
+    assert.deepEqual(detectSceneChangeTimestamps(parseSceneScoreMetadata(sceneMetadata(scores))), [3]);
   });
 
   test('turns scene changes into continuous segments covering the video', ({ assert }) => {
@@ -103,6 +125,10 @@ test.group('FFmpeg service', () => {
       { start: '00:00:00.000', end: '00:00:02.500' },
       { start: '00:00:02.500', end: '00:00:07.000' },
       { start: '00:00:07.000', end: '00:00:12.500' },
+    ]);
+    assert.deepEqual(buildSegments([2.5, 12.3], 12.5, 0.3), [
+      { start: '00:00:00.000', end: '00:00:02.500' },
+      { start: '00:00:02.500', end: '00:00:12.500' },
     ]);
     assert.equal(formatFfmpegTimestamp(3723.4564), '01:02:03.456');
   });
@@ -122,7 +148,7 @@ test.group('FFmpeg service', () => {
 
     assert.deepEqual(service.commands, [
       { command: 'ffprobe', args: buildDurationProbeCommand('/tmp/source.mp4') },
-      { command: 'ffmpeg', args: buildSceneDetectionCommand('/tmp/source.mp4') },
+      { command: 'ffmpeg', args: buildSceneScoreCommand('/tmp/source.mp4') },
       { command: 'ffmpeg', args: buildSegmentCommand(segmentParams) },
       { command: 'ffmpeg', args: buildAudioExtractionCommand(audioParams) },
     ]);

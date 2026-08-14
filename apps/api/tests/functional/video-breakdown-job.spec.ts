@@ -37,7 +37,12 @@ class StubFfmpegService extends FfmpegService {
 
   protected override async executeCommand(_command: string, args: string[]) {
     this.commands.push(args);
-    return _command === 'ffprobe' ? { stdout: '30\n', stderr: '' } : { stdout: '', stderr: 'pts_time:12.5' };
+    return _command === 'ffprobe'
+      ? { stdout: '30\n', stderr: '' }
+      : {
+          stdout: Array.from({ length: 80 }, (_, frame) => `frame:${frame} pts:${frame} pts_time:${frame / 4}\nlavfi.scd.score=${frame === 50 ? 50 : 0}`).join('\n'),
+          stderr: '',
+        };
   }
 }
 
@@ -85,7 +90,19 @@ test.group('Video breakdown job', (group) => {
     assert.deepEqual(job.downloads, [{ videoUrl: 'https://cdn.example.com/video.mp4', destPath: app.tmpPath(`video-breakdown/${taskId}/source-video`) }]);
     assert.deepEqual(ffmpegService.commands, [
       ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', app.tmpPath(`video-breakdown/${taskId}/source-video`)],
-      ['-hide_banner', '-nostats', '-i', app.tmpPath(`video-breakdown/${taskId}/source-video`), '-vf', "select='gt(scene,0.3)',showinfo", '-an', '-f', 'null', '-'],
+      [
+        '-hide_banner',
+        '-loglevel',
+        'error',
+        '-i',
+        app.tmpPath(`video-breakdown/${taskId}/source-video`),
+        '-vf',
+        'fps=4,scdet=t=1,metadata=mode=print:file=-',
+        '-an',
+        '-f',
+        'null',
+        '-',
+      ],
       [
         '-y',
         '-ss',
