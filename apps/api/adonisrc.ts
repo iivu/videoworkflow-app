@@ -1,6 +1,6 @@
-import { indexEntities } from '@adonisjs/core';
-import { defineConfig } from '@adonisjs/core/app';
-import { generateRegistry } from '@tuyau/core/hooks';
+import { indexEntities } from '@adonisjs/core'
+import { defineConfig } from '@adonisjs/core/app'
+import { generateRegistry } from '@tuyau/core/hooks'
 
 export default defineConfig({
   /*
@@ -59,6 +59,7 @@ export default defineConfig({
     () => import('#providers/oss-provider'),
     () => import('#providers/nanobananas-provider'),
     () => import('@adonisjs/redis/redis_provider'),
+    () => import('@adonisjs/static/static_provider')
   ],
 
   /*
@@ -113,7 +114,10 @@ export default defineConfig({
   | the production build.
   |
   */
-  metaFiles: [],
+  metaFiles: [{
+    pattern: 'public/**',
+    reloadServer: false,
+  }],
 
   hooks: {
     init: [
@@ -125,4 +129,4 @@ export default defineConfig({
       }),
     ],
   },
-});
+})

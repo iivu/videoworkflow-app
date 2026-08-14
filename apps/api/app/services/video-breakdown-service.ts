@@ -96,7 +96,7 @@ export function buildBreakdownRequestBody(videoUrl: string, model: string, promp
       {
         role: 'user',
         content: [
-          { type: 'video_url', video_url: { url: videoUrl }, fps: 5 },
+          { type: 'video_url', video_url: { url: videoUrl }, fps: 10 },
           { type: 'text', text: prompt },
         ],
       },
@@ -137,9 +137,12 @@ export async function requestVideoBreakdown(
   return validateSegments(parseSegmentsFromText(extractBreakdownContent(response)));
 }
 
-export function buildSegmentCommand(params: { videoPath: string; start: number; end: number; outputPath: string }): string[] {
+export function buildSegmentCommand(params: { videoPath: string; start: number|string; end: number|string; outputPath: string }): string[] {
   const { videoPath, start, end, outputPath } = params;
-  return ['-y', '-ss', String(start), '-to', String(end), '-i', videoPath, '-map', '0:v:0', '-map', '0:a:0?', '-c', 'copy', outputPath];
+  // return ['-y', '-ss', String(start), '-to', String(end), '-i', videoPath, '-map', '0:v:0', '-map', '0:a:0?', '-c', 'copy', outputPath];
+  return [
+    '-y', '-i', videoPath, '-ss', String(start), '-to', String(end), '-map', '0:v:0', '-map', '0:a:0?', '-c:v', 'libx264', '-crf', '18', '-preset', 'fast', '-c:a', 'aac', '-b:a', '128k', outputPath
+  ]
 }
 
 export function segmentOutputPath(segmentsDir: string, index: number): string {

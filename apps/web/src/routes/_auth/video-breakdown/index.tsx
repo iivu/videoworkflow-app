@@ -1,9 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router';
+import { VideoBreakdownListPage } from '#/features/video-breakdown/list';
 
 export const Route = createFileRoute('/_auth/video-breakdown/')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/_auth/video-breakdown/"!</div>
-}
+  staticData: { breadcrumb: '视频拆解' },
+  component: VideoBreakdownListPage,
+});

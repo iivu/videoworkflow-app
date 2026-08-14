@@ -5,8 +5,6 @@ import { registry } from 'api/registry';
 import { getToken } from '#/shared/token';
 
 type ApiFailed = { code: number; message: string; data?: any };
-type ApiSuccess = { code: 0; message: 'ok'; data: unknown };
-type ApiResponse = ApiFailed | ApiSuccess;
 
 const asApiFailed = (error: TuyauError) => error as TuyauError<{ response: ApiFailed }>;
 

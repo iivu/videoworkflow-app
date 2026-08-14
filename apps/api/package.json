@@ -69,6 +69,7 @@
     "@adonisjs/redis": "catalog:",
     "@adonisjs/session": "catalog:",
     "@adonisjs/shield": "catalog:",
+    "@adonisjs/static": "catalog:",
     "@ai-sdk/alibaba": "catalog:",
     "@ai-sdk/moonshotai": "catalog:",
     "@japa/api-client": "catalog:",
