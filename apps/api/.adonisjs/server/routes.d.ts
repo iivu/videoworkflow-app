@@ -20,6 +20,9 @@ export type ScannedRoutes = {
     'voices.clone_task': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.create_crawler_task': { paramsTuple?: []; params?: {} }
     'videos.list_crawler_tasks': { paramsTuple?: []; params?: {} }
+    'video_breakdown.create': { paramsTuple?: []; params?: {} }
+    'video_breakdown.list': { paramsTuple?: []; params?: {} }
+    'video_breakdown.show': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'paraformer.transcription': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
     'paraformer.check_task': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
     'paraformer.transcription_retry': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
@@ -46,6 +49,7 @@ export type ScannedRoutes = {
     'voices.clone_audio': { paramsTuple?: []; params?: {} }
     'voices.clone_video': { paramsTuple?: []; params?: {} }
     'videos.create_crawler_task': { paramsTuple?: []; params?: {} }
+    'video_breakdown.create': { paramsTuple?: []; params?: {} }
     'paraformer.transcription': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
     'paraformer.transcription_retry': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
     'oss.upload': { paramsTuple?: []; params?: {} }
@@ -66,6 +70,8 @@ export type ScannedRoutes = {
     'voices.list_clone_tasks': { paramsTuple?: []; params?: {} }
     'voices.clone_task': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list_crawler_tasks': { paramsTuple?: []; params?: {} }
+    'video_breakdown.list': { paramsTuple?: []; params?: {} }
+    'video_breakdown.show': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'paraformer.check_task': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
     'oss.get_policy': { paramsTuple?: []; params?: {} }
     'ai.list_messages': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
@@ -82,6 +88,8 @@ export type ScannedRoutes = {
     'voices.list_clone_tasks': { paramsTuple?: []; params?: {} }
     'voices.clone_task': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list_crawler_tasks': { paramsTuple?: []; params?: {} }
+    'video_breakdown.list': { paramsTuple?: []; params?: {} }
+    'video_breakdown.show': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'paraformer.check_task': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
     'oss.get_policy': { paramsTuple?: []; params?: {} }
     'ai.list_messages': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }

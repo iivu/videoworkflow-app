@@ -10,6 +10,7 @@ import type CreativeAudioTransformer from '#transformers/creative-audio-transfor
 import type ParaformerTaskTransformer from '#transformers/paraformer-task-transformer'
 import type UserPolishArticleMessageTransformer from '#transformers/user-polish-article-message-transformer'
 import type UserTransformer from '#transformers/user-transformer'
+import type VideoBreakdownTaskTransformer from '#transformers/video-breakdown-task-transformer'
 import type VideoToVoiceTaskTransformer from '#transformers/video-to-voice-task-transformer'
 import type VideoTransformer from '#transformers/video-transformer'
 import type VoiceTransformer from '#transformers/voice-transformer'
@@ -34,6 +35,10 @@ export namespace Data {
   export type User = InferData<UserTransformer>
   export namespace User {
     export type Variants = InferVariants<UserTransformer>
+  }
+  export type VideoBreakdownTask = InferData<VideoBreakdownTaskTransformer>
+  export namespace VideoBreakdownTask {
+    export type Variants = InferVariants<VideoBreakdownTaskTransformer>
   }
   export type VideoToVoiceTask = InferData<VideoToVoiceTaskTransformer>
   export namespace VideoToVoiceTask {

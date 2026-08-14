@@ -32,6 +32,10 @@ r.group(() => {
     r.post('/videos/crawler/tasks', [controllers.Videos, 'createCrawlerTask']);
     r.get('/videos/crawler/tasks', [controllers.Videos, 'listCrawlerTasks']);
 
+    r.post('/videos/breakdown/tasks', [controllers.VideoBreakdown, 'create']);
+    r.get('/videos/breakdown/tasks', [controllers.VideoBreakdown, 'list']);
+    r.get('/videos/breakdown/tasks/:taskId', [controllers.VideoBreakdown, 'show']);
+
     r.post('/paraformer/transcription/:videoId', [controllers.Paraformer, 'transcription']);
     r.get('/paraformer/task/check/:videoId', [controllers.Paraformer, 'checkTask']);
     r.post('/paraformer/transcription/retry/:videoId', [controllers.Paraformer, 'transcriptionRetry']);

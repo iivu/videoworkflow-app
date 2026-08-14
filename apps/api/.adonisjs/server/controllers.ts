@@ -9,6 +9,7 @@ export const controllers = {
   Oss: () => import('#controllers/oss-controller'),
   Paraformer: () => import('#controllers/paraformer-controller'),
   Session: () => import('#controllers/session-controller'),
+  VideoBreakdown: () => import('#controllers/video-breakdown-controller'),
   Videos: () => import('#controllers/videos-controller'),
   Voices: () => import('#controllers/voices-controller'),
   XhsSessions: () => import('#controllers/xhs-sessions-controller'),

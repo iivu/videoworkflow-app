@@ -199,6 +199,42 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/videos-controller').default['listCrawlerTasks']>>>
     }
   }
+  'video_breakdown.create': {
+    methods: ["POST"]
+    pattern: '/api/v1/videos/breakdown/tasks'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/video-breakdown').createVideoBreakdownTaskValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/video-breakdown').createVideoBreakdownTaskValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-breakdown-controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-breakdown-controller').default['create']>>>
+    }
+  }
+  'video_breakdown.list': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/videos/breakdown/tasks'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/video-breakdown').listVideoBreakdownTasksValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-breakdown-controller').default['list']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-breakdown-controller').default['list']>>>
+    }
+  }
+  'video_breakdown.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/videos/breakdown/tasks/:taskId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { taskId: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/video-breakdown').showVideoBreakdownTaskValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-breakdown-controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-breakdown-controller').default['show']>>>
+    }
+  }
   'paraformer.transcription': {
     methods: ["POST"]
     pattern: '/api/v1/paraformer/transcription/:videoId'

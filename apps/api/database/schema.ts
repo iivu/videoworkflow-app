@@ -353,6 +353,29 @@ export class UserSchema extends BaseModel {
   declare username: string
 }
 
+export class VideoBreakdownTaskSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'reason', 'result', 'status', 'taskId', 'updatedAt', 'userId', 'videoUrl'] as const
+  $columns = VideoBreakdownTaskSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare reason: string | null
+  @column()
+  declare result: string | null
+  @column()
+  declare status: string
+  @column()
+  declare taskId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+  @column()
+  declare videoUrl: string
+}
+
 export class VideoMinimaxiVoiceTaskSchema extends BaseModel {
   static $columns = ['createdAt', 'id', 'minimaxiVoiceId', 'reason', 'status', 'updatedAt', 'userId', 'videoId'] as const
   $columns = VideoMinimaxiVoiceTaskSchema.$columns

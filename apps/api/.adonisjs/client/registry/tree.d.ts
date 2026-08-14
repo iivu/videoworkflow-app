@@ -26,6 +26,11 @@ export interface ApiDefinition {
     create: typeof routes['creative_audios.create']
     list: typeof routes['creative_audios.list']
   }
+  videoBreakdown: {
+    create: typeof routes['video_breakdown.create']
+    list: typeof routes['video_breakdown.list']
+    show: typeof routes['video_breakdown.show']
+  }
   paraformer: {
     transcription: typeof routes['paraformer.transcription']
     checkTask: typeof routes['paraformer.check_task']

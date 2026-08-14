@@ -102,6 +102,24 @@ const routes = {
     tokens: [{"old":"/api/v1/videos/crawler/tasks","type":0,"val":"api","end":""},{"old":"/api/v1/videos/crawler/tasks","type":0,"val":"v1","end":""},{"old":"/api/v1/videos/crawler/tasks","type":0,"val":"videos","end":""},{"old":"/api/v1/videos/crawler/tasks","type":0,"val":"crawler","end":""},{"old":"/api/v1/videos/crawler/tasks","type":0,"val":"tasks","end":""}],
     types: placeholder as Registry['videos.list_crawler_tasks']['types'],
   },
+  'video_breakdown.create': {
+    methods: ["POST"],
+    pattern: '/api/v1/videos/breakdown/tasks',
+    tokens: [{"old":"/api/v1/videos/breakdown/tasks","type":0,"val":"api","end":""},{"old":"/api/v1/videos/breakdown/tasks","type":0,"val":"v1","end":""},{"old":"/api/v1/videos/breakdown/tasks","type":0,"val":"videos","end":""},{"old":"/api/v1/videos/breakdown/tasks","type":0,"val":"breakdown","end":""},{"old":"/api/v1/videos/breakdown/tasks","type":0,"val":"tasks","end":""}],
+    types: placeholder as Registry['video_breakdown.create']['types'],
+  },
+  'video_breakdown.list': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/videos/breakdown/tasks',
+    tokens: [{"old":"/api/v1/videos/breakdown/tasks","type":0,"val":"api","end":""},{"old":"/api/v1/videos/breakdown/tasks","type":0,"val":"v1","end":""},{"old":"/api/v1/videos/breakdown/tasks","type":0,"val":"videos","end":""},{"old":"/api/v1/videos/breakdown/tasks","type":0,"val":"breakdown","end":""},{"old":"/api/v1/videos/breakdown/tasks","type":0,"val":"tasks","end":""}],
+    types: placeholder as Registry['video_breakdown.list']['types'],
+  },
+  'video_breakdown.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/videos/breakdown/tasks/:taskId',
+    tokens: [{"old":"/api/v1/videos/breakdown/tasks/:taskId","type":0,"val":"api","end":""},{"old":"/api/v1/videos/breakdown/tasks/:taskId","type":0,"val":"v1","end":""},{"old":"/api/v1/videos/breakdown/tasks/:taskId","type":0,"val":"videos","end":""},{"old":"/api/v1/videos/breakdown/tasks/:taskId","type":0,"val":"breakdown","end":""},{"old":"/api/v1/videos/breakdown/tasks/:taskId","type":0,"val":"tasks","end":""},{"old":"/api/v1/videos/breakdown/tasks/:taskId","type":1,"val":"taskId","end":""}],
+    types: placeholder as Registry['video_breakdown.show']['types'],
+  },
   'paraformer.transcription': {
     methods: ["POST"],
     pattern: '/api/v1/paraformer/transcription/:videoId',
