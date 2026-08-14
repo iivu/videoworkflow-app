@@ -95,7 +95,7 @@ function VideoPreview({ segment }: { segment?: Segment }) {
     <section className="flex min-h-0 flex-1 items-center justify-center bg-black">
       {segment ? (
         /* biome-ignore lint/a11y/useMediaCaption: segment captions are not available from the breakdown API. */
-        <video key={segment.file} src={getAssetUrl(segment.file)} controls className="h-full w-full rounded-sm object-contain" />
+        <video autoPlay key={segment.file} src={getAssetUrl(segment.file)} controls className="h-full w-full rounded-sm object-contain" />
       ) : (
         <p className="text-sm text-white/60">暂无可预览的切片</p>
       )}

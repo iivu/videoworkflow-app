@@ -1,4 +1,3 @@
-import { execFile } from 'node:child_process';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, readFile, rm } from 'node:fs/promises';
 import { basename, join } from 'node:path';
@@ -15,9 +14,9 @@ import { v4 as uuidv4 } from 'uuid';
 import VideoToVoiceTask from '#models/video-to-voice-task';
 import Voice from '#models/voice';
 import { BailianAudioService, type BailianCloneVoiceParams } from '#services/bailian-audio-service';
+import { FfmpegService } from '#services/ffmpeg-service';
 import { type MinimaxiCloneVoiceParams, MinimaxiService } from '#services/minimaxi-service';
 
-const execFileAsync = promisify(execFile);
 const pipelineAsync = promisify(pipeline);
 
 export const QUEUE_NAME = 'video-to-voice-queue';
@@ -44,6 +43,7 @@ export default class VideoToVoiceJob extends Job<JobPayload> {
   constructor(
     private readonly bailianAudioService: BailianAudioService,
     private readonly minimaxiService: MinimaxiService,
+    private readonly ffmpegService: FfmpegService,
   ) {
     super();
   }
@@ -77,7 +77,7 @@ export default class VideoToVoiceJob extends Job<JobPayload> {
       const fetchClient = await app.container.make('fetch');
       const stream = await fetchClient.stream(videoUrl);
       await pipelineAsync(Readable.fromWeb(stream), createWriteStream(videoPath));
-      await execFileAsync('ffmpeg', ['-y', '-i', videoPath, '-t', '20', '-vn', '-acodec', 'pcm_s16le', audioPath]);
+      await this.ffmpegService.extractAudio({ videoPath, audioPath });
 
       const oss = await app.container.make('oss');
       const ossResponse = await oss.putStream(createReadStream(audioPath), `video-to-voice/${uuidv4()}.wav`);

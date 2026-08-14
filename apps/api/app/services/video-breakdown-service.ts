@@ -193,14 +193,6 @@ export async function requestVideoBreakdown(
   return validateSegments(parseSegmentsFromText(content));
 }
 
-export function buildSegmentCommand(params: { videoPath: string; start: string; end: string; outputPath: string }): string[] {
-  const { videoPath, start, end, outputPath } = params;
-  // return ['-y', '-ss', String(start), '-to', String(end), '-i', videoPath, '-map', '0:v:0', '-map', '0:a:0?', '-c', 'copy', outputPath];
-  return [
-    '-y', '-i', videoPath, '-ss', String(start), '-to', String(end), '-map', '0:v:0', '-map', '0:a:0?', '-c:v', 'libx264', '-crf', '18', '-preset', 'fast', '-c:a', 'aac', '-b:a', '128k', outputPath
-  ]
-}
-
 export function segmentOutputPath(segmentsDir: string, index: number): string {
   return join(segmentsDir, `segment-${String(index + 1).padStart(3, '0')}.mp4`);
 }

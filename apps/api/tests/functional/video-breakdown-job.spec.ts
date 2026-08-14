@@ -11,42 +11,33 @@ import { test } from '@japa/runner';
 import VideoBreakdownJob from '#jobs/video-breakdown-job';
 import User from '#models/user';
 import VideoBreakdownTask, { VIDEO_BREAKDOWN_TASK_STATUS } from '#models/video-breakdown-task';
-import { PromptService } from '#services/prompt-service';
-import { type VideoBreakdownSegmentDraft, VideoBreakdownService } from '#services/video-breakdown-service';
-
-const SEGMENTS: VideoBreakdownSegmentDraft[] = [
-  { start: '00:00:00.000', end: '00:00:12.500', summary: '开场介绍' },
-  { start: '00:00:12.500', end: '00:00:30.000', summary: '核心内容讲解' },
-];
-
-class StubBreakdownService extends VideoBreakdownService {
-  constructor() {
-    super(new PromptService());
-  }
-
-  breakdownError: Error | null = null;
-
-  override async breakdown(): Promise<VideoBreakdownSegmentDraft[]> {
-    if (this.breakdownError) throw this.breakdownError;
-    return SEGMENTS;
-  }
-}
+import { FfmpegService } from '#services/ffmpeg-service';
 
 class StubVideoBreakdownJob extends VideoBreakdownJob {
   readonly downloads: Array<{ videoUrl: string; destPath: string }> = [];
-  readonly cuts: string[][] = [];
   readonly moves: Array<{ sourcePath: string; destPath: string }> = [];
 
   protected override async download(videoUrl: string, destPath: string) {
     this.downloads.push({ videoUrl, destPath });
   }
 
-  protected override async cutSegment(args: string[]) {
-    this.cuts.push(args);
-  }
-
   protected override async moveSegment(sourcePath: string, destPath: string) {
     this.moves.push({ sourcePath, destPath });
+  }
+}
+
+class StubFfmpegService extends FfmpegService {
+  readonly commands: string[][] = [];
+  breakdownError: Error | null = null;
+
+  override async breakdown(videoPath: string) {
+    if (this.breakdownError) throw this.breakdownError;
+    return super.breakdown(videoPath);
+  }
+
+  protected override async executeCommand(_command: string, args: string[]) {
+    this.commands.push(args);
+    return _command === 'ffprobe' ? { stdout: '30\n', stderr: '' } : { stdout: '', stderr: 'pts_time:12.5' };
   }
 }
 
@@ -79,8 +70,8 @@ test.group('Video breakdown job', (group) => {
       reason: null,
     });
 
-    const service = new StubBreakdownService();
-    const job = new StubVideoBreakdownJob(service);
+    const ffmpegService = new StubFfmpegService();
+    const job = new StubVideoBreakdownJob(ffmpegService);
     job.$hydrate({ taskId, videoUrl: 'https://cdn.example.com/video.mp4', userId: user.id, model: 'qwen-vl-max' }, JOB_CONTEXT);
 
     await job.execute();
@@ -88,18 +79,20 @@ test.group('Video breakdown job', (group) => {
     await task.refresh();
     assert.equal(task.status, VIDEO_BREAKDOWN_TASK_STATUS.COMPLETED);
     assert.deepEqual(JSON.parse(task.result ?? '[]'), [
-      { start: '00:00:00.000', end: '00:00:12.500', summary: '开场介绍', file: `video-breakdown/${taskId}/segment-001.mp4` },
-      { start: '00:00:12.500', end: '00:00:30.000', summary: '核心内容讲解', file: `video-breakdown/${taskId}/segment-002.mp4` },
+      { start: '00:00:00.000', end: '00:00:12.500', summary: '', file: `video-breakdown/${taskId}/segment-001.mp4` },
+      { start: '00:00:12.500', end: '00:00:30.000', summary: '', file: `video-breakdown/${taskId}/segment-002.mp4` },
     ]);
     assert.deepEqual(job.downloads, [{ videoUrl: 'https://cdn.example.com/video.mp4', destPath: app.tmpPath(`video-breakdown/${taskId}/source-video`) }]);
-    assert.deepEqual(job.cuts, [
+    assert.deepEqual(ffmpegService.commands, [
+      ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', app.tmpPath(`video-breakdown/${taskId}/source-video`)],
+      ['-hide_banner', '-nostats', '-i', app.tmpPath(`video-breakdown/${taskId}/source-video`), '-vf', "select='gt(scene,0.3)',showinfo", '-an', '-f', 'null', '-'],
       [
         '-y',
-        '-i',
-        app.tmpPath(`video-breakdown/${taskId}/source-video`),
         '-ss',
         '00:00:00.000',
-        '-to',
+        '-i',
+        app.tmpPath(`video-breakdown/${taskId}/source-video`),
+        '-t',
         '00:00:12.500',
         '-map',
         '0:v:0',
@@ -119,12 +112,12 @@ test.group('Video breakdown job', (group) => {
       ],
       [
         '-y',
-        '-i',
-        app.tmpPath(`video-breakdown/${taskId}/source-video`),
         '-ss',
         '00:00:12.500',
-        '-to',
-        '00:00:30.000',
+        '-i',
+        app.tmpPath(`video-breakdown/${taskId}/source-video`),
+        '-t',
+        '00:00:17.500',
         '-map',
         '0:v:0',
         '-map',
@@ -166,9 +159,9 @@ test.group('Video breakdown job', (group) => {
       reason: null,
     });
 
-    const service = new StubBreakdownService();
-    service.breakdownError = new Error('llm unavailable');
-    const job = new StubVideoBreakdownJob(service);
+    const ffmpegService = new StubFfmpegService();
+    ffmpegService.breakdownError = new Error('ffmpeg unavailable');
+    const job = new StubVideoBreakdownJob(ffmpegService);
     job.$hydrate({ taskId, videoUrl: 'https://cdn.example.com/video.mp4', userId: user.id, model: 'qwen-vl-max' }, JOB_CONTEXT);
 
     await assert.rejects(() => job.execute());
@@ -177,11 +170,11 @@ test.group('Video breakdown job', (group) => {
     await mkdir(publicTaskDir, { recursive: true });
     await writeFile(join(publicTaskDir, 'segment-001.mp4'), 'partial');
 
-    await job.failed(new Error('llm unavailable'));
+    await job.failed(new Error('ffmpeg unavailable'));
 
     await task.refresh();
     assert.equal(task.status, VIDEO_BREAKDOWN_TASK_STATUS.FAILED);
-    assert.equal(task.reason, 'llm unavailable');
+    assert.equal(task.reason, 'ffmpeg unavailable');
     assert.isFalse(existsSync(app.tmpPath(`video-breakdown/${taskId}`)));
     assert.isFalse(existsSync(publicTaskDir));
   });

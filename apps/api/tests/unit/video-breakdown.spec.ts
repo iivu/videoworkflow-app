@@ -6,7 +6,6 @@ import { PromptService } from '#services/prompt-service';
 import {
   buildApiHeaders,
   buildBreakdownRequestBody,
-  buildSegmentCommand,
   extractBreakdownContent,
   extractStreamBreakdownContent,
   parseSegmentsFromText,
@@ -104,34 +103,7 @@ test.group('Video breakdown segment validation', () => {
   });
 });
 
-test.group('Video breakdown ffmpeg helpers', () => {
-  test('builds the expected ffmpeg segment command', ({ assert }) => {
-    assert.deepEqual(buildSegmentCommand({ videoPath: '/tmp/source-video', start: '00:00:12.500', end: '00:00:30.000', outputPath: '/tmp/segments/segment-002.mp4' }), [
-      '-y',
-      '-i',
-      '/tmp/source-video',
-      '-ss',
-      '00:00:12.500',
-      '-to',
-      '00:00:30.000',
-      '-map',
-      '0:v:0',
-      '-map',
-      '0:a:0?',
-      '-c:v',
-      'libx264',
-      '-crf',
-      '18',
-      '-preset',
-      'fast',
-      '-c:a',
-      'aac',
-      '-b:a',
-      '128k',
-      '/tmp/segments/segment-002.mp4',
-    ]);
-  });
-
+test.group('Video breakdown file helpers', () => {
   test('generates zero-padded segment output paths', ({ assert }) => {
     assert.equal(segmentOutputPath('/tmp/segments', 0), '/tmp/segments/segment-001.mp4');
     assert.equal(segmentOutputPath('/tmp/segments', 11), '/tmp/segments/segment-012.mp4');

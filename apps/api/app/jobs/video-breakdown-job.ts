@@ -1,4 +1,3 @@
-import { execFile } from 'node:child_process';
 import { createWriteStream } from 'node:fs';
 import { mkdir, rename, rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -12,9 +11,9 @@ import { Job } from '@adonisjs/queue';
 import type { JobOptions } from '@adonisjs/queue/types';
 
 import VideoBreakdownTask, { VIDEO_BREAKDOWN_TASK_STATUS } from '#models/video-breakdown-task';
-import { buildSegmentCommand, segmentFileRelativePath, segmentOutputPath, VideoBreakdownService } from '#services/video-breakdown-service';
+import { FfmpegService } from '#services/ffmpeg-service';
+import { segmentFileRelativePath, segmentOutputPath } from '#services/video-breakdown-service';
 
-const execFileAsync = promisify(execFile);
 const pipelineAsync = promisify(pipeline);
 
 export const QUEUE_NAME = 'video-breakdown-queue';
@@ -30,7 +29,7 @@ type JobPayload = {
 export default class VideoBreakdownJob extends Job<JobPayload> {
   static options: JobOptions = { queue: QUEUE_NAME };
 
-  constructor(private readonly videoBreakdownService: VideoBreakdownService) {
+  constructor(private readonly ffmpegService: FfmpegService) {
     super();
   }
 
@@ -49,12 +48,13 @@ export default class VideoBreakdownJob extends Job<JobPayload> {
 
     await mkdir(segmentsDir, { recursive: true });
     await this.download(videoUrl, videoPath);
-    const segments = await this.videoBreakdownService.breakdown({ videoUrl, model, stream: true });
+    // LLM scene detection is intentionally disabled; FFmpeg provides the segment boundaries.
+    const segments = await this.ffmpegService.breakdown(videoPath);
 
     const result = [];
     for (let index = 0; index < segments.length; index++) {
       const outputPath = segmentOutputPath(segmentsDir, index);
-      await this.cutSegment(buildSegmentCommand({ videoPath, start: segments[index].start, end: segments[index].end, outputPath }));
+      await this.ffmpegService.cutSegment({ videoPath, start: segments[index].start, end: segments[index].end, outputPath });
 
       const publicPath = segmentOutputPath(publicSegmentsDir, index);
       await this.moveSegment(outputPath, publicPath);
@@ -62,7 +62,7 @@ export default class VideoBreakdownJob extends Job<JobPayload> {
       result.push({
         start: segments[index].start,
         end: segments[index].end,
-        summary: segments[index].summary,
+        summary: '',
         file: segmentFileRelativePath(publicPath),
       });
     }
@@ -98,10 +98,6 @@ export default class VideoBreakdownJob extends Job<JobPayload> {
     const fetchClient = await app.container.make('fetch');
     const stream = await fetchClient.stream(videoUrl);
     await pipelineAsync(Readable.fromWeb(stream), createWriteStream(destPath));
-  }
-
-  protected async cutSegment(args: string[]) {
-    await execFileAsync('ffmpeg', args);
   }
 
   protected async moveSegment(sourcePath: string, destPath: string) {
