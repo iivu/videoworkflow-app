@@ -6,7 +6,7 @@ import type { DataMigrationConfig } from '../data-migrate.ts';
  * 新建你自己的迁移定义文件（例如 my-table.ts）放到本目录，默认导出一个
  * DataMigrationConfig（或由多个配置组成的数组），运行
  *
- *   node scripts/run-data-migrations.ts
+ *   node scripts/data-migrate/run-data-migrations.ts
  *
  * 即可自动发现并全部执行。
  *
