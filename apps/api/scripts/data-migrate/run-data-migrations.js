@@ -1,7 +1,6 @@
-import '@poppinss/ts-exec';
 import { readdir } from 'node:fs/promises';
 import { createPool } from 'mysql2/promise';
-import { type DataMigrationConfig, migrateTable } from './data-migrate.ts';
+import { migrateTable } from './data-migrate.js';
 
 /**
  * 数据库数据搬运入口（项目无关，可独立运行）。
@@ -13,12 +12,12 @@ import { type DataMigrationConfig, migrateTable } from './data-migrate.ts';
  *   DB_PASSWORD 密码，默认空
  *
  * 运行方式：
- *   node scripts/data-migrate/run-data-migrations.ts
- *   DB_USER=root DB_PASSWORD=xxx node scripts/data-migrate/run-data-migrations.ts
+ *   node scripts/data-migrate/run-data-migrations.js
+ *   DB_USER=root DB_PASSWORD=xxx node scripts/data-migrate/run-data-migrations.js
  *
- * 迁移定义放在 scripts/data-migrate/data-migrations/ 目录下，每个 .ts 文件默认导出一个
+ * 迁移定义放在 scripts/data-migrate/data-migrations/ 目录下，每个 .js 文件默认导出一个
  * 迁移配置（或由多个配置组成的数组），本脚本会自动发现并逐个执行；
- * 以下划线开头的文件（如 _example.ts）会被跳过。
+ * 以下划线开头的文件（如 _example.js）会被跳过。
  */
 
 const host = process.env.DB_HOST ?? '127.0.0.1';
@@ -39,9 +38,9 @@ console.log(`数据库连接: ${user}@${host}:${port}（源/目标库由各迁�
 
 // 自动发现迁移定义
 const migrationsDir = new URL('./data-migrations/', import.meta.url);
-const files = (await readdir(migrationsDir)).filter((file) => file.endsWith('.ts') && !file.startsWith('_')).sort();
+const files = (await readdir(migrationsDir)).filter((file) => file.endsWith('.js') && !file.startsWith('_')).sort();
 
-const migrations: DataMigrationConfig[] = [];
+const migrations = [];
 for (const file of files) {
   const module = await import(new URL(file, migrationsDir).href);
   const exported = module.default ?? module;

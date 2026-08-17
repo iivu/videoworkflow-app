@@ -1,0 +1,20 @@
+export default {
+  name: 'videos -> videos',
+  source: { database: 'video_workflow', table: 'videos' },
+  target: { database: 'videoworkflow_app_v2', table: 'videos' },
+  fields: [
+    ['user_id', 'user_id', '01a00f17-3eee-733f-b834-03a14311b05b'],
+    ['title', 'title'],
+    ['author', 'author'],
+    ['cover_url', 'cover_url'],
+    ['file_url', 'file_url'],
+    ['like_count', 'like_count'],
+    ['play_count', 'play_count'],
+    ['share_count', 'share_count'],
+    ['favorite_count', 'favorite_count'],
+    ['comment_count', 'comment_count'],
+    ['publish_at', 'publish_at', new Date().toISOString().replace('T', ' ').replace('Z', '')],
+    ['created_at', 'created_at', new Date().toISOString().replace('T', ' ').replace('Z', '')],
+    ['updated_at', 'updated_at', new Date().toISOString().replace('T', ' ').replace('Z', '')],
+  ],
+};

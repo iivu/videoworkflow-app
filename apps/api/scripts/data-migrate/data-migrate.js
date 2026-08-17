@@ -1,91 +1,44 @@
-import type { Pool, PoolConnection, RowDataPacket } from 'mysql2/promise';
-
 /**
  * 通用数据库数据搬运引擎（项目无关，只依赖 mysql2）。
  *
  * 传入一个 mysql2 连接池（不需要指定 database，每个迁移配置里都会显式
  * 给出源库/目标库）以及迁移配置，即可把源库源表的字段按映射关系搬运到
  * 目标库目标表。
+ *
+ * config.fields 每项支持两种写法：
+ *   [源表字段名, 目标表字段名]                      —— 从源表读取该字段值写入目标表
+ *   [源表字段名, 目标表字段名, 固定值]              —— 不读取源表，直接向目标表写入固定值
  */
-
-export interface TableRef {
-  /** 数据库名 */
-  database: string;
-  /** 表名 */
-  table: string;
-}
-
-/** 字段映射：每一项为 [源表字段名, 目标表字段名] */
-export type FieldMapping = Array<[string, string]>;
-
-export type OnConflictStrategy = 'update' | 'ignore' | 'error';
-
-export interface DataMigrationConfig {
-  /** 迁移名称（仅用于日志），默认自动生成 "源库.源表 -> 目标库.目标表" */
-  name?: string;
-  /** 源：数据从哪个数据库的哪张表搬出 */
-  source: TableRef;
-  /** 目标：数据搬到哪个数据库的哪张表 */
-  target: TableRef;
-  /**
-   * 字段映射，函数会逐项迭代它。
-   * 例如 [['title', 'name']] 表示把源表 title 字段的数据写入目标表 name 字段。
-   */
-  fields: FieldMapping;
-  /** 每批读取并写入的行数，默认 500 */
-  batchSize?: number;
-  /** 源表主键字段名，用于分批读取；默认自动检测 */
-  primaryKey?: string;
-  /** 目标表发生唯一键冲突时的处理方式，默认 'update' */
-  onConflict?: OnConflictStrategy;
-  /** 是否在写入成功后删除源表中已搬运的行，默认 false（仅复制，不删除） */
-  deleteSourceRows?: boolean;
-  /** 是否将整个迁移过程包在事务中，默认 true */
-  useTransaction?: boolean;
-  /** 附加过滤条件（不含 WHERE 关键字），例如 "created_at < '2025-01-01'" */
-  where?: string;
-}
-
-export interface MigrationSummary {
-  name: string;
-  source: string;
-  target: string;
-  total: number;
-  processed: number;
-  durationMs: number;
-}
 
 const DEFAULT_BATCH_SIZE = 500;
 
-type Queryable = Pool | PoolConnection;
-
-function escapeId(identifier: string): string {
+function escapeId(identifier) {
   return `\`${identifier.replaceAll('`', '``')}\``;
 }
 
-function qualify(table: TableRef): string {
+function qualify(table) {
   return `${escapeId(table.database)}.${escapeId(table.table)}`;
 }
 
-async function getColumns(db: Queryable, table: TableRef): Promise<Set<string>> {
-  const [rows] = await db.query<RowDataPacket[]>('SELECT COLUMN_NAME AS name FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?', [
+async function getColumns(db, table) {
+  const [rows] = await db.query('SELECT COLUMN_NAME AS name FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?', [
     table.database,
     table.table,
   ]);
   return new Set(rows.map((row) => String(row.name)));
 }
 
-async function getPrimaryKeyColumns(db: Queryable, table: TableRef): Promise<string[]> {
-  const [rows] = await db.query<RowDataPacket[]>(
+async function getPrimaryKeyColumns(db, table) {
+  const [rows] = await db.query(
     "SELECT COLUMN_NAME AS name FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND CONSTRAINT_NAME = 'PRIMARY' ORDER BY ORDINAL_POSITION ASC",
     [table.database, table.table],
   );
   return rows.map((row) => String(row.name));
 }
 
-async function countRows(db: Queryable, config: DataMigrationConfig): Promise<number> {
+async function countRows(db, config) {
   const whereClause = config.where ? `WHERE ${config.where}` : '';
-  const [rows] = await db.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM ${qualify(config.source)} ${whereClause}`);
+  const [rows] = await db.query(`SELECT COUNT(*) AS total FROM ${qualify(config.source)} ${whereClause}`);
   return Number(rows[0]?.total ?? 0);
 }
 
@@ -95,7 +48,7 @@ async function countRows(db: Queryable, config: DataMigrationConfig): Promise<nu
  * @param db mysql2 连接池（createPool 创建）
  * @param config 迁移配置
  */
-export async function migrateTable(db: Pool, config: DataMigrationConfig): Promise<MigrationSummary> {
+export async function migrateTable(db, config) {
   const batchSize = config.batchSize ?? DEFAULT_BATCH_SIZE;
   const onConflict = config.onConflict ?? 'update';
   const useTransaction = config.useTransaction ?? true;
@@ -120,8 +73,14 @@ export async function migrateTable(db: Pool, config: DataMigrationConfig): Promi
     throw new Error(`目标表不存在: ${target}`);
   }
 
-  const sourceFields = config.fields.map(([sourceField]) => sourceField);
-  const targetFields = config.fields.map(([, targetField]) => targetField);
+  // 字段映射：fields 每项为 [源表字段名, 目标表字段名]，或带第三个参数 [源表字段名, 目标表字段名, 固定值]；
+  // 带第三个参数（固定值）的项不会从源表读取，而是直接向目标表字段写入该固定值。
+  const fieldSpecs = config.fields.map((entry) => {
+    const [sourceField, targetField, fixedValue] = entry;
+    return { sourceField, targetField, fixedValue, isFixed: entry.length >= 3 };
+  });
+  const sourceFields = fieldSpecs.filter((spec) => !spec.isFixed).map((spec) => spec.sourceField);
+  const targetFields = fieldSpecs.map((spec) => spec.targetField);
   const missingSourceFields = sourceFields.filter((field) => !sourceColumns.has(field));
   if (missingSourceFields.length > 0) {
     throw new Error(`源表 ${source} 缺少字段: ${missingSourceFields.join(', ')}`);
@@ -158,7 +117,7 @@ export async function migrateTable(db: Pool, config: DataMigrationConfig): Promi
 
   const targetColumnsList = targetFields.map(escapeId).join(', ');
   const rowPlaceholder = `(${targetFields.map(() => '?').join(', ')})`;
-  const buildInsertSql = (rowCount: number): string => {
+  const buildInsertSql = (rowCount) => {
     const valuesClause = Array.from({ length: rowCount }, () => rowPlaceholder).join(', ');
     if (onConflict === 'ignore') {
       return `INSERT IGNORE INTO ${target} (${targetColumnsList}) VALUES ${valuesClause}`;
@@ -170,27 +129,27 @@ export async function migrateTable(db: Pool, config: DataMigrationConfig): Promi
     return `INSERT INTO ${target} (${targetColumnsList}) VALUES ${valuesClause}`;
   };
 
-  const deleteRows = async (executor: Queryable, rows: RowDataPacket[]): Promise<void> => {
+  const deleteRows = async (executor, rows) => {
     const pks = rows.map((row) => row[primaryKey]);
     const deleteSql = `DELETE FROM ${source} WHERE ${escapeId(primaryKey)} IN (${pks.map(() => '?').join(', ')})`;
     await executor.query(deleteSql, pks);
   };
 
   // ---- 执行 ----
-  let connection: PoolConnection | undefined;
-  const executor: Queryable = useTransaction ? await db.getConnection() : db;
+  let connection;
+  const executor = useTransaction ? await db.getConnection() : db;
   if (useTransaction) {
-    connection = executor as PoolConnection;
+    connection = executor;
     await connection.beginTransaction();
   }
 
   let processed = 0;
 
   try {
-    let lastPrimaryKey: unknown = null;
+    let lastPrimaryKey = null;
 
     while (true) {
-      const [rows] = await executor.query<RowDataPacket[]>(
+      const [rows] = await executor.query(
         lastPrimaryKey === null ? firstBatchSql : nextBatchSql,
         lastPrimaryKey === null ? [batchSize] : [lastPrimaryKey, batchSize],
       );
@@ -198,10 +157,10 @@ export async function migrateTable(db: Pool, config: DataMigrationConfig): Promi
         break;
       }
 
-      const params: unknown[] = [];
+      const params = [];
       for (const row of rows) {
-        for (const sourceField of sourceFields) {
-          params.push(row[sourceField]);
+        for (const spec of fieldSpecs) {
+          params.push(spec.isFixed ? spec.fixedValue : row[spec.sourceField]);
         }
       }
       await executor.query(buildInsertSql(rows.length), params);

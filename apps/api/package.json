@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node bin/server.js",
     "start:queue-worker": "node ace queue:work --queue=crawler-video-queue,video-to-voice-queue,video-breakdown-queue",
-    "build": "node ace build",
+    "build": "node ace build && node scripts/format-package-json.js",
     "dev": "node ace serve --hmr",
     "test": "node ace test",
     "typecheck": "tsc --noEmit",
@@ -19,7 +19,7 @@
     "check": "biome check",
     "checkwrite": "biome check --write",
     "db:migrate:run": "node ace migration:run",
-    "db:migrate:data": "node scripts/data-migrate/run-data-migrations.ts"
+    "db:migrate:data": "node scripts/data-migrate/run-data-migrations.js"
   },
   "imports": {
     "#controllers/*": "./app/controllers/*.js",
