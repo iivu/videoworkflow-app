@@ -162,6 +162,30 @@ const routes = {
     tokens: [{"old":"/api/v1/video-edit/tasks/:taskId/check","type":0,"val":"api","end":""},{"old":"/api/v1/video-edit/tasks/:taskId/check","type":0,"val":"v1","end":""},{"old":"/api/v1/video-edit/tasks/:taskId/check","type":0,"val":"video-edit","end":""},{"old":"/api/v1/video-edit/tasks/:taskId/check","type":0,"val":"tasks","end":""},{"old":"/api/v1/video-edit/tasks/:taskId/check","type":1,"val":"taskId","end":""},{"old":"/api/v1/video-edit/tasks/:taskId/check","type":0,"val":"check","end":""}],
     types: placeholder as Registry['wanxiang_video_edit.check']['types'],
   },
+  'video_edit_conversation.send': {
+    methods: ["POST"],
+    pattern: '/api/v1/video-breakdown/:taskId/video-edit/messages',
+    tokens: [{"old":"/api/v1/video-breakdown/:taskId/video-edit/messages","type":0,"val":"api","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/messages","type":0,"val":"v1","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/messages","type":0,"val":"video-breakdown","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/messages","type":1,"val":"taskId","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/messages","type":0,"val":"video-edit","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/messages","type":0,"val":"messages","end":""}],
+    types: placeholder as Registry['video_edit_conversation.send']['types'],
+  },
+  'video_edit_conversation.list_messages': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/video-breakdown/:taskId/video-edit/messages',
+    tokens: [{"old":"/api/v1/video-breakdown/:taskId/video-edit/messages","type":0,"val":"api","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/messages","type":0,"val":"v1","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/messages","type":0,"val":"video-breakdown","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/messages","type":1,"val":"taskId","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/messages","type":0,"val":"video-edit","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/messages","type":0,"val":"messages","end":""}],
+    types: placeholder as Registry['video_edit_conversation.list_messages']['types'],
+  },
+  'video_edit_conversation.check': {
+    methods: ["POST"],
+    pattern: '/api/v1/video-breakdown/:taskId/video-edit/check',
+    tokens: [{"old":"/api/v1/video-breakdown/:taskId/video-edit/check","type":0,"val":"api","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/check","type":0,"val":"v1","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/check","type":0,"val":"video-breakdown","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/check","type":1,"val":"taskId","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/check","type":0,"val":"video-edit","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/check","type":0,"val":"check","end":""}],
+    types: placeholder as Registry['video_edit_conversation.check']['types'],
+  },
+  'video_edit_conversation.abandon': {
+    methods: ["POST"],
+    pattern: '/api/v1/video-breakdown/:taskId/video-edit/abandon',
+    tokens: [{"old":"/api/v1/video-breakdown/:taskId/video-edit/abandon","type":0,"val":"api","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/abandon","type":0,"val":"v1","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/abandon","type":0,"val":"video-breakdown","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/abandon","type":1,"val":"taskId","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/abandon","type":0,"val":"video-edit","end":""},{"old":"/api/v1/video-breakdown/:taskId/video-edit/abandon","type":0,"val":"abandon","end":""}],
+    types: placeholder as Registry['video_edit_conversation.abandon']['types'],
+  },
   'oss.upload': {
     methods: ["POST"],
     pattern: '/api/v1/oss/upload',

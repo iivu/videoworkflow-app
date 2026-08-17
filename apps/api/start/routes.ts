@@ -45,6 +45,11 @@ r.group(() => {
     r.get('/video-edit/tasks/:taskId', [controllers.WanxiangVideoEdit, 'show']);
     r.get('/video-edit/tasks/:taskId/check', [controllers.WanxiangVideoEdit, 'check']);
 
+    r.post('/video-breakdown/:taskId/video-edit/messages', [controllers.VideoEditConversation, 'send']);
+    r.get('/video-breakdown/:taskId/video-edit/messages', [controllers.VideoEditConversation, 'listMessages']);
+    r.post('/video-breakdown/:taskId/video-edit/check', [controllers.VideoEditConversation, 'check']);
+    r.post('/video-breakdown/:taskId/video-edit/abandon', [controllers.VideoEditConversation, 'abandon']);
+
     r.post('/oss/upload', [controllers.Oss, 'upload']);
     r.post('/oss/url', [controllers.Oss, 'uploadURL']);
     r.get('/oss/policy', [controllers.Oss, 'getPolicy']);

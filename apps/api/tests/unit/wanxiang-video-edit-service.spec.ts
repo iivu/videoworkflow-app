@@ -1,6 +1,8 @@
+import testUtils from '@adonisjs/core/services/test_utils';
 import { test } from '@japa/runner';
 
 import BusinessException from '#exceptions/business-exception';
+import WanxiangVideoEditTask from '#models/wanxiang-video-edit-task';
 import type { FetchClient } from '#providers/fetch-provider';
 import { buildWanxiangTaskConfig, isValidWanxiangEntityId, WANXIANG_VIDEO_EDIT_TASK_STATUS, WanxiangVideoEditService } from '#services/wanxiang-video-edit-service';
 import env from '#start/env';
@@ -380,5 +382,85 @@ test.group('Wanxiang video edit service', () => {
     assert.instanceOf(error, BusinessException);
     assert.equal((error as Error).message, '万相视频编辑失败: entity_id 长度需在 1～36 个字符之间');
     assert.lengthOf(service.requests, 0);
+  });
+});
+
+test.group('Wanxiang video edit service occupancy and abandon', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction());
+
+  async function createTask(params: { userId: string; entityId: string; taskId: string; status: string; reason?: string | null }) {
+    return WanxiangVideoEditTask.create({
+      userId: params.userId,
+      entityId: params.entityId,
+      taskId: params.taskId,
+      status: params.status,
+      config: JSON.stringify({ model: 'wan2.7-videoedit', media: defaultParams.input.media }),
+      videoUrl: null,
+      result: null,
+      reason: params.reason ?? null,
+    });
+  }
+
+  for (const status of [WANXIANG_VIDEO_EDIT_TASK_STATUS.PENDING, WANXIANG_VIDEO_EDIT_TASK_STATUS.RUNNING]) {
+    test(`rejects create when the user already has a ${status} task`, async ({ assert }) => {
+      const service = new TestWanxiangVideoEditService([]);
+      await createTask({ userId: 'user-1', entityId: 'entity-1', taskId: 'active-task', status });
+
+      const error = await caught(service.create({ userId: 'user-1', entityId: 'entity-2', input: defaultParams.input }));
+
+      assert.instanceOf(error, BusinessException);
+      assert.equal((error as Error).message, '当前已有视频编辑任务进行中，请等待其完成后再试');
+      assert.lengthOf(service.requests, 0);
+    });
+  }
+
+  test('allows create when the user only has terminal tasks', async ({ assert }) => {
+    const service = new TestWanxiangVideoEditService([{ output: { task_id: 'task-new', task_status: 'PENDING' }, request_id: 'req-1' }]);
+    await createTask({ userId: 'user-1', entityId: 'entity-1', taskId: 'done-task', status: WANXIANG_VIDEO_EDIT_TASK_STATUS.SUCCEEDED });
+
+    const task = await service.create({ userId: 'user-1', entityId: 'entity-2', input: defaultParams.input });
+
+    assert.equal(task.taskId, 'task-new');
+    assert.equal(task.status, WANXIANG_VIDEO_EDIT_TASK_STATUS.PENDING);
+    assert.lengthOf(service.requests, 1);
+  });
+
+  test('abandons a non-terminal task owned by the user', async ({ assert }) => {
+    const service = new TestWanxiangVideoEditService([]);
+    await createTask({ userId: 'user-1', entityId: 'entity-1', taskId: 'running-task', status: WANXIANG_VIDEO_EDIT_TASK_STATUS.RUNNING });
+
+    const task = await service.abandon({ taskId: 'running-task', userId: 'user-1' });
+
+    assert.equal(task.status, WANXIANG_VIDEO_EDIT_TASK_STATUS.CANCELED);
+    assert.equal(task.reason, '用户已放弃');
+    assert.lengthOf(service.requests, 0);
+  });
+
+  test('rejects abandoning a terminal task', async ({ assert }) => {
+    const service = new TestWanxiangVideoEditService([]);
+    await createTask({ userId: 'user-1', entityId: 'entity-1', taskId: 'done-task', status: WANXIANG_VIDEO_EDIT_TASK_STATUS.SUCCEEDED });
+
+    const error = await caught(service.abandon({ taskId: 'done-task', userId: 'user-1' }));
+
+    assert.instanceOf(error, BusinessException);
+    assert.equal((error as Error).message, '任务已结束，无需放弃');
+  });
+
+  test('rejects abandoning another user task', async ({ assert }) => {
+    const service = new TestWanxiangVideoEditService([]);
+    await createTask({ userId: 'user-1', entityId: 'entity-1', taskId: 'other-task', status: WANXIANG_VIDEO_EDIT_TASK_STATUS.RUNNING });
+
+    const error = await caught(service.abandon({ taskId: 'other-task', userId: 'user-2' }));
+
+    assert.instanceOf(error, BusinessException);
+    assert.equal((error as Error).message, '任务不存在');
+  });
+
+  test('rejects abandoning a missing task', async ({ assert }) => {
+    const service = new TestWanxiangVideoEditService([]);
+    const error = await caught(service.abandon({ taskId: 'missing-task', userId: 'user-1' }));
+
+    assert.instanceOf(error, BusinessException);
+    assert.equal((error as Error).message, '任务不存在');
   });
 });

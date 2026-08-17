@@ -1,13 +1,14 @@
 import { Alert, AlertDescription, AlertTitle, Card, CardContent, CardHeader, CardTitle, Skeleton } from '@r/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { AlertCircle, ArrowLeft, Bot, Check } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Check } from 'lucide-react';
 import { useState } from 'react';
 import { useWheelHorizontalScroll } from '#/hooks/use-wheel-horizontal-scroll';
 import { Route } from '#/routes/_auth/video-breakdown/$id';
 import { normalizeApiFailedMessage, query } from '#/services/api';
+import { EditChatPanel } from './edit-chat-panel';
 
-type Segment = { start: string; end: string; summary?: string; file: string };
+export type Segment = { start: string; end: string; summary?: string; file: string };
 type Task = { videoUrl: string; status: string; result?: string | Segment[] | null };
 const statusLabels: Record<string, string> = { pending: '排队中', processing: '处理中', completed: '已完成', failed: '失败' };
 
@@ -52,7 +53,7 @@ export function VideoBreakdownDetailPage() {
   return (
     <main className="h-(--content-min-height) overflow-x-auto overflow-y-hidden bg-background flex min-w-225 flex-col">
       <BreakdownHeader videoUrl={task.videoUrl} />
-      <BreakdownWorkspace segments={segments} />
+      <BreakdownWorkspace taskId={id} segments={segments} />
     </main>
   );
 }
@@ -77,7 +78,7 @@ function BreakdownHeader({ videoUrl }: { videoUrl: string }) {
   );
 }
 
-function BreakdownWorkspace({ segments }: { segments: Segment[] }) {
+function BreakdownWorkspace({ taskId, segments }: { taskId: string; segments: Segment[] }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const selectedSegment = segments[selectedIndex] ?? segments[0];
   return (
@@ -86,7 +87,7 @@ function BreakdownWorkspace({ segments }: { segments: Segment[] }) {
         <VideoPreview segment={selectedSegment} />
         <SegmentRail segments={segments} selectedIndex={selectedIndex} onSelect={setSelectedIndex} />
       </div>
-      <AiChatPlaceholder />
+      <EditChatPanel taskId={taskId} segments={segments} selectedIndex={selectedIndex} />
     </div>
   );
 }
@@ -100,18 +101,6 @@ function VideoPreview({ segment }: { segment?: Segment }) {
       ) : (
         <p className="text-sm text-white/60">暂无可预览的切片</p>
       )}
-    </section>
-  );
-}
-
-function AiChatPlaceholder() {
-  return (
-    <section className="flex min-h-0 flex-col border-l">
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 text-center text-muted-foreground">
-        <Bot className="size-10 opacity-30" />
-        <p className="text-sm">AI 对话功能即将上线</p>
-        <p className="text-xs">你可以先从下方分片开始查看视频内容。</p>
-      </div>
     </section>
   );
 }
@@ -163,6 +152,9 @@ function SegmentCard({ segment, index, selected, onSelect }: { segment: Segment;
 function getAssetUrl(file: string) {
   return /^https?:\/\//.test(file) ? file : `${String(import.meta.env.VITE_API_URL).replace(/\/$/, '')}/${file.replace(/^\//, '')}`;
 }
+
+export { getAssetUrl };
+
 function parseSegments(result: Task['result']): Segment[] {
   if (Array.isArray(result)) return result;
   if (!result) return [];

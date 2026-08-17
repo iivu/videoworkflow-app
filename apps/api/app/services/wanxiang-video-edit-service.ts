@@ -8,6 +8,8 @@ import { asRecord, type JsonRecord, optionalString } from '#utils/type-guards';
 
 export const WANXIANG_VIDEO_EDIT_MODEL = 'wan2.7-videoedit' as const;
 
+export const VIDEO_EDIT_PROVIDER_WANXIANG = 'wanxiang' as const;
+
 export const WANXIANG_VIDEO_EDIT_TASK_STATUS = {
   PENDING: 'PENDING',
   RUNNING: 'RUNNING',
@@ -144,6 +146,9 @@ export function buildWanxiangTaskConfig(params: WanxiangCreateVideoEditTaskParam
 }
 
 export class WanxiangVideoEditService {
+  /** 提供商标识，供对话域写入 assistant 消息与选择对应服务 */
+  readonly provider = VIDEO_EDIT_PROVIDER_WANXIANG;
+
   protected async getFetchClient(): Promise<Pick<FetchClient, 'json'>> {
     return app.container.make('fetch');
   }
@@ -219,9 +224,10 @@ export class WanxiangVideoEditService {
     };
   }
 
-  /** 提交任务并持久化任务记录 */
+  /** 提交任务并持久化任务记录；同一用户同一时间仅允许一个进行中的编辑任务 */
   async create(params: { userId: string; entityId: string; input: WanxiangVideoEditInput; parameters?: WanxiangVideoEditParameters; model?: string }) {
     if (!isValidWanxiangEntityId(params.entityId)) throw providerError(`entity_id 长度需在 1～${ENTITY_ID_MAX_LENGTH} 个字符之间`);
+    await this.assertNoActiveTask(params.userId);
     const submission = await this.submit({ input: params.input, parameters: params.parameters, model: params.model });
     return WanxiangVideoEditTaskModel.create({
       userId: params.userId,
@@ -233,6 +239,20 @@ export class WanxiangVideoEditService {
       result: null,
       reason: null,
     });
+  }
+
+  /** 放弃任务：仅属主可操作，非终态任务标记为已取消；仅本地标记，不调用远端取消接口 */
+  async abandon(params: { taskId: string; userId: string }) {
+    const task = await this.getByTaskId(params);
+    if (!task) throw new BusinessException('任务不存在');
+    if (isTerminalStatus(task.status)) throw new BusinessException('任务已结束，无需放弃');
+    await task
+      .merge({
+        status: WANXIANG_VIDEO_EDIT_TASK_STATUS.CANCELED,
+        reason: '用户已放弃',
+      })
+      .save();
+    return task;
   }
 
   /** 轮询查询远程任务状态，并同步更新本地任务记录；终态任务直接返回，不再请求远程 */
@@ -280,6 +300,16 @@ export class WanxiangVideoEditService {
   }
 
   /** 素材限制：视频有且仅有 1 个，参考图像最多 4 张 */
+  private async assertNoActiveTask(userId: string) {
+    const active = await WanxiangVideoEditTaskModel.query()
+      .where('userId', userId)
+      .whereIn('status', [WANXIANG_VIDEO_EDIT_TASK_STATUS.PENDING, WANXIANG_VIDEO_EDIT_TASK_STATUS.RUNNING])
+      .first();
+    if (active) {
+      throw new BusinessException('当前已有视频编辑任务进行中，请等待其完成后再试');
+    }
+  }
+
   private assertMedia(media: WanxiangVideoEditMedia[]) {
     if (!Array.isArray(media) || media.length === 0) throw providerError('媒体素材不能为空');
     for (const item of media) {

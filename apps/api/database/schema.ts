@@ -168,6 +168,27 @@ export class VideoBreakdownTaskSchema extends BaseModel {
   declare videoUrl: string
 }
 
+export class VideoEditMessageSchema extends BaseModel {
+  static $columns = ['createdAt', 'entityId', 'id', 'message', 'role', 'taskId', 'updatedAt', 'userId'] as const
+  $columns = VideoEditMessageSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare entityId: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare message: string
+  @column()
+  declare role: string
+  @column()
+  declare taskId: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+}
+
 export class VideoToVoiceTaskSchema extends BaseModel {
   static $columns = ['audioUrl', 'config', 'createdAt', 'id', 'provider', 'reason', 'status', 'updatedAt', 'userId', 'videoId', 'voiceId'] as const
   $columns = VideoToVoiceTaskSchema.$columns

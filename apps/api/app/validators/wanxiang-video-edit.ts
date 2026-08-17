@@ -8,12 +8,12 @@ import {
   WANXIANG_VIDEO_EDIT_TASK_STATUS,
 } from '#services/wanxiang-video-edit-service';
 
-const wanxiangMedia = vine.object({
+export const wanxiangMedia = vine.object({
   type: vine.enum(['video', 'reference_image'] as const),
   url: vine.string().trim().minLength(1),
 });
 
-const wanxiangParameters = vine.object({
+export const wanxiangParameters = vine.object({
   resolution: vine.enum([...WANXIANG_VIDEO_EDIT_RESOLUTIONS]).optional(),
   ratio: vine.enum([...WANXIANG_VIDEO_EDIT_RATIOS]).optional(),
   duration: vine.number().min(2).max(10).withoutDecimals().optional(),

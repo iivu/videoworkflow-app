@@ -42,6 +42,12 @@ export interface ApiDefinition {
     show: typeof routes['wanxiang_video_edit.show']
     check: typeof routes['wanxiang_video_edit.check']
   }
+  videoEditConversation: {
+    send: typeof routes['video_edit_conversation.send']
+    listMessages: typeof routes['video_edit_conversation.list_messages']
+    check: typeof routes['video_edit_conversation.check']
+    abandon: typeof routes['video_edit_conversation.abandon']
+  }
   oss: {
     upload: typeof routes['oss.upload']
     uploadUrl: typeof routes['oss.upload_url']

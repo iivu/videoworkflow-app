@@ -30,6 +30,10 @@ export type ScannedRoutes = {
     'wanxiang_video_edit.list': { paramsTuple?: []; params?: {} }
     'wanxiang_video_edit.show': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'wanxiang_video_edit.check': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'video_edit_conversation.send': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'video_edit_conversation.list_messages': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'video_edit_conversation.check': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'video_edit_conversation.abandon': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'oss.upload': { paramsTuple?: []; params?: {} }
     'oss.upload_url': { paramsTuple?: []; params?: {} }
     'oss.get_policy': { paramsTuple?: []; params?: {} }
@@ -49,6 +53,9 @@ export type ScannedRoutes = {
     'paraformer.transcription': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
     'paraformer.transcription_retry': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
     'wanxiang_video_edit.create': { paramsTuple?: []; params?: {} }
+    'video_edit_conversation.send': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'video_edit_conversation.check': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'video_edit_conversation.abandon': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'oss.upload': { paramsTuple?: []; params?: {} }
     'oss.upload_url': { paramsTuple?: []; params?: {} }
     'ai.polish_article': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
@@ -68,6 +75,7 @@ export type ScannedRoutes = {
     'wanxiang_video_edit.list': { paramsTuple?: []; params?: {} }
     'wanxiang_video_edit.show': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'wanxiang_video_edit.check': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'video_edit_conversation.list_messages': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'oss.get_policy': { paramsTuple?: []; params?: {} }
     'ai.list_messages': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
   }
@@ -86,6 +94,7 @@ export type ScannedRoutes = {
     'wanxiang_video_edit.list': { paramsTuple?: []; params?: {} }
     'wanxiang_video_edit.show': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'wanxiang_video_edit.check': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'video_edit_conversation.list_messages': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'oss.get_policy': { paramsTuple?: []; params?: {} }
     'ai.list_messages': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
   }

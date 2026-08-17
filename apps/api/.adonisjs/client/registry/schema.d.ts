@@ -319,6 +319,54 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/wanxiang-video-edit-controller').default['check']>>>
     }
   }
+  'video_edit_conversation.send': {
+    methods: ["POST"]
+    pattern: '/api/v1/video-breakdown/:taskId/video-edit/messages'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/video-edit-message').sendVideoEditMessageValidator)>>
+      paramsTuple: [ParamValue]
+      params: { taskId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/video-edit-message').sendVideoEditMessageValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-edit-conversation-controller').default['send']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-edit-conversation-controller').default['send']>>>
+    }
+  }
+  'video_edit_conversation.list_messages': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/video-breakdown/:taskId/video-edit/messages'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { taskId: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/video-edit-message').listVideoEditMessagesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-edit-conversation-controller').default['listMessages']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-edit-conversation-controller').default['listMessages']>>>
+    }
+  }
+  'video_edit_conversation.check': {
+    methods: ["POST"]
+    pattern: '/api/v1/video-breakdown/:taskId/video-edit/check'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/video-edit-message').conversationTaskActionValidator)>>
+      paramsTuple: [ParamValue]
+      params: { taskId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/video-edit-message').conversationTaskActionValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-edit-conversation-controller').default['check']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-edit-conversation-controller').default['check']>>>
+    }
+  }
+  'video_edit_conversation.abandon': {
+    methods: ["POST"]
+    pattern: '/api/v1/video-breakdown/:taskId/video-edit/abandon'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/video-edit-message').conversationTaskActionValidator)>>
+      paramsTuple: [ParamValue]
+      params: { taskId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/video-edit-message').conversationTaskActionValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-edit-conversation-controller').default['abandon']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-edit-conversation-controller').default['abandon']>>>
+    }
+  }
   'oss.upload': {
     methods: ["POST"]
     pattern: '/api/v1/oss/upload'
