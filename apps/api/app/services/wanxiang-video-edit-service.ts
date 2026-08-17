@@ -1,6 +1,7 @@
 import app from '@adonisjs/core/services/app';
 
 import BusinessException from '#exceptions/business-exception';
+import WanxiangVideoEditTaskModel from '#models/wanxiang-video-edit-task';
 import type { FetchClient } from '#providers/fetch-provider';
 import env from '#start/env';
 import { asRecord, type JsonRecord, optionalString } from '#utils/type-guards';
@@ -79,6 +80,13 @@ export type WanxiangVideoEditTask = {
   requestId: string | null;
 };
 
+export type WanxiangVideoEditTaskUpdate = {
+  status: WanxiangVideoEditTaskStatus;
+  videoUrl: string | null;
+  result: string | null;
+  reason: string | null;
+};
+
 const CREATE_TASK_PATH = '/api/v1/services/aigc/video-generation/video-synthesis';
 const MAX_PROMPT_LENGTH = 5000;
 const MAX_NEGATIVE_PROMPT_LENGTH = 500;
@@ -86,6 +94,7 @@ const MAX_REFERENCE_IMAGE_COUNT = 4;
 const MIN_DURATION = 2;
 const MAX_DURATION = 10;
 const MAX_SEED = 2147483647;
+const ENTITY_ID_MAX_LENGTH = 36;
 
 function providerError(prefix: string, detail?: string): BusinessException {
   const message = detail ? `${prefix}: ${detail}` : prefix;
@@ -108,15 +117,31 @@ function optionalNumber(record: JsonRecord | null, key: string): number | null {
   return null;
 }
 
+/** entity_id 用于关联应用内其他功能实体，长度不超过 uuid（36 位） */
+export function isValidWanxiangEntityId(value: string): boolean {
+  return value.trim().length > 0 && value.length <= ENTITY_ID_MAX_LENGTH;
+}
+
+/** 构建请求配置 JSON（含 model/prompt/negative_prompt/media/parameters），用于审计与重试 */
+export function buildWanxiangTaskConfig(params: WanxiangCreateVideoEditTaskParams): string {
+  return JSON.stringify({
+    model: params.model ?? WANXIANG_VIDEO_EDIT_MODEL,
+    ...(params.input.prompt !== undefined && { prompt: params.input.prompt }),
+    ...(params.input.negativePrompt !== undefined && { negativePrompt: params.input.negativePrompt }),
+    media: params.input.media,
+    ...(params.parameters !== undefined && { parameters: params.parameters }),
+  });
+}
+
 export class WanxiangVideoEditService {
   protected async getFetchClient(): Promise<Pick<FetchClient, 'json'>> {
     return app.container.make('fetch');
   }
 
   /**
-   * 步骤1：创建视频编辑任务，返回 task_id 用于后续轮询查询。
+   * 步骤1：创建视频编辑任务（HTTP），返回 task_id 用于后续轮询查询。
    */
-  async createTask(params: WanxiangCreateVideoEditTaskParams) {
+  async submit(params: WanxiangCreateVideoEditTaskParams) {
     this.assertMedia(params.input.media);
     this.assertTextLengths(params.input);
     this.assertParameters(params.parameters);
@@ -147,7 +172,7 @@ export class WanxiangVideoEditService {
   }
 
   /**
-   * 步骤2：根据 task_id 查询任务状态与结果。
+   * 步骤2：根据 task_id 查询任务状态与结果（HTTP）。
    */
   async getTask(params: { taskId: string }): Promise<WanxiangVideoEditTask> {
     const response = await (await this.getFetchClient()).json<unknown>(this.taskEndpoint(params.taskId), {
@@ -182,6 +207,65 @@ export class WanxiangVideoEditService {
       message: optionalString(output, 'message') || null,
       requestId: optionalString(record, 'request_id') || null,
     };
+  }
+
+  /** 提交任务并持久化任务记录 */
+  async create(params: { userId: string; entityId: string; input: WanxiangVideoEditInput; parameters?: WanxiangVideoEditParameters; model?: string }) {
+    if (!isValidWanxiangEntityId(params.entityId)) throw providerError(`entity_id 长度需在 1～${ENTITY_ID_MAX_LENGTH} 个字符之间`);
+    const submission = await this.submit({ input: params.input, parameters: params.parameters, model: params.model });
+    return WanxiangVideoEditTaskModel.create({
+      userId: params.userId,
+      entityId: params.entityId,
+      taskId: submission.taskId,
+      status: submission.taskStatus,
+      config: buildWanxiangTaskConfig({ input: params.input, parameters: params.parameters, model: params.model }),
+      videoUrl: null,
+      result: null,
+      reason: null,
+    });
+  }
+
+  /** 轮询查询远程任务状态，并同步更新本地任务记录 */
+  async checkTask(params: { taskId: string; userId: string }) {
+    const task = await this.getByTaskId(params);
+    if (!task) throw new BusinessException('任务不存在');
+    const remote = await this.getTask({ taskId: params.taskId });
+
+    const update: WanxiangVideoEditTaskUpdate = { status: remote.taskStatus, videoUrl: null, result: null, reason: null };
+    if (remote.taskStatus === WANXIANG_VIDEO_EDIT_TASK_STATUS.SUCCEEDED) {
+      update.videoUrl = remote.videoUrl;
+      update.result = JSON.stringify({
+        usage: remote.usage,
+        submitTime: remote.submitTime,
+        scheduledTime: remote.scheduledTime,
+        endTime: remote.endTime,
+        origPrompt: remote.origPrompt,
+        requestId: remote.requestId,
+      });
+    } else if (remote.taskStatus === WANXIANG_VIDEO_EDIT_TASK_STATUS.FAILED || remote.taskStatus === WANXIANG_VIDEO_EDIT_TASK_STATUS.CANCELED) {
+      update.reason = remote.message || null;
+    }
+    await task.merge(update).save();
+    return task;
+  }
+
+  /** 获取某个实体最新的编辑任务记录 */
+  async getByEntityId(params: { entityId: string; userId: string }) {
+    return WanxiangVideoEditTaskModel.query().where('userId', params.userId).where('entityId', params.entityId).orderBy('id', 'desc').first();
+  }
+
+  /** 按万相任务 ID 获取任务记录 */
+  async getByTaskId(params: { taskId: string; userId: string }) {
+    return WanxiangVideoEditTaskModel.query().where('userId', params.userId).where('taskId', params.taskId).first();
+  }
+
+  /** 分页查询任务记录 */
+  async list(params: { userId: string; entityId?: string; status?: WanxiangVideoEditTaskStatus; page?: number; size?: number }) {
+    const query = WanxiangVideoEditTaskModel.query().where('userId', params.userId);
+    if (params.entityId) query.where('entityId', params.entityId);
+    if (params.status) query.where('status', params.status);
+    query.orderBy('id', 'desc');
+    return query.paginate(params.page ?? 1, params.size ?? 10);
   }
 
   /** 素材限制：视频有且仅有 1 个，参考图像最多 4 张 */

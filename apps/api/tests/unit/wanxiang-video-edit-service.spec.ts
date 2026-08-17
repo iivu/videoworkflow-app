@@ -2,7 +2,7 @@ import { test } from '@japa/runner';
 
 import BusinessException from '#exceptions/business-exception';
 import type { FetchClient } from '#providers/fetch-provider';
-import { WANXIANG_VIDEO_EDIT_TASK_STATUS, WanxiangVideoEditService } from '#services/wanxiang-video-edit-service';
+import { buildWanxiangTaskConfig, isValidWanxiangEntityId, WANXIANG_VIDEO_EDIT_TASK_STATUS, WanxiangVideoEditService } from '#services/wanxiang-video-edit-service';
 import env from '#start/env';
 
 type JsonRequest = {
@@ -46,7 +46,7 @@ test.group('Wanxiang video edit service', () => {
   test('creates a task with the expected async HTTP request', async ({ assert }) => {
     const service = new TestWanxiangVideoEditService([{ output: { task_id: 'task-1', task_status: 'PENDING' }, request_id: 'req-1' }]);
 
-    assert.deepEqual(await service.createTask(defaultParams), {
+    assert.deepEqual(await service.submit(defaultParams), {
       taskId: 'task-1',
       taskStatus: WANXIANG_VIDEO_EDIT_TASK_STATUS.PENDING,
       requestId: 'req-1',
@@ -73,7 +73,7 @@ test.group('Wanxiang video edit service', () => {
   test('sends all optional input and parameters', async ({ assert }) => {
     const service = new TestWanxiangVideoEditService([{ output: { task_id: 'task-1', task_status: 'PENDING' } }]);
 
-    await service.createTask({
+    await service.submit({
       input: {
         prompt: '将视频中女孩的衣服替换为图片中的衣服',
         negativePrompt: '低分辨率、错误、最差质量',
@@ -184,7 +184,7 @@ test.group('Wanxiang video edit service', () => {
   ]) {
     test(`rejects ${scenario.name} before calling the API`, async ({ assert }) => {
       const service = new TestWanxiangVideoEditService([]);
-      const error = await caught(service.createTask(scenario.params as Parameters<WanxiangVideoEditService['createTask']>[0]));
+      const error = await caught(service.submit(scenario.params as Parameters<WanxiangVideoEditService['submit']>[0]));
 
       assert.instanceOf(error, BusinessException);
       assert.equal((error as Error).message, scenario.message);
@@ -198,7 +198,7 @@ test.group('Wanxiang video edit service', () => {
     { name: 'missing task status', response: { output: { task_id: 'task-1' } }, message: '万相视频编辑失败: 创建任务失败: 服务响应格式无效' },
   ]) {
     test(`rejects ${scenario.name}`, async ({ assert }) => {
-      const error = await caught(new TestWanxiangVideoEditService([scenario.response]).createTask(defaultParams));
+      const error = await caught(new TestWanxiangVideoEditService([scenario.response]).submit(defaultParams));
 
       assert.instanceOf(error, BusinessException);
       assert.equal((error as Error).message, scenario.message);
@@ -329,4 +329,56 @@ test.group('Wanxiang video edit service', () => {
       assert.equal((error as Error).message, scenario.message);
     });
   }
+
+  test('builds the persisted task config JSON', async ({ assert }) => {
+    assert.deepEqual(
+      JSON.parse(
+        buildWanxiangTaskConfig({
+          input: {
+            prompt: '将画面转换为黏土风格',
+            negativePrompt: '低分辨率',
+            media: [
+              { type: 'video', url: 'https://cdn.example.com/video.mp4' },
+              { type: 'reference_image', url: 'https://cdn.example.com/clothes.png' },
+            ],
+          },
+          parameters: { resolution: '720P', watermark: true },
+        }),
+      ),
+      {
+        model: 'wan2.7-videoedit',
+        prompt: '将画面转换为黏土风格',
+        negativePrompt: '低分辨率',
+        media: [
+          { type: 'video', url: 'https://cdn.example.com/video.mp4' },
+          { type: 'reference_image', url: 'https://cdn.example.com/clothes.png' },
+        ],
+        parameters: { resolution: '720P', watermark: true },
+      },
+    );
+  });
+
+  test('builds task config without optional fields', async ({ assert }) => {
+    assert.deepEqual(JSON.parse(buildWanxiangTaskConfig({ input: { media: [{ type: 'video', url: 'https://cdn.example.com/video.mp4' }] } })), {
+      model: 'wan2.7-videoedit',
+      media: [{ type: 'video', url: 'https://cdn.example.com/video.mp4' }],
+    });
+  });
+
+  test('validates entity id length up to 36 chars', async ({ assert }) => {
+    assert.isTrue(isValidWanxiangEntityId('not-a-uuid'));
+    assert.isTrue(isValidWanxiangEntityId('0385dc79-5ff8-4d82-bcb6-abcdef012345'));
+    assert.isFalse(isValidWanxiangEntityId(''));
+    assert.isFalse(isValidWanxiangEntityId('   '));
+    assert.isFalse(isValidWanxiangEntityId('x'.repeat(37)));
+  });
+
+  test('rejects an invalid entity id before calling the API', async ({ assert }) => {
+    const service = new TestWanxiangVideoEditService([]);
+    const error = await caught(service.create({ userId: 'user-1', entityId: 'x'.repeat(37), input: { media: [{ type: 'video', url: 'https://cdn.example.com/video.mp4' }] } }));
+
+    assert.instanceOf(error, BusinessException);
+    assert.equal((error as Error).message, '万相视频编辑失败: entity_id 长度需在 1～36 个字符之间');
+    assert.lengthOf(service.requests, 0);
+  });
 });
