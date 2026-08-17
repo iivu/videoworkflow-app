@@ -97,13 +97,6 @@ export const CHANNEL_OPTIONS: Array<{ label: string; value: string }> = [
   { label: '双声道', value: '2' },
 ];
 
-/** 百炼音色所属系列：百炼限制合成模型必须与生成音色的模型同系列（qwen/cosyvoice） */
-export function bailianModelFamily(model: string): 'qwen' | 'cosyvoice' | null {
-  if (model.startsWith('qwen')) return 'qwen';
-  if (model.startsWith('cosyvoice')) return 'cosyvoice';
-  return null;
-}
-
 export function providerOfModel(model: string): 'bailian' | 'minimaxi' {
   return (BAILIAN_VOICE_MODELS as readonly string[]).includes(model) ? 'bailian' : 'minimaxi';
 }

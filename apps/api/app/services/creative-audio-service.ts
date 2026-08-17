@@ -3,7 +3,7 @@ import type { Infer } from '@vinejs/vine/types';
 import BusinessException from '#exceptions/business-exception';
 import CreativeAudio from '#models/creative-audio';
 import Voice from '#models/voice';
-import { BailianAudioService, type BailianVoiceModel, bailianModelFamily, isBailianVoiceModel } from '#services/bailian-audio-service';
+import { BailianAudioService, type BailianVoiceModel, isBailianVoiceModel } from '#services/bailian-audio-service';
 import { isMinimaxiCloneModel, MinimaxiService } from '#services/minimaxi-service';
 import type { CreativeAudioConfigOptions, listCreativeAudioValidator, synthesizeCreativeAudioValidator } from '#validators/creative-audio';
 
@@ -35,6 +35,13 @@ function removeUndefined(configs: CreativeAudioConfigOptions): CreativeAudioConf
   return Object.fromEntries(Object.entries(configs).filter(([, value]) => value !== undefined));
 }
 
+/** 百炼音色约束：合成模型必须与生成音色的模型完全一致（qwen/cosyvoice 系列） */
+export function assertBailianVoiceModelMatch(voiceModel: string, model: string) {
+  if (voiceModel !== model) {
+    throw new BusinessException('语音合成模型必须与音色所属模型一致');
+  }
+}
+
 @inject()
 export class CreativeAudioService {
   constructor(
@@ -49,10 +56,8 @@ export class CreativeAudioService {
     if (provider === 'bailian') {
       const voice = await Voice.query().where('user_id', params.userId).where('voice_id', voiceId).first();
       if (!voice) throw new BusinessException('音色不存在');
-      // 百炼限制：合成模型必须与生成音色的模型同系列（qwen/cosyvoice）
-      if (bailianModelFamily(voice.model) !== bailianModelFamily(model)) {
-        throw new BusinessException('语音合成模型与音色所属系列不匹配');
-      }
+      // 百炼限制：合成模型必须与生成音色的模型完全一致（qwen/cosyvoice 系列）
+      assertBailianVoiceModelMatch(voice.model, model);
       const result = await this.bailian.synthesize({ model: model as BailianVoiceModel, text, voice: voiceId, ...configs });
       audioUrl = result.ossUrl;
     } else {
