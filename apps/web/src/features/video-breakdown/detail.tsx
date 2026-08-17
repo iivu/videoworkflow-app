@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { AlertCircle, ArrowLeft, Bot, Check } from 'lucide-react';
 import { useState } from 'react';
+import { useWheelHorizontalScroll } from '#/hooks/use-wheel-horizontal-scroll';
 import { Route } from '#/routes/_auth/video-breakdown/$id';
 import { normalizeApiFailedMessage, query } from '#/services/api';
 
@@ -116,8 +117,9 @@ function AiChatPlaceholder() {
 }
 
 function SegmentRail({ segments, selectedIndex, onSelect }: { segments: Segment[]; selectedIndex: number; onSelect: (index: number) => void }) {
+  const railRef = useWheelHorizontalScroll();
   return (
-    <section className="flex h-48 shrink-0 border-t overflow-x-auto">
+    <section ref={railRef} className="flex h-48 shrink-0 border-t overflow-x-auto">
       {segments.length ? (
         segments.map((segment, index) => (
           <SegmentCard key={`${segment.file}-${index}`} segment={segment} index={index} selected={index === selectedIndex} onSelect={() => onSelect(index)} />
