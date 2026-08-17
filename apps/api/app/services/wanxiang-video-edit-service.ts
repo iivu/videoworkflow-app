@@ -168,7 +168,7 @@ export class WanxiangVideoEditService {
         ...(params.input.negativePrompt !== undefined && { negative_prompt: params.input.negativePrompt }),
         media: params.input.media,
       },
-      ...(params.parameters !== undefined && { parameters: this.buildParameters(params.parameters) }),
+      parameters: this.buildParameters(params.parameters),
     };
 
     const response = await (await this.getFetchClient()).json<unknown>(this.createTaskEndpoint(), {
@@ -342,7 +342,12 @@ export class WanxiangVideoEditService {
     }
   }
 
-  private buildParameters(parameters: WanxiangVideoEditParameters): JsonRecord {
+  private buildParameters(parameters?: WanxiangVideoEditParameters): JsonRecord {
+    if (!parameters) return {
+      resolution: WANXIANG_VIDEO_EDIT_RESOLUTIONS[1],
+      prompt_extend: true,
+      watermark: false,
+    };
     return {
       ...(parameters.resolution !== undefined && { resolution: parameters.resolution }),
       ...(parameters.ratio !== undefined && { ratio: parameters.ratio }),

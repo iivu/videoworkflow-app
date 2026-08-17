@@ -41,3 +41,6 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+
+nl-app.tanhegucheng.com.conf
+ecosystem.config.js
