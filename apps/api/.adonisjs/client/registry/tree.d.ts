@@ -36,6 +36,12 @@ export interface ApiDefinition {
     checkTask: typeof routes['paraformer.check_task']
     transcriptionRetry: typeof routes['paraformer.transcription_retry']
   }
+  wanxiangVideoEdit: {
+    create: typeof routes['wanxiang_video_edit.create']
+    list: typeof routes['wanxiang_video_edit.list']
+    show: typeof routes['wanxiang_video_edit.show']
+    check: typeof routes['wanxiang_video_edit.check']
+  }
   oss: {
     upload: typeof routes['oss.upload']
     uploadUrl: typeof routes['oss.upload_url']

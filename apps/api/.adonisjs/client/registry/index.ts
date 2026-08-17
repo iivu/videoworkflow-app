@@ -138,6 +138,30 @@ const routes = {
     tokens: [{"old":"/api/v1/paraformer/transcription/retry/:videoId","type":0,"val":"api","end":""},{"old":"/api/v1/paraformer/transcription/retry/:videoId","type":0,"val":"v1","end":""},{"old":"/api/v1/paraformer/transcription/retry/:videoId","type":0,"val":"paraformer","end":""},{"old":"/api/v1/paraformer/transcription/retry/:videoId","type":0,"val":"transcription","end":""},{"old":"/api/v1/paraformer/transcription/retry/:videoId","type":0,"val":"retry","end":""},{"old":"/api/v1/paraformer/transcription/retry/:videoId","type":1,"val":"videoId","end":""}],
     types: placeholder as Registry['paraformer.transcription_retry']['types'],
   },
+  'wanxiang_video_edit.create': {
+    methods: ["POST"],
+    pattern: '/api/v1/video-edit/tasks',
+    tokens: [{"old":"/api/v1/video-edit/tasks","type":0,"val":"api","end":""},{"old":"/api/v1/video-edit/tasks","type":0,"val":"v1","end":""},{"old":"/api/v1/video-edit/tasks","type":0,"val":"video-edit","end":""},{"old":"/api/v1/video-edit/tasks","type":0,"val":"tasks","end":""}],
+    types: placeholder as Registry['wanxiang_video_edit.create']['types'],
+  },
+  'wanxiang_video_edit.list': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/video-edit/tasks',
+    tokens: [{"old":"/api/v1/video-edit/tasks","type":0,"val":"api","end":""},{"old":"/api/v1/video-edit/tasks","type":0,"val":"v1","end":""},{"old":"/api/v1/video-edit/tasks","type":0,"val":"video-edit","end":""},{"old":"/api/v1/video-edit/tasks","type":0,"val":"tasks","end":""}],
+    types: placeholder as Registry['wanxiang_video_edit.list']['types'],
+  },
+  'wanxiang_video_edit.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/video-edit/tasks/:taskId',
+    tokens: [{"old":"/api/v1/video-edit/tasks/:taskId","type":0,"val":"api","end":""},{"old":"/api/v1/video-edit/tasks/:taskId","type":0,"val":"v1","end":""},{"old":"/api/v1/video-edit/tasks/:taskId","type":0,"val":"video-edit","end":""},{"old":"/api/v1/video-edit/tasks/:taskId","type":0,"val":"tasks","end":""},{"old":"/api/v1/video-edit/tasks/:taskId","type":1,"val":"taskId","end":""}],
+    types: placeholder as Registry['wanxiang_video_edit.show']['types'],
+  },
+  'wanxiang_video_edit.check': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/video-edit/tasks/:taskId/check',
+    tokens: [{"old":"/api/v1/video-edit/tasks/:taskId/check","type":0,"val":"api","end":""},{"old":"/api/v1/video-edit/tasks/:taskId/check","type":0,"val":"v1","end":""},{"old":"/api/v1/video-edit/tasks/:taskId/check","type":0,"val":"video-edit","end":""},{"old":"/api/v1/video-edit/tasks/:taskId/check","type":0,"val":"tasks","end":""},{"old":"/api/v1/video-edit/tasks/:taskId/check","type":1,"val":"taskId","end":""},{"old":"/api/v1/video-edit/tasks/:taskId/check","type":0,"val":"check","end":""}],
+    types: placeholder as Registry['wanxiang_video_edit.check']['types'],
+  },
   'oss.upload': {
     methods: ["POST"],
     pattern: '/api/v1/oss/upload',

@@ -271,6 +271,54 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/paraformer-controller').default['transcriptionRetry']>>>
     }
   }
+  'wanxiang_video_edit.create': {
+    methods: ["POST"]
+    pattern: '/api/v1/video-edit/tasks'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/wanxiang-video-edit').createWanxiangVideoEditTaskValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/wanxiang-video-edit').createWanxiangVideoEditTaskValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/wanxiang-video-edit-controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/wanxiang-video-edit-controller').default['create']>>>
+    }
+  }
+  'wanxiang_video_edit.list': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/video-edit/tasks'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/wanxiang-video-edit').listWanxiangVideoEditTasksValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/wanxiang-video-edit-controller').default['list']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/wanxiang-video-edit-controller').default['list']>>>
+    }
+  }
+  'wanxiang_video_edit.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/video-edit/tasks/:taskId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { taskId: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/wanxiang-video-edit').showWanxiangVideoEditTaskValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/wanxiang-video-edit-controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/wanxiang-video-edit-controller').default['show']>>>
+    }
+  }
+  'wanxiang_video_edit.check': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/video-edit/tasks/:taskId/check'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { taskId: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/wanxiang-video-edit').showWanxiangVideoEditTaskValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/wanxiang-video-edit-controller').default['check']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/wanxiang-video-edit-controller').default['check']>>>
+    }
+  }
   'oss.upload': {
     methods: ["POST"]
     pattern: '/api/v1/oss/upload'

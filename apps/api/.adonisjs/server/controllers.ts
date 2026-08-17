@@ -12,4 +12,5 @@ export const controllers = {
   VideoBreakdown: () => import('#controllers/video-breakdown-controller'),
   Videos: () => import('#controllers/videos-controller'),
   Voices: () => import('#controllers/voices-controller'),
+  WanxiangVideoEdit: () => import('#controllers/wanxiang-video-edit-controller'),
 }

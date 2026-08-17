@@ -40,6 +40,11 @@ r.group(() => {
     r.get('/paraformer/task/check/:videoId', [controllers.Paraformer, 'checkTask']);
     r.post('/paraformer/transcription/retry/:videoId', [controllers.Paraformer, 'transcriptionRetry']);
 
+    r.post('/video-edit/tasks', [controllers.WanxiangVideoEdit, 'create']);
+    r.get('/video-edit/tasks', [controllers.WanxiangVideoEdit, 'list']);
+    r.get('/video-edit/tasks/:taskId', [controllers.WanxiangVideoEdit, 'show']);
+    r.get('/video-edit/tasks/:taskId/check', [controllers.WanxiangVideoEdit, 'check']);
+
     r.post('/oss/upload', [controllers.Oss, 'upload']);
     r.post('/oss/url', [controllers.Oss, 'uploadURL']);
     r.get('/oss/policy', [controllers.Oss, 'getPolicy']);

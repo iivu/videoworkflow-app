@@ -117,6 +117,16 @@ function optionalNumber(record: JsonRecord | null, key: string): number | null {
   return null;
 }
 
+/** 终态任务无需再请求远程，直接使用本地缓存结果 */
+function isTerminalStatus(status: string): boolean {
+  return (
+    status === WANXIANG_VIDEO_EDIT_TASK_STATUS.SUCCEEDED ||
+    status === WANXIANG_VIDEO_EDIT_TASK_STATUS.FAILED ||
+    status === WANXIANG_VIDEO_EDIT_TASK_STATUS.CANCELED ||
+    status === WANXIANG_VIDEO_EDIT_TASK_STATUS.UNKNOWN
+  );
+}
+
 /** entity_id 用于关联应用内其他功能实体，长度不超过 uuid（36 位） */
 export function isValidWanxiangEntityId(value: string): boolean {
   return value.trim().length > 0 && value.length <= ENTITY_ID_MAX_LENGTH;
@@ -225,10 +235,11 @@ export class WanxiangVideoEditService {
     });
   }
 
-  /** 轮询查询远程任务状态，并同步更新本地任务记录 */
+  /** 轮询查询远程任务状态，并同步更新本地任务记录；终态任务直接返回，不再请求远程 */
   async checkTask(params: { taskId: string; userId: string }) {
     const task = await this.getByTaskId(params);
     if (!task) throw new BusinessException('任务不存在');
+    if (isTerminalStatus(task.status)) return task;
     const remote = await this.getTask({ taskId: params.taskId });
 
     const update: WanxiangVideoEditTaskUpdate = { status: remote.taskStatus, videoUrl: null, result: null, reason: null };
