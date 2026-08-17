@@ -45,14 +45,4 @@ export interface ApiDefinition {
     polishArticle: typeof routes['ai.polish_article']
     listMessages: typeof routes['ai.list_messages']
   }
-  xhsSessions: {
-    create: typeof routes['xhs_sessions.create']
-    list: typeof routes['xhs_sessions.list']
-    show: typeof routes['xhs_sessions.show']
-    update: typeof routes['xhs_sessions.update']
-    delete: typeof routes['xhs_sessions.delete']
-    listMessages: typeof routes['xhs_sessions.list_messages']
-    chatCopy: typeof routes['xhs_sessions.chat_copy']
-    chatImage: typeof routes['xhs_sessions.chat_image']
-  }
 }

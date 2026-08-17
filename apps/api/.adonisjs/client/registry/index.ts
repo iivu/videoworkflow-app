@@ -168,54 +168,6 @@ const routes = {
     tokens: [{"old":"/api/v1/chat/polish-article/:videoId/messages","type":0,"val":"api","end":""},{"old":"/api/v1/chat/polish-article/:videoId/messages","type":0,"val":"v1","end":""},{"old":"/api/v1/chat/polish-article/:videoId/messages","type":0,"val":"chat","end":""},{"old":"/api/v1/chat/polish-article/:videoId/messages","type":0,"val":"polish-article","end":""},{"old":"/api/v1/chat/polish-article/:videoId/messages","type":1,"val":"videoId","end":""},{"old":"/api/v1/chat/polish-article/:videoId/messages","type":0,"val":"messages","end":""}],
     types: placeholder as Registry['ai.list_messages']['types'],
   },
-  'xhs_sessions.create': {
-    methods: ["POST"],
-    pattern: '/api/v1/xhs/sessions',
-    tokens: [{"old":"/api/v1/xhs/sessions","type":0,"val":"api","end":""},{"old":"/api/v1/xhs/sessions","type":0,"val":"v1","end":""},{"old":"/api/v1/xhs/sessions","type":0,"val":"xhs","end":""},{"old":"/api/v1/xhs/sessions","type":0,"val":"sessions","end":""}],
-    types: placeholder as Registry['xhs_sessions.create']['types'],
-  },
-  'xhs_sessions.list': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/xhs/sessions',
-    tokens: [{"old":"/api/v1/xhs/sessions","type":0,"val":"api","end":""},{"old":"/api/v1/xhs/sessions","type":0,"val":"v1","end":""},{"old":"/api/v1/xhs/sessions","type":0,"val":"xhs","end":""},{"old":"/api/v1/xhs/sessions","type":0,"val":"sessions","end":""}],
-    types: placeholder as Registry['xhs_sessions.list']['types'],
-  },
-  'xhs_sessions.show': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/xhs/sessions/:id',
-    tokens: [{"old":"/api/v1/xhs/sessions/:id","type":0,"val":"api","end":""},{"old":"/api/v1/xhs/sessions/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/xhs/sessions/:id","type":0,"val":"xhs","end":""},{"old":"/api/v1/xhs/sessions/:id","type":0,"val":"sessions","end":""},{"old":"/api/v1/xhs/sessions/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['xhs_sessions.show']['types'],
-  },
-  'xhs_sessions.update': {
-    methods: ["POST"],
-    pattern: '/api/v1/xhs/sessions/:id',
-    tokens: [{"old":"/api/v1/xhs/sessions/:id","type":0,"val":"api","end":""},{"old":"/api/v1/xhs/sessions/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/xhs/sessions/:id","type":0,"val":"xhs","end":""},{"old":"/api/v1/xhs/sessions/:id","type":0,"val":"sessions","end":""},{"old":"/api/v1/xhs/sessions/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['xhs_sessions.update']['types'],
-  },
-  'xhs_sessions.delete': {
-    methods: ["POST"],
-    pattern: '/api/v1/xhs/sessions/:id/delete',
-    tokens: [{"old":"/api/v1/xhs/sessions/:id/delete","type":0,"val":"api","end":""},{"old":"/api/v1/xhs/sessions/:id/delete","type":0,"val":"v1","end":""},{"old":"/api/v1/xhs/sessions/:id/delete","type":0,"val":"xhs","end":""},{"old":"/api/v1/xhs/sessions/:id/delete","type":0,"val":"sessions","end":""},{"old":"/api/v1/xhs/sessions/:id/delete","type":1,"val":"id","end":""},{"old":"/api/v1/xhs/sessions/:id/delete","type":0,"val":"delete","end":""}],
-    types: placeholder as Registry['xhs_sessions.delete']['types'],
-  },
-  'xhs_sessions.list_messages': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/xhs/sessions/:id/messages',
-    tokens: [{"old":"/api/v1/xhs/sessions/:id/messages","type":0,"val":"api","end":""},{"old":"/api/v1/xhs/sessions/:id/messages","type":0,"val":"v1","end":""},{"old":"/api/v1/xhs/sessions/:id/messages","type":0,"val":"xhs","end":""},{"old":"/api/v1/xhs/sessions/:id/messages","type":0,"val":"sessions","end":""},{"old":"/api/v1/xhs/sessions/:id/messages","type":1,"val":"id","end":""},{"old":"/api/v1/xhs/sessions/:id/messages","type":0,"val":"messages","end":""}],
-    types: placeholder as Registry['xhs_sessions.list_messages']['types'],
-  },
-  'xhs_sessions.chat_copy': {
-    methods: ["POST"],
-    pattern: '/api/v1/xhs/sessions/:id/chat/copy',
-    tokens: [{"old":"/api/v1/xhs/sessions/:id/chat/copy","type":0,"val":"api","end":""},{"old":"/api/v1/xhs/sessions/:id/chat/copy","type":0,"val":"v1","end":""},{"old":"/api/v1/xhs/sessions/:id/chat/copy","type":0,"val":"xhs","end":""},{"old":"/api/v1/xhs/sessions/:id/chat/copy","type":0,"val":"sessions","end":""},{"old":"/api/v1/xhs/sessions/:id/chat/copy","type":1,"val":"id","end":""},{"old":"/api/v1/xhs/sessions/:id/chat/copy","type":0,"val":"chat","end":""},{"old":"/api/v1/xhs/sessions/:id/chat/copy","type":0,"val":"copy","end":""}],
-    types: placeholder as Registry['xhs_sessions.chat_copy']['types'],
-  },
-  'xhs_sessions.chat_image': {
-    methods: ["POST"],
-    pattern: '/api/v1/xhs/sessions/:id/chat/image',
-    tokens: [{"old":"/api/v1/xhs/sessions/:id/chat/image","type":0,"val":"api","end":""},{"old":"/api/v1/xhs/sessions/:id/chat/image","type":0,"val":"v1","end":""},{"old":"/api/v1/xhs/sessions/:id/chat/image","type":0,"val":"xhs","end":""},{"old":"/api/v1/xhs/sessions/:id/chat/image","type":0,"val":"sessions","end":""},{"old":"/api/v1/xhs/sessions/:id/chat/image","type":1,"val":"id","end":""},{"old":"/api/v1/xhs/sessions/:id/chat/image","type":0,"val":"chat","end":""},{"old":"/api/v1/xhs/sessions/:id/chat/image","type":0,"val":"image","end":""}],
-    types: placeholder as Registry['xhs_sessions.chat_image']['types'],
-  },
 } as const satisfies Record<string, AdonisEndpoint>
 
 export { routes }

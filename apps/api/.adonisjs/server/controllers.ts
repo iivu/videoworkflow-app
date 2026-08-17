@@ -12,5 +12,4 @@ export const controllers = {
   VideoBreakdown: () => import('#controllers/video-breakdown-controller'),
   Videos: () => import('#controllers/videos-controller'),
   Voices: () => import('#controllers/voices-controller'),
-  XhsSessions: () => import('#controllers/xhs-sessions-controller'),
 }

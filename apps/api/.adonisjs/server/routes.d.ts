@@ -31,14 +31,6 @@ export type ScannedRoutes = {
     'oss.get_policy': { paramsTuple?: []; params?: {} }
     'ai.polish_article': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
     'ai.list_messages': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
-    'xhs_sessions.create': { paramsTuple?: []; params?: {} }
-    'xhs_sessions.list': { paramsTuple?: []; params?: {} }
-    'xhs_sessions.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'xhs_sessions.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'xhs_sessions.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'xhs_sessions.list_messages': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'xhs_sessions.chat_copy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'xhs_sessions.chat_image': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   POST: {
     'session.create': { paramsTuple?: []; params?: {} }
@@ -55,11 +47,6 @@ export type ScannedRoutes = {
     'oss.upload': { paramsTuple?: []; params?: {} }
     'oss.upload_url': { paramsTuple?: []; params?: {} }
     'ai.polish_article': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
-    'xhs_sessions.create': { paramsTuple?: []; params?: {} }
-    'xhs_sessions.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'xhs_sessions.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'xhs_sessions.chat_copy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'xhs_sessions.chat_image': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
     'session.validate': { paramsTuple?: []; params?: {} }
@@ -75,9 +62,6 @@ export type ScannedRoutes = {
     'paraformer.check_task': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
     'oss.get_policy': { paramsTuple?: []; params?: {} }
     'ai.list_messages': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
-    'xhs_sessions.list': { paramsTuple?: []; params?: {} }
-    'xhs_sessions.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'xhs_sessions.list_messages': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   HEAD: {
     'session.validate': { paramsTuple?: []; params?: {} }
@@ -93,9 +77,6 @@ export type ScannedRoutes = {
     'paraformer.check_task': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
     'oss.get_policy': { paramsTuple?: []; params?: {} }
     'ai.list_messages': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
-    'xhs_sessions.list': { paramsTuple?: []; params?: {} }
-    'xhs_sessions.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'xhs_sessions.list_messages': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

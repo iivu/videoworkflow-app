@@ -46,14 +46,5 @@ r.group(() => {
 
     r.post('/chat/polish-article/:videoId', [controllers.Ai, 'polishArticle']);
     r.get('/chat/polish-article/:videoId/messages', [controllers.Ai, 'listMessages']);
-
-    r.post('/xhs/sessions', [controllers.XhsSessions, 'create']);
-    r.get('/xhs/sessions', [controllers.XhsSessions, 'list']);
-    r.get('/xhs/sessions/:id', [controllers.XhsSessions, 'show']);
-    r.post('/xhs/sessions/:id', [controllers.XhsSessions, 'update']);
-    r.post('/xhs/sessions/:id/delete', [controllers.XhsSessions, 'delete']);
-    r.get('/xhs/sessions/:id/messages', [controllers.XhsSessions, 'listMessages']);
-    r.post('/xhs/sessions/:id/chat/copy', [controllers.XhsSessions, 'chatCopy']);
-    r.post('/xhs/sessions/:id/chat/image', [controllers.XhsSessions, 'chatImage']);
   }).use(middleware.auth());
 }).prefix('/api/v1');
