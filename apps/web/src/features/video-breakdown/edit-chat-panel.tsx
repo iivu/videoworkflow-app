@@ -10,17 +10,8 @@ import { EmptyState } from '#/features/video/detail/components';
 import { useTheme } from '#/providers/theme-provider';
 import { normalizeApiFailedMessage, query } from '#/services/api';
 import { getAssetUrl, type Segment } from './detail';
-import { type AssistantPayload, type ChatMessage, EditMessageItem, TERMINAL_STATUSES } from './edit-message-item';
-
-type MessageRow = {
-  id: number;
-  entityId: string;
-  role: string;
-  message: string;
-  taskId: string | null;
-  createdAt: string | null;
-  updatedAt: string | null;
-};
+import { type AssistantPayload, EditMessageItem, TERMINAL_STATUSES } from './edit-message-item';
+import type { ChatMessage, VideoEditMessage } from './types';
 
 const roleConfig: BubbleListProps['role'] = {
   user: { placement: 'end', variant: 'filled' },
@@ -31,7 +22,7 @@ function toApiErrorMessage(error: unknown): string {
   return normalizeApiFailedMessage(error as TuyauError) || '';
 }
 
-function toChatMessage(row: MessageRow): ChatMessage {
+function toChatMessage(row: VideoEditMessage): ChatMessage {
   return { ...row, role: row.role === 'assistant' ? 'assistant' : 'user' };
 }
 
@@ -59,16 +50,9 @@ export function EditChatPanel({ taskId, segments, selectedIndex }: { taskId: str
       const task = response.data;
       const source: AssistantPayload['source'] = { type: 'segment', segmentIndex: selectedIndex };
       const now = Date.now();
-      const optimistic: MessageRow[] = [
-        {
-          id: -now,
-          entityId: taskId,
-          role: 'user',
-          message: variables.body.prompt,
-          taskId: null,
-          createdAt: new Date(now).toISOString(),
-          updatedAt: null,
-        },
+      // 缓存列表与服务端一致为「新消息在前」（orderBy id desc），展示层再 reverse 成时间正序。
+      // 因此乐观插入时 assistant（更新）必须排在 user 之前，否则展示时处理中的消息会跑到用户消息上面。
+      const optimistic: VideoEditMessage[] = [
         {
           id: -now - 1,
           entityId: taskId,
@@ -85,9 +69,18 @@ export function EditChatPanel({ taskId, segments, selectedIndex }: { taskId: str
           createdAt: new Date(now + 1).toISOString(),
           updatedAt: null,
         },
+        {
+          id: -now,
+          entityId: taskId,
+          role: 'user',
+          message: variables.body.prompt,
+          taskId: null,
+          createdAt: new Date(now).toISOString(),
+          updatedAt: null,
+        },
       ];
       queryClient.setQueryData(messagesKey, (old) => {
-        const previous = old ?? { code: 0, message: 'ok', data: { meta: { total: 0, currentPage: 1 }, list: [] as MessageRow[] } };
+        const previous = old ?? { code: 0, message: 'ok', data: { meta: { total: 0, currentPage: 1 }, list: [] as VideoEditMessage[] } };
         return { ...previous, data: { meta: previous.data.meta, list: [...optimistic, ...previous.data.list] } };
       });
       setInput('');

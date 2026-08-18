@@ -5,16 +5,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 
 import { client } from '#/services/api';
 import type { Segment } from './detail';
-
-export type ChatMessage = {
-  id: number;
-  entityId: string;
-  role: 'user' | 'assistant';
-  message: string;
-  taskId: string | null;
-  createdAt: string | null;
-  updatedAt: string | null;
-};
+import type { ChatMessage } from './types';
 
 export type AssistantPayload = {
   provider: string;
