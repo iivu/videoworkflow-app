@@ -46,7 +46,7 @@ export type ShanhaiVideoInfo = {
   title: string;
   videoUrl: string;
   author: string;
-  platform?: string;
+  platform: string;
   stats: {
     likeCount: number;
     playCount: number;
@@ -79,7 +79,7 @@ function mapVideoInfo(data: ShanhaiApiData, videoUrl: string, title: string): Sh
     title,
     videoUrl,
     author: stats?.author_name || 'Unknown',
-    platform: data.platform || 'Unknown',
+    platform: data.platform || 'unknown',
     stats: {
       likeCount: stats?.like_count || 0,
       playCount: stats?.play_count || 0,

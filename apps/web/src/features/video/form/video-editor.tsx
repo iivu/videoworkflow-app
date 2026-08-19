@@ -1,9 +1,9 @@
-import { Alert, AlertDescription, cn, DatePicker, Field, FieldError, FieldLabel, Input } from '@r/ui';
+import { Alert, AlertDescription, cn, DatePicker, Field, FieldError, FieldLabel, Input, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@r/ui';
 import { AlertCircle, FileVideo } from 'lucide-react';
 
 import { useObjectUrl } from '#/hooks/use-object-url';
 import { normalizeApiFailedMessage } from '#/services/api';
-import { COUNT_FIELDS, type DraftErrors, formatFileSize, type VideoDraft } from './video-draft';
+import { COUNT_FIELDS, type DraftErrors, formatFileSize, VIDEO_PLATFORMS, type VideoDraft } from './video-draft';
 
 type VideoEditorProps = {
   draft?: VideoDraft;
@@ -67,6 +67,30 @@ export function VideoEditor({ draft, errors, busy, error, onUpdate }: VideoEdito
             {errors?.title ? <FieldError>{errors.title}</FieldError> : null}
           </Field>
 
+          <Field data-invalid={Boolean(errors?.platform)}>
+            <FieldLabel htmlFor={`video-${draft.id}-platform`}>平台</FieldLabel>
+            <Select
+              items={VIDEO_PLATFORMS}
+              value={draft.platform}
+              disabled={busy}
+              onValueChange={(value) => onUpdate((current) => ({ ...current, platform: value as VideoDraft['platform'] }))}
+            >
+              <SelectTrigger id={`video-${draft.id}-platform`} className={cn('w-full', errors?.platform && 'border-destructive')} aria-invalid={Boolean(errors?.platform)}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {VIDEO_PLATFORMS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            {errors?.platform ? <FieldError>{errors.platform}</FieldError> : null}
+          </Field>
+
           <Field data-invalid={Boolean(errors?.author)}>
             <FieldLabel htmlFor={`video-${draft.id}-author`}>作者</FieldLabel>
             <Input
@@ -80,7 +104,7 @@ export function VideoEditor({ draft, errors, busy, error, onUpdate }: VideoEdito
             {errors?.author ? <FieldError>{errors.author}</FieldError> : null}
           </Field>
 
-          <Field data-invalid={Boolean(errors?.publishAt)} className="sm:col-span-2">
+          <Field data-invalid={Boolean(errors?.publishAt)}>
             <FieldLabel htmlFor={`video-${draft.id}-publishAt`}>发布日期</FieldLabel>
             <DatePicker
               id={`video-${draft.id}-publishAt`}

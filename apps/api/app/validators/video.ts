@@ -3,6 +3,7 @@ import vine from '@vinejs/vine';
 const videoSchema = vine.object({
   title: vine.string().trim(),
   author: vine.string().trim(),
+  platform: vine.string().trim().maxLength(32),
   coverUrl: vine.string().url().optional(),
   fileUrl: vine.string().url(),
   publishAt: vine.date({ formats: ['iso8601'] }).transform((value) => value.setZone('utc')),

@@ -7,6 +7,7 @@ export default class VideoTransformer extends BaseTransformer<Video> {
       'id',
       'title',
       'author',
+      'platform',
       'fileUrl',
       'coverUrl',
       'likeCount',

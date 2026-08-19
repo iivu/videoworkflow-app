@@ -45,6 +45,7 @@ export default class CrawlerVideoJob extends Job<CrawlerVideoPayload> {
       payload: [
         {
           author: videoInfo.author,
+          platform: videoInfo.platform,
           fileUrl: ossResp.url,
           likeCount: videoInfo.stats.likeCount ?? 0,
           playCount: videoInfo.stats.playCount ?? 0,

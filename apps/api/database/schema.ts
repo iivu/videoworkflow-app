@@ -217,7 +217,7 @@ export class VideoToVoiceTaskSchema extends BaseModel {
 }
 
 export class VideoSchema extends BaseModel {
-  static $columns = ['author', 'commentCount', 'coverUrl', 'createdAt', 'favoriteCount', 'fileUrl', 'id', 'likeCount', 'playCount', 'publishAt', 'shareCount', 'title', 'updatedAt', 'userId'] as const
+  static $columns = ['author', 'commentCount', 'coverUrl', 'createdAt', 'favoriteCount', 'fileUrl', 'id', 'likeCount', 'platform', 'playCount', 'publishAt', 'shareCount', 'title', 'updatedAt', 'userId'] as const
   $columns = VideoSchema.$columns
   @column()
   declare author: string
@@ -235,6 +235,8 @@ export class VideoSchema extends BaseModel {
   declare id: number
   @column()
   declare likeCount: number
+  @column()
+  declare platform: string
   @column()
   declare playCount: number
   @column.dateTime()

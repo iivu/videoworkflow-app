@@ -118,6 +118,7 @@ export function VideoCreateForm() {
           return {
             title: draft.title.trim(),
             author: draft.author.trim(),
+            platform: draft.platform,
             fileUrl: draft.uploadedUrl,
             publishAt: draft.publishAt.toISOString(),
             likeCount: Number(draft.likeCount || 0),

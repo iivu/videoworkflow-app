@@ -38,6 +38,7 @@ test.group('Shanhai API service', () => {
         data: {
           code: 200,
           data: { title: 'Video title', video_url: 'https://cdn.example.com/fallback.mp4' },
+          platform: 'douyin',
           stats: { author_name: 'Author', like_count: 12, play_count: 34, share_count: 5, collect_count: 6, comment_count: 7 },
           video_list: [
             { url: 'https://cdn.example.com/large.mp4', size: '1.2GB' },
@@ -56,11 +57,12 @@ test.group('Shanhai API service', () => {
       title: 'Video title',
       videoUrl: 'https://cdn.example.com/small.mp4',
       author: 'Author',
+      platform: 'douyin',
       stats: { likeCount: 12, playCount: 34, shareCount: 5, collectCount: 6, commentCount: 7 },
     });
     const parsedRequestUrl = new URL(service.requests[0].input as string);
     const configuredBaseUrl = new URL(env.get('SHANHAI_API_HOST'));
-    const configuredPath = [configuredBaseUrl.pathname, env.get('SHANHAI_API_PREFIX'), 'video6']
+    const configuredPath = [configuredBaseUrl.pathname, env.get('SHANHAI_API_PREFIX'), 'video-parse']
       .map((segment) => segment.replace(/^\/+|\/+$/g, ''))
       .filter(Boolean)
       .join('/');
@@ -86,6 +88,7 @@ test.group('Shanhai API service', () => {
       title: 'Fallback title',
       videoUrl: 'https://cdn.example.com/fallback.mp4',
       author: 'Unknown',
+      platform: 'unknown',
       stats: { likeCount: 0, playCount: 0, shareCount: 0, collectCount: 0, commentCount: 0 },
     });
   });
