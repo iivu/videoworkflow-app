@@ -63,6 +63,7 @@
   },
   "dependencies": {
     "@adonisjs/auth": "catalog:",
+    "@adonisjs/bouncer": "catalog:",
     "@adonisjs/core": "catalog:",
     "@adonisjs/cors": "catalog:",
     "@adonisjs/lucid": "catalog:",

@@ -19,6 +19,7 @@ catalog:
   '@adonisjs/session': ^8.1.0
   '@adonisjs/shield': ^9.0.0
   '@adonisjs/static': ^2.0.1
+  '@adonisjs/bouncer': ^4.0.0
   '@adonisjs/tsconfig': ^2.0.0
   '@ai-sdk/alibaba': ^2.0.20
   '@ai-sdk/moonshotai': ^3.0.21

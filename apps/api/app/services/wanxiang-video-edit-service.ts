@@ -343,11 +343,12 @@ export class WanxiangVideoEditService {
   }
 
   private buildParameters(parameters?: WanxiangVideoEditParameters): JsonRecord {
-    if (!parameters) return {
-      resolution: WANXIANG_VIDEO_EDIT_RESOLUTIONS[1],
-      prompt_extend: true,
-      watermark: false,
-    };
+    if (!parameters)
+      return {
+        resolution: WANXIANG_VIDEO_EDIT_RESOLUTIONS[1],
+        prompt_extend: true,
+        watermark: false,
+      };
     return {
       ...(parameters.resolution !== undefined && { resolution: parameters.resolution }),
       ...(parameters.ratio !== undefined && { ratio: parameters.ratio }),

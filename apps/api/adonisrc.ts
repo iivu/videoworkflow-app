@@ -1,6 +1,7 @@
-import { indexEntities } from '@adonisjs/core'
-import { defineConfig } from '@adonisjs/core/app'
-import { generateRegistry } from '@tuyau/core/hooks'
+import { indexPolicies } from '@adonisjs/bouncer';
+import { indexEntities } from '@adonisjs/core';
+import { defineConfig } from '@adonisjs/core/app';
+import { generateRegistry } from '@tuyau/core/hooks';
 
 export default defineConfig({
   /*
@@ -29,6 +30,7 @@ export default defineConfig({
     () => import('@adonisjs/lucid/commands'),
     () => import('@adonisjs/session/commands'),
     () => import('@adonisjs/queue/commands'),
+    () => import('@adonisjs/bouncer/commands'),
   ],
 
   /*
@@ -59,7 +61,8 @@ export default defineConfig({
     () => import('#providers/oss-provider'),
     () => import('#providers/nanobananas-provider'),
     () => import('@adonisjs/redis/redis_provider'),
-    () => import('@adonisjs/static/static_provider')
+    () => import('@adonisjs/static/static_provider'),
+    () => import('@adonisjs/bouncer/bouncer_provider'),
   ],
 
   /*
@@ -114,10 +117,12 @@ export default defineConfig({
   | the production build.
   |
   */
-  metaFiles: [{
-    pattern: 'public/**',
-    reloadServer: false,
-  }],
+  metaFiles: [
+    {
+      pattern: 'public/**',
+      reloadServer: false,
+    },
+  ],
 
   hooks: {
     init: [
@@ -127,6 +132,7 @@ export default defineConfig({
       generateRegistry({
         validationErrorType: false,
       }),
+      indexPolicies(),
     ],
   },
-})
+});

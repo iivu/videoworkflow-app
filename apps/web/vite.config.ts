@@ -29,7 +29,7 @@ const config = defineConfig(({ mode, command }) => {
         spa: { enabled: true },
         router: { basepath: isBuild ? env.VITE_BASE_URL : '/' },
       }),
-      viteReact()
+      viteReact(),
     ],
   };
 });

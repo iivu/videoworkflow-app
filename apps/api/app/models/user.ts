@@ -26,4 +26,8 @@ export default class User extends compose(UserSchema, AuthFinder) {
   static assignUUID(user: User) {
     user.id = uuidv7();
   }
+
+  isAdminOwner() {
+    return this.role?.code === 'admin_owner';
+  }
 }
