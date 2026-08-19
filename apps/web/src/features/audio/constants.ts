@@ -1,6 +1,6 @@
 import type { BailianAudioConfigs, MinimaxiAudioConfigs, ModelOption } from './types';
 
-export const MAX_TEXT_LENGTH = 2000;
+export const MAX_TEXT_LENGTH = 5000;
 
 /** 与后端 bailian-audio-service.ts 的 BAILIAN_VOICE_MODELS 保持一致 */
 export const BAILIAN_VOICE_MODELS = [

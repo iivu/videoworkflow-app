@@ -27,14 +27,14 @@ export function EditorCard({ text, busy, onTextChange, onPolish, onFixTypos, onG
       />
 
       <div className="flex items-center gap-2 rounded-b-xl border-t bg-muted/40 px-4 py-3">
-        <Button variant="outline" size="sm" className="rounded-full bg-background" onClick={onPolish}>
+        {/* <Button variant="outline" size="sm" className="rounded-full bg-background" onClick={onPolish}>
           <Sparkles />
           AI 润色
         </Button>
         <Button variant="outline" size="sm" className="rounded-full bg-background" onClick={onFixTypos}>
           <SpellCheck />
           修正错别字
-        </Button>
+        </Button> */}
         <span className="ml-auto text-xs tabular-nums text-muted-foreground">
           {text.length.toLocaleString()} / {MAX_TEXT_LENGTH.toLocaleString()} 字符
         </span>
