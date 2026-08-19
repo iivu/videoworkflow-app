@@ -29,11 +29,8 @@ export class VideoService {
     await Promise.all(videos.map((v) => v.delete()));
     const ossKeys = videos
       .map((v) => {
-        const parts = v.fileUrl.split('/');
-        const dir = parts[parts.length - 2];
-        const key = parts[parts.length - 1];
-        if (!dir || !key) return null;
-        return `${dir}/${key}`;
+        const url = new URL(v.fileUrl);
+        return url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname;
       })
       .filter((v) => v !== null);
     try {
