@@ -18,18 +18,12 @@ type ShanhaiStats = {
   share_count?: number;
   collect_count?: number;
   comment_count?: number;
-};
-
-type ShanhaiVideoData = {
-  title: string;
-  video_url?: string;
+  publish_time?: string;
 };
 
 type ShanhaiApiData = {
-  code: number;
-  msg?: string;
-  message?: string;
-  data?: ShanhaiVideoData;
+  title: string;
+  video_url?: string;
   stats?: ShanhaiStats;
   video_list?: VideoItem[];
   platform?: string;
@@ -53,6 +47,7 @@ export type ShanhaiVideoInfo = {
     shareCount: number;
     collectCount: number;
     commentCount: number;
+    publishTime?: string;
   };
 };
 
@@ -86,6 +81,7 @@ function mapVideoInfo(data: ShanhaiApiData, videoUrl: string, title: string): Sh
       shareCount: stats?.share_count || 0,
       collectCount: stats?.collect_count || 0,
       commentCount: stats?.comment_count || 0,
+      publishTime: stats?.publish_time,
     },
   };
 }
@@ -108,23 +104,21 @@ export class ShanhaiApiService {
     apiUrl.searchParams.set('flat', '1');
     const fetchClient = await this.getFetchClient();
     const response = await fetchClient.json<ShanhaiApiResponse | null>(apiUrl);
-
     if (!response) throw new Error('Response body is empty');
-    if (response.code !== 200) throw new Error(response.msg || response.message || 'API error (level 1)');
+    if (response.code !== 200 && response.code !== 0) throw new Error(response.msg || response.message || 'API error (level 1)');
     if (!response.data) throw new Error('Response data is empty');
-    if (response.data.code !== 200 && response.data.code !== 0) throw new Error(response.data.msg || response.data.message || 'API error (level 2)');
 
     const videoList = response.data.video_list;
     if (Array.isArray(videoList) && videoList.length > 0) {
       const smallestVideo = videoList.reduce((smallest, video) => (parseSizeToBytes(video.size) < parseSizeToBytes(smallest.size) ? video : smallest));
       if (smallestVideo.url) {
-        const result = mapVideoInfo(response.data, smallestVideo.url, response.data.data?.title || 'Unknown');
+        const result = mapVideoInfo(response.data, smallestVideo.url, response.data?.title || 'Unknown');
         logger.info({ source: 'video_list', title: result.title }, 'Shanhai video info retrieved');
         return result;
       }
     }
 
-    const fallbackData = response.data.data;
+    const fallbackData = response.data;
     const fallbackUrl = fallbackData?.video_url;
     if (!fallbackUrl) throw new Error('Video URL is empty');
 

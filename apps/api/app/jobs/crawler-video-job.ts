@@ -52,7 +52,7 @@ export default class CrawlerVideoJob extends Job<CrawlerVideoPayload> {
           shareCount: videoInfo.stats.shareCount ?? 0,
           favoriteCount: videoInfo.stats.collectCount ?? 0,
           commentCount: videoInfo.stats.commentCount ?? 0,
-          publishAt: DateTime.now().toUTC(),
+          publishAt: this.safeCovertPublishTime(videoInfo.stats.publishTime),
           title: videoInfo.title,
         },
       ],
@@ -67,5 +67,12 @@ export default class CrawlerVideoJob extends Job<CrawlerVideoPayload> {
     await this.crawlerVideoTaskService.update({
       payload: { status: TASK_STATUS.FAILED, taskId, reason: error.message },
     });
+  }
+
+  private safeCovertPublishTime(publishTime?: string) {
+    if (!publishTime) return DateTime.now().toUTC();
+    const dt = DateTime.fromSQL(publishTime);
+    if (!dt.isValid) return DateTime.now().toUTC();
+    return dt.toUTC();
   }
 }
