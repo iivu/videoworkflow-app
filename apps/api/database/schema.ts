@@ -103,6 +103,23 @@ export class ParaformerTaskSchema extends BaseModel {
   declare videoId: number
 }
 
+export class RoleSchema extends BaseModel {
+  static $columns = ['code', 'createdAt', 'description', 'id', 'name', 'updatedAt'] as const
+  $columns = RoleSchema.$columns
+  @column()
+  declare code: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare name: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class UserPolishArticleMessageSchema extends BaseModel {
   static $columns = ['createdAt', 'id', 'message', 'role', 'updatedAt', 'userId', 'videoId'] as const
   $columns = UserPolishArticleMessageSchema.$columns
@@ -123,7 +140,7 @@ export class UserPolishArticleMessageSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['avatar', 'createdAt', 'email', 'id', 'mobile', 'password', 'updatedAt', 'username'] as const
+  static $columns = ['avatar', 'createdAt', 'email', 'id', 'mobile', 'password', 'roleId', 'updatedAt', 'username'] as const
   $columns = UserSchema.$columns
   @column()
   declare avatar: string | null
@@ -137,6 +154,8 @@ export class UserSchema extends BaseModel {
   declare mobile: string | null
   @column({ serializeAs: null })
   declare password: string
+  @column()
+  declare roleId: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()

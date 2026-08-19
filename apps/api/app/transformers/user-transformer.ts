@@ -3,6 +3,11 @@ import type User from '#models/user';
 
 export default class UserTransformer extends BaseTransformer<User> {
   toObject() {
-    return this.pick(this.resource, ['username', 'avatar', 'email', 'createdAt', 'updatedAt', 'mobile']);
+    const user = this.pick(this.resource, ['username', 'avatar', 'email', 'createdAt', 'updatedAt', 'mobile']);
+    const role = this.resource.role;
+    return {
+      ...user,
+      role: role ? { code: role.code, name: role.name } : null,
+    };
   }
 }

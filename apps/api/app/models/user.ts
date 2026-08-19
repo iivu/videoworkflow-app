@@ -2,9 +2,11 @@ import { type AccessToken, DbAccessTokensProvider } from '@adonisjs/auth/access_
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid';
 import { compose } from '@adonisjs/core/helpers';
 import hash from '@adonisjs/core/services/hash';
-import { beforeCreate } from '@adonisjs/lucid/orm';
+import { beforeCreate, belongsTo } from '@adonisjs/lucid/orm';
+import type { BelongsTo } from '@adonisjs/lucid/types/relations';
 import { v7 as uuidv7 } from 'uuid';
 import { UserSchema } from '#database/schema';
+import Role from '#models/role';
 
 const AuthFinder = withAuthFinder(hash, {
   uids: ['id', 'username'],
@@ -16,6 +18,9 @@ export default class User extends compose(UserSchema, AuthFinder) {
   static selfAssignPrimaryKey = true;
 
   declare currentAccessToken?: AccessToken;
+
+  @belongsTo(() => Role)
+  declare role: BelongsTo<typeof Role>;
 
   @beforeCreate()
   static assignUUID(user: User) {
