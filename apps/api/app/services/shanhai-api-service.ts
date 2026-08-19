@@ -32,6 +32,7 @@ type ShanhaiApiData = {
   data?: ShanhaiVideoData;
   stats?: ShanhaiStats;
   video_list?: VideoItem[];
+  platform?: string;
 };
 
 type ShanhaiApiResponse = {
@@ -45,6 +46,7 @@ export type ShanhaiVideoInfo = {
   title: string;
   videoUrl: string;
   author: string;
+  platform?: string;
   stats: {
     likeCount: number;
     playCount: number;
@@ -77,6 +79,7 @@ function mapVideoInfo(data: ShanhaiApiData, videoUrl: string, title: string): Sh
     title,
     videoUrl,
     author: stats?.author_name || 'Unknown',
+    platform: data.platform || 'Unknown',
     stats: {
       likeCount: stats?.like_count || 0,
       playCount: stats?.play_count || 0,
@@ -94,7 +97,7 @@ export class ShanhaiApiService {
 
   async fetchVideoInfo(url: string): Promise<ShanhaiVideoInfo> {
     const apiUrl = new URL(env.get('SHANHAI_API_HOST'));
-    const path = [apiUrl.pathname, env.get('SHANHAI_API_PREFIX'), 'video6']
+    const path = [apiUrl.pathname, env.get('SHANHAI_API_PREFIX'), 'video-parse']
       .map((segment) => segment.replace(/^\/+|\/+$/g, ''))
       .filter(Boolean)
       .join('/');
@@ -102,13 +105,14 @@ export class ShanhaiApiService {
     apiUrl.search = '';
     apiUrl.searchParams.set('key', env.get('SHANHAI_API_KEY'));
     apiUrl.searchParams.set('url', url);
+    apiUrl.searchParams.set('flat', '1');
     const fetchClient = await this.getFetchClient();
     const response = await fetchClient.json<ShanhaiApiResponse | null>(apiUrl);
 
     if (!response) throw new Error('Response body is empty');
     if (response.code !== 200) throw new Error(response.msg || response.message || 'API error (level 1)');
     if (!response.data) throw new Error('Response data is empty');
-    if (response.data.code !== 200) throw new Error(response.data.msg || response.data.message || 'API error (level 2)');
+    if (response.data.code !== 200 && response.data.code !== 0) throw new Error(response.data.msg || response.data.message || 'API error (level 2)');
 
     const videoList = response.data.video_list;
     if (Array.isArray(videoList) && videoList.length > 0) {
