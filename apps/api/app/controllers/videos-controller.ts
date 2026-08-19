@@ -36,6 +36,7 @@ export default class VideosController {
 
   async delete(ctx: HttpContext) {
     const payload = await ctx.request.validateUsing(deleteVideoValidator);
+    if (await ctx.bouncer.with('VideoPolicy').denies('delete')) return ctx.fail('没有权限', 40300);
     const ids = await this.videoService.deleteVideos({
       videoIds: payload.ids,
     });
