@@ -5,14 +5,10 @@ import { useEffect, useState } from 'react';
 import z from 'zod';
 
 import { useAppForm } from '#/components/form';
-import { FieldBase } from '#/components/form/fields/field-base';
 import { normalizeApiFailedMessage, query } from '#/services/api';
 import { EVENT_OPEN_CRAWLER_VIDEO_FORM_DIALOG, emitter } from '#/shared/mitt';
 
-const PLATFORMS = [{ value: 'douyin', label: '抖音' }] as const;
-
 const crawlerVideoFormSchema = z.object({
-  platform: z.enum(PLATFORMS.map((p) => p.value)),
   links: z.string().min(1, '请输入至少一条视频链接'),
 });
 
@@ -47,9 +43,9 @@ function CrawlerVideoForm({ onSuccess, onCancel }: { onSuccess?: () => void; onC
     validators: {
       onSubmit: crawlerVideoFormSchema,
     },
-    defaultValues: { platform: PLATFORMS[0].value as string, links: '' },
+    defaultValues: { links: '' },
     onSubmit: ({ value }) => {
-      createMutation.mutate({ body: { platform: value.platform, userInput: parseUserInput(value.links) } });
+      createMutation.mutate({ body: { userInput: parseUserInput(value.links) } });
     },
   });
 
@@ -60,14 +56,6 @@ function CrawlerVideoForm({ onSuccess, onCancel }: { onSuccess?: () => void; onC
 
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-      <form.AppField name="platform">
-        {(field) => (
-          <FieldBase description="选择视频分享平台">
-            <field.FieldSelect disabled options={PLATFORMS.map((p) => ({ value: p.value, label: p.label }))} placeholder="请选择平台" />
-          </FieldBase>
-        )}
-      </form.AppField>
-
       <form.AppField name="links">
         {(field) => <field.FieldTextarea rows={6} placeholder="粘贴视频分享链接或分享文本，每行一条" description="支持直接粘贴 App 分享文本，提交后自动提取并下载视频" />}
       </form.AppField>

@@ -1,7 +1,6 @@
 import vine from '@vinejs/vine';
 
 export const createCrawlerVideoTaskValidator = vine.create({
-  platform: vine.string().trim(),
   userInput: vine.array(vine.string().trim()).minLength(1),
 });
 

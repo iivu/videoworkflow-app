@@ -3,6 +3,6 @@ import type CrawlerVideoTask from '#models/crawler-video-task';
 
 export default class CrawlerVideoTaskTransformer extends BaseTransformer<CrawlerVideoTask> {
   toObject() {
-    return this.pick(this.resource, ['id', 'platform', 'url', 'userInput', 'status', 'reason', 'result', 'createdAt', 'updatedAt']);
+    return this.pick(this.resource, ['id', 'url', 'userInput', 'status', 'reason', 'result', 'createdAt', 'updatedAt']);
   }
 }

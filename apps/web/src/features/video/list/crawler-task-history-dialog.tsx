@@ -28,10 +28,6 @@ import { normalizeApiFailedMessage, query } from '#/services/api';
 
 const PAGE_SIZE = 10;
 
-const PLATFORM_LABELS: Record<string, string> = {
-  douyin: '抖音',
-};
-
 const STATUS_LABELS: Record<string, string> = {
   processing: '处理中',
   completed: '已完成',
@@ -46,7 +42,6 @@ function TaskStatus({ status }: { status: string }) {
 function TaskRow({ task }: { task: Data.CrawlerVideoTask }) {
   return (
     <TableRow>
-      <TableCell>{PLATFORM_LABELS[task.platform] ?? task.platform}</TableCell>
       <TableCell className="max-w-80 whitespace-normal">
         <div className="wrap-break-word font-medium truncate-2">{task.userInput || task.url}</div>
         {task.userInput && task.url !== task.userInput ? <div className="mt-1 break-all text-xs text-muted-foreground">提取目标：{task.url}</div> : null}
@@ -124,7 +119,6 @@ export function CrawlerTaskHistoryDialog({ open, onOpenChange }: Props) {
             <Table className="min-w-180">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-20">平台</TableHead>
                   <TableHead>原始输入 / 视频链接</TableHead>
                   <TableHead className="w-24">状态</TableHead>
                   <TableHead className="w-36">提交时间</TableHead>

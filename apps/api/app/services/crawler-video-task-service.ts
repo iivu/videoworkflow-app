@@ -16,7 +16,6 @@ export class CrawlerVideoTaskService {
           userId,
           userInput,
           url: url!,
-          platform: payload.platform,
           status: TASK_STATUS.PROCESSING,
         })),
     );
