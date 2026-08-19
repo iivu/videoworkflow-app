@@ -18,7 +18,7 @@ export default class ParaformerController {
   async transcription(ctx: HttpContext) {
     const user = await ctx.auth.getUserOrFail();
     const payload = await ctx.request.validateUsing(paraformerVideoValidator);
-    const video = await this.videoService.getVideoById({ id: payload.params.videoId, userId: user.id });
+    const video = await this.videoService.getVideoById({ id: payload.params.videoId });
     if (!video) return ctx.error('视频不存在');
 
     const existingTask = await this.paraformerService.getTaskByVideoId({ videoId: video.id, userId: user.id });
@@ -45,7 +45,7 @@ export default class ParaformerController {
   async transcriptionRetry(ctx: HttpContext) {
     const user = await ctx.auth.getUserOrFail();
     const payload = await ctx.request.validateUsing(paraformerVideoValidator);
-    const video = await this.videoService.getVideoById({ id: payload.params.videoId, userId: user.id });
+    const video = await this.videoService.getVideoById({ id: payload.params.videoId });
     if (!video) return ctx.error('视频不存在');
 
     const task = await this.paraformerService.getTaskByVideoId({ videoId: video.id, userId: user.id });

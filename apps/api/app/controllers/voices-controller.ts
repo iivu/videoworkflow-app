@@ -10,9 +10,8 @@ export default class VoicesController {
   constructor(private readonly voiceService: VoiceService) {}
 
   async list(ctx: HttpContext) {
-    const user = await ctx.auth.getUserOrFail();
     const payload = await ctx.request.validateUsing(listVoiceValidator);
-    const result = await this.voiceService.list({ userId: user.id, payload });
+    const result = await this.voiceService.list({ payload });
     const serialized = result.source === 'user' ? await ctx.serialize.withoutWrapping(VoiceTransformer.transform(result.list)) : result.list;
     const list = serialized.map((voice) => ({ ...voice, source: result.source }));
     return ctx.ok({ meta: result.meta, list });

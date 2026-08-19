@@ -26,32 +26,26 @@ export default class VideosController {
   }
 
   async update(ctx: HttpContext) {
-    const user = await ctx.auth.getUserOrFail();
     const payload = await ctx.request.validateUsing(updateVideoValidator);
     const video = await this.videoService.updateVideo({
       videoId: payload.params.id,
-      userId: user.id,
       payload,
     });
     return ctx.ok(await ctx.serialize.withoutWrapping(VideoTransformer.transform(video)));
   }
 
   async delete(ctx: HttpContext) {
-    const user = await ctx.auth.getUserOrFail();
     const payload = await ctx.request.validateUsing(deleteVideoValidator);
     const ids = await this.videoService.deleteVideos({
       videoIds: payload.ids,
-      userId: user.id,
     });
     return ctx.ok(ids);
   }
 
   async list(ctx: HttpContext) {
-    const user = await ctx.auth.getUserOrFail();
     const payload = await ctx.request.validateUsing(listVideoValidator);
     const paginated = await this.videoService.listVideo({
       payload,
-      userId: user.id,
     });
     return ctx.ok({
       meta: { total: paginated.total, currentPage: paginated.currentPage },
@@ -60,11 +54,9 @@ export default class VideosController {
   }
 
   async check(ctx: HttpContext) {
-    const user = await ctx.auth.getUserOrFail();
     const payload = await ctx.request.validateUsing(checkVideoValidator);
     const video = await this.videoService.getVideoById({
       id: payload.params.id,
-      userId: user.id,
     });
     if (!video) return ctx.error('视频不存在');
     return ctx.ok(await ctx.serialize.withoutWrapping(VideoTransformer.transform(video)));

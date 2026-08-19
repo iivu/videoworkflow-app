@@ -11,23 +11,23 @@ export class VideoService {
     return videos;
   }
 
-  async updateVideo(params: { videoId: number; userId: string; payload: Infer<typeof updateVideoValidator> }) {
-    const { videoId, userId, payload } = params;
-    const video = await Video.findBy({ id: videoId, userId: userId });
+  async updateVideo(params: { videoId: number; payload: Infer<typeof updateVideoValidator> }) {
+    const { videoId, payload } = params;
+    const video = await Video.find(videoId);
     if (!video) throw new BusinessException('视频不存在');
     const { params: _, ...rest } = payload;
     await video.merge(rest).save();
     return video;
   }
 
-  async deleteVideos(params: { videoIds: number[]; userId: string }) {
-    const { videoIds, userId } = params;
-    const userVideos = await Video.query().whereIn('id', videoIds).where('user_id', userId).exec();
+  async deleteVideos(params: { videoIds: number[] }) {
+    const { videoIds } = params;
+    const videos = await Video.query().whereIn('id', videoIds).exec();
     // 没有视频需要删除
-    if (userVideos.length <= 0) return [];
+    if (videos.length <= 0) return [];
     const oss = await app.container.make('oss');
-    await Promise.all(userVideos.map((v) => v.delete()));
-    const ossKeys = userVideos
+    await Promise.all(videos.map((v) => v.delete()));
+    const ossKeys = videos
       .map((v) => {
         const parts = v.fileUrl.split('/');
         const dir = parts[parts.length - 2];
@@ -39,15 +39,15 @@ export class VideoService {
     try {
       await Promise.all(ossKeys.map((v) => oss.delete(v)));
     } catch (e: any) {
-      logger.error({ videoIds, userId, ossKeys, err: e.message }, 'delete oss video files failed');
+      logger.error({ videoIds, ossKeys, err: e.message }, 'delete oss video files failed');
       throw new BusinessException(e.message);
     }
-    return userVideos.map((v) => v.id);
+    return videos.map((v) => v.id);
   }
 
-  async listVideo(params: { payload: Infer<typeof listVideoValidator>; userId: string }) {
-    const { payload, userId } = params;
-    const query = Video.query().where('user_id', userId);
+  async listVideo(params: { payload: Infer<typeof listVideoValidator> }) {
+    const { payload } = params;
+    const query = Video.query();
     if (payload.publishAt) query.where('publishAt', payload.publishAt.toSQLDate() || '');
     if (payload.minLikeCount) query.where('likeCount', '>=', payload.minLikeCount);
     if (payload.maxLikeCount) query.where('likeCount', '<=', payload.maxLikeCount);
@@ -65,13 +65,13 @@ export class VideoService {
     return await query.paginate(payload.page, payload.size);
   }
 
-  async getVideoById(params: { id: number; userId: string }) {
-    const { id, userId } = params;
-    return await Video.query().where('user_id', userId).where('id', id).first();
+  async getVideoById(params: { id: number }) {
+    const { id } = params;
+    return await Video.find(id);
   }
 
-  async getVideosByIds(params: { ids: number[]; userId: string }) {
-    const { ids, userId } = params;
-    return await Video.query().where('user_id', userId).whereIn('id', ids).exec();
+  async getVideosByIds(params: { ids: number[] }) {
+    const { ids } = params;
+    return await Video.query().whereIn('id', ids).exec();
   }
 }

@@ -64,10 +64,10 @@ export class VoiceService {
     }
   }
 
-  async list(params: { userId: string; payload: Infer<typeof listVoiceValidator> }) {
+  async list(params: { payload: Infer<typeof listVoiceValidator> }) {
     const { source, provider, page = 1, size = 20 } = params.payload;
     if (source === 'user') {
-      const paginated = await Voice.query().where('user_id', params.userId).orderBy('created_at', 'desc').paginate(page, size);
+      const paginated = await Voice.query().orderBy('created_at', 'desc').paginate(page, size);
       return { meta: { total: paginated.total, currentPage: paginated.currentPage }, list: paginated.all(), source };
     }
     if (!provider) throw new BusinessException('查询系统音色时必须指定 provider');

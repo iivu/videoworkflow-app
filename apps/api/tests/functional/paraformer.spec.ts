@@ -1,3 +1,4 @@
+import app from '@adonisjs/core/services/app';
 import testUtils from '@adonisjs/core/services/test_utils';
 import { test } from '@japa/runner';
 import { DateTime } from 'luxon';
@@ -5,7 +6,14 @@ import { DateTime } from 'luxon';
 import ParaformerTask from '#models/paraformer-task';
 import User from '#models/user';
 import Video from '#models/video';
-import { PARAFORMER_TASK_STATUS } from '#services/paraformer-service';
+import { PARAFORMER_TASK_STATUS, ParaformerService } from '#services/paraformer-service';
+
+class StubParaformerService extends ParaformerService {
+  override async submit(params: { videoUrl: string }) {
+    void params;
+    return { taskId: 'shared-video-task', status: PARAFORMER_TASK_STATUS.PENDING };
+  }
+}
 
 async function createUser(username: string) {
   return User.create({ username, password: 'test-password' });
@@ -23,6 +31,12 @@ async function createVideo(userId: string) {
 
 test.group('Paraformer HTTP boundary', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction());
+  group.each.setup(() => {
+    app.container.swap(ParaformerService, () => new StubParaformerService());
+  });
+  group.each.teardown(() => {
+    app.container.restore(ParaformerService);
+  });
 
   test('requires authentication', async ({ client }) => {
     const response = await client.get('/api/v1/paraformer/task/check/1');
@@ -90,15 +104,22 @@ test.group('Paraformer HTTP boundary', (group) => {
     assert.notProperty(body.data, 'userId');
   });
 
-  test('rejects creating a task for another user video before remote submission', async ({ assert, client }) => {
+  test('allows creating a task for a shared video owned by another user', async ({ assert, client }) => {
     const owner = await createUser('paraformer-video-owner');
     const viewer = await createUser('paraformer-video-viewer');
     const video = await createVideo(owner.id);
 
     const response = await client.post(`/api/v1/paraformer/transcription/${video.id}`).loginAs(viewer);
 
-    response.assertStatus(400);
-    assert.deepEqual(response.body(), { code: 40000, message: '视频不存在', data: null });
+    response.assertStatus(200);
+    const data = (response.body() as { data: { taskId: string; videoId: number; status: string } }).data;
+    assert.equal(data.taskId, 'shared-video-task');
+    assert.equal(data.videoId, video.id);
+    assert.equal(data.status, PARAFORMER_TASK_STATUS.PENDING);
+    assert.notProperty(data, 'userId');
+
+    const task = await ParaformerTask.query().where('videoId', video.id).first();
+    assert.equal(task?.userId, viewer.id);
   });
 
   test('rejects a duplicate task before remote submission', async ({ assert, client }) => {

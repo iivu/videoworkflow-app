@@ -54,7 +54,7 @@ export class CreativeAudioService {
     const configs = buildCreativeAudioSynthesizeConfig({ provider, model, configs: params.payload.configs });
     let audioUrl: string;
     if (provider === 'bailian') {
-      const voice = await Voice.query().where('user_id', params.userId).where('voice_id', voiceId).first();
+      const voice = await Voice.query().where('voice_id', voiceId).first();
       if (!voice) throw new BusinessException('音色不存在');
       // 百炼限制：合成模型必须与生成音色的模型完全一致（qwen/cosyvoice 系列）
       assertBailianVoiceModelMatch(voice.model, model);
