@@ -30,7 +30,7 @@ export function UserProfileDropdown() {
           <DropdownMenuItem className="font-normal">
             <div className="flex flex-col gap-1.5">
               <p className="text-sm leading-none font-medium">账号：{user?.username}</p>
-              <p className="text-xs leading-none text-muted-foreground">用户名：-</p>
+              <p className="text-xs leading-none text-muted-foreground">角色：{user?.role?.name ?? '-'}</p>
             </div>
           </DropdownMenuItem>
         </DropdownMenuGroup>

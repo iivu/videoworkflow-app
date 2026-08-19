@@ -1,9 +1,9 @@
-import { Button, cn, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@r/ui';
-import { AudioLines, MoreVertical, Pencil } from 'lucide-react';
+import { Button, cn, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@r/ui';
+import { AudioLines, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 
 import { EVENT_OPEN_VOICE_CLONING_DIALOG, emitter } from '#/shared/mitt';
 
-export function VideoActionsMenuTrigger({ videoUrl, onEdit, className }: { videoUrl: string; onEdit: () => void; className?: string }) {
+export function VideoActionsMenuTrigger({ videoUrl, onEdit, onDelete, className }: { videoUrl: string; onEdit: () => void; onDelete?: () => void; className?: string }) {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger
@@ -46,6 +46,21 @@ export function VideoActionsMenuTrigger({ videoUrl, onEdit, className }: { video
           <AudioLines />
           提取音色
         </DropdownMenuItem>
+        {onDelete ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive focus:bg-destructive/10"
+              onClick={(event) => {
+                event.stopPropagation();
+                onDelete();
+              }}
+            >
+              <Trash2 />
+              删除视频
+            </DropdownMenuItem>
+          </>
+        ) : null}
       </DropdownMenuContent>
     </DropdownMenu>
   );

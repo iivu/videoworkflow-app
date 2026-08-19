@@ -1,8 +1,12 @@
+import { toast } from '@r/ui';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import dayjs from 'dayjs';
 import { Bookmark, Heart, MessageCircle, Share2 } from 'lucide-react';
 import { useRef } from 'react';
 
+import { useConfirm } from '#/providers/confirm-dialog-provider';
+import { normalizeApiFailedMessage, query } from '#/services/api';
 import { VideoActionsMenuTrigger } from '../components/video-actions-menu';
 import type { Video } from '../type';
 
@@ -15,6 +19,30 @@ function formatCount(count: number): string {
 
 export function VideoItem({ video, onEdit }: { video: Video; onEdit: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const queryClient = useQueryClient();
+  const { confirm } = useConfirm();
+  const deleteMutation = useMutation({
+    ...query.videos.delete.mutationOptions(),
+    onSuccess: () => {
+      toast.add({ type: 'success', description: '视频已删除' });
+      void queryClient.invalidateQueries({ queryKey: query.videos.list.queryKey() });
+    },
+    onError: (error) => {
+      toast.add({ type: 'error', description: normalizeApiFailedMessage(error) || '删除失败' });
+    },
+  });
+
+  const handleDelete = async () => {
+    const confirmed = await confirm({
+      title: '删除视频',
+      description: '确认删除该视频？删除后不可恢复。',
+      confirmBtnText: '删除',
+      danger: true,
+    });
+    if (!confirmed) return;
+    deleteMutation.mutate({ body: { ids: [video.id] } });
+  };
+
   return (
     <Link
       className="group relative block cursor-pointer overflow-hidden rounded-sm shadow-sm"
@@ -27,7 +55,7 @@ export function VideoItem({ video, onEdit }: { video: Video; onEdit: () => void 
         <video className="h-full w-full object-cover" preload="metadata" ref={videoRef} muted>
           <source src={video.fileUrl} type="video/mp4" />
         </video>
-        <VideoActionsMenuTrigger videoUrl={video.fileUrl} onEdit={onEdit} />
+        <VideoActionsMenuTrigger videoUrl={video.fileUrl} onEdit={onEdit} onDelete={handleDelete} />
         <Data video={video} />
       </div>
       <div className="px-3 py-2 text-sm">

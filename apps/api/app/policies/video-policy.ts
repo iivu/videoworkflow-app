@@ -1,9 +1,9 @@
 import { BasePolicy } from '@adonisjs/bouncer';
-import type { AuthorizerResponse } from '@adonisjs/bouncer/types';
 import User from '#models/user';
 
 export default class VideoPolicy extends BasePolicy {
-  delete(user: User): AuthorizerResponse {
+  async delete(user: User) {
+    await user.load((preloader) => preloader.load('role'));
     return user.isAdminOwner();
   }
 }
