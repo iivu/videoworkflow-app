@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { Bookmark, Heart, MessageCircle, Share2 } from 'lucide-react';
 import { useRef } from 'react';
 
+import { useAuth } from '#/providers/auth-provider';
 import { useConfirm } from '#/providers/confirm-dialog-provider';
 import { normalizeApiFailedMessage, query } from '#/services/api';
 import { VideoActionsMenuTrigger } from '../components/video-actions-menu';
@@ -20,6 +21,9 @@ function formatCount(count: number): string {
 export function VideoItem({ video, onEdit }: { video: Video; onEdit: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  // 与后端 VideoPolicy.delete 保持一致：仅超级管理员可删除视频，普通用户隐藏删除按钮
+  const canDelete = user?.role?.code === 'admin_owner';
   const { confirm } = useConfirm();
   const deleteMutation = useMutation({
     ...query.videos.delete.mutationOptions(),
@@ -55,7 +59,7 @@ export function VideoItem({ video, onEdit }: { video: Video; onEdit: () => void 
         <video className="h-full w-full object-cover" preload="metadata" ref={videoRef} muted>
           <source src={video.fileUrl} type="video/mp4" />
         </video>
-        <VideoActionsMenuTrigger videoUrl={video.fileUrl} onEdit={onEdit} onDelete={handleDelete} />
+        <VideoActionsMenuTrigger videoUrl={video.fileUrl} onEdit={onEdit} onDelete={canDelete ? handleDelete : undefined} />
         <Data video={video} />
       </div>
       <div className="px-3 py-2 text-sm">

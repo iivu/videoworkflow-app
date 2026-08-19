@@ -36,7 +36,7 @@ export function UserProfileDropdown() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onClick={logout}>
+          <DropdownMenuItem variant="destructive" onClick={logout}>
             退出登录
             <DropdownMenuShortcut>
               <LogOutIcon className="h-4 w-4" />

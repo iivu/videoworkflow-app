@@ -50,7 +50,7 @@ export function VideoActionsMenuTrigger({ videoUrl, onEdit, onDelete, className 
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="text-destructive focus:text-destructive focus:bg-destructive/10"
+              variant="destructive"
               onClick={(event) => {
                 event.stopPropagation();
                 onDelete();
