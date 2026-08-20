@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FileText, LoaderCircle, Play, RefreshCw } from 'lucide-react';
 
 import { normalizeApiFailedMessage, query } from '#/services/api';
-import { EmptyState, ErrorAlert, PanelHeader, TranscriptionSkeleton } from './components';
+import { CopyButton, EmptyState, ErrorAlert, PanelHeader, TranscriptionSkeleton } from './components';
 
 const POLL_INTERVAL_MS = 5_000;
 const ACTIVE_STATUSES = new Set(['PENDING', 'RUNNING']);
@@ -35,7 +35,12 @@ export function TranscriptionPanel({ videoId }: { videoId: string }) {
 
   return (
     <section className="flex min-h-0 flex-col bg-background xl:border-r" aria-labelledby="transcription-panel-title">
-      <PanelHeader id="transcription-panel-title" icon={<FileText />} title="转录文本" />
+      <PanelHeader
+        id="transcription-panel-title"
+        icon={<FileText />}
+        title="转录文本"
+        action={task?.status === 'SUCCEEDED' && task.result ? <CopyButton text={task.result} label="复制转录文本" /> : undefined}
+      />
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
         {taskQuery.isLoading ? <TranscriptionSkeleton /> : null}
 
@@ -61,7 +66,7 @@ export function TranscriptionPanel({ videoId }: { videoId: string }) {
         ) : null}
 
         {task?.status === 'SUCCEEDED' ? (
-          <article className="whitespace-pre-wrap wrap-break-word text-sm leading-7 text-foreground text-justify">{task.result || '转录已完成，但没有返回文本内容'}</article>
+          <article className="whitespace-pre-wrap wrap-break-word text-sm leading-7 text-foreground">{task.result || '转录已完成，但没有返回文本内容'}</article>
         ) : null}
 
         {task && !taskQuery.error && FAILED_STATUSES.has(task.status) ? (

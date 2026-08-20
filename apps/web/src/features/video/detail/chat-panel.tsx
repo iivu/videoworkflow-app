@@ -1,16 +1,16 @@
 import { type UIMessage, useChat } from '@ai-sdk/react';
 import { Bubble, type BubbleListProps, Sender, Think, XProvider } from '@ant-design/x';
 import { XMarkdown } from '@ant-design/x-markdown';
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, toast } from '@r/ui';
+import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@r/ui';
 import { DefaultChatTransport } from 'ai';
 import { theme as antdTheme } from 'antd';
-import { Bot, Check, ChevronDown, Copy, History, LoaderCircle } from 'lucide-react';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Bot, ChevronDown, History, LoaderCircle } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTheme } from '#/providers/theme-provider';
 import { client } from '#/services/api';
 import { getToken } from '#/shared/token';
-import { EmptyState, PanelHeader } from './components';
+import { CopyButton, EmptyState, PanelHeader } from './components';
 
 const CHAT_MODELS = ['qwen3.8-max', 'kimi/kimi-k3', 'deepseek-v4-flash-0731'] as const;
 const HISTORY_PAGE_SIZE = 20;
@@ -54,39 +54,6 @@ function normalizeChatError(error: Error) {
   }
   return error.message || '请求失败，请稍后重试';
 }
-
-const CopyButton = memo(function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    if (!copied) return;
-    const timer = window.setTimeout(() => setCopied(false), 1500);
-    return () => window.clearTimeout(timer);
-  }, [copied]);
-
-  const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-    } catch {
-      toast.add({ type: 'error', description: '复制失败，请手动复制' });
-    }
-  }, [text]);
-
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon-xs"
-      aria-label="复制内容"
-      title="复制"
-      className="text-muted-foreground hover:text-foreground"
-      onClick={() => void handleCopy()}
-    >
-      {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
-    </Button>
-  );
-});
 
 export function ChatPanel({ videoId }: { videoId: string }) {
   const { resolvedTheme } = useTheme();
