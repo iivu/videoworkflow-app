@@ -10,6 +10,7 @@ const asApiFailed = (error: TuyauError) => error as TuyauError<{ response: ApiFa
 
 export const client = createTuyau({
   baseUrl: import.meta.env.VITE_API_URL,
+  timeout: 1000 * 60 * 5,
   registry,
   headers: { Accept: 'application/json' },
   hooks: {
