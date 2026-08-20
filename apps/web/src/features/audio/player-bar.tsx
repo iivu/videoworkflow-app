@@ -1,7 +1,7 @@
 import { Button } from '@r/ui';
 import { AudioLines, Download, FastForward, Pause, Play, Rewind, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { formatDuration, hashString, parseAudioConfigs } from './constants';
+import { formatDuration, parseAudioConfigs } from './constants';
 import type { CreativeAudioItem } from './types';
 
 type PlayerBarProps = {
@@ -67,14 +67,10 @@ export function PlayerBar({ item, onClose }: PlayerBarProps) {
   const format = typeof configs.format === 'string' ? configs.format : 'mp3';
   const title = `${item.model}-${item.id}`;
   const progress = duration > 0 ? Math.min(currentTime / duration, 1) : 0;
-  const hue = hashString(item.voiceId) % 360;
 
   return (
     <div className="flex h-16 shrink-0 items-center gap-3 border-t bg-background px-4">
-      <div
-        className="grid size-10 shrink-0 place-items-center rounded-md text-white"
-        style={{ background: `linear-gradient(135deg, hsl(${hue} 70% 62%), hsl(${(hue + 45) % 360} 70% 45%))` }}
-      >
+      <div className="grid size-10 shrink-0 place-items-center rounded-md bg-secondary text-foreground">
         <AudioLines className="size-5" />
       </div>
       <div className="w-52 shrink-0">

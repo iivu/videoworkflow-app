@@ -1,6 +1,6 @@
-import { Skeleton } from '@r/ui';
+import { Button, Skeleton } from '@r/ui';
 import dayjs from 'dayjs';
-import { Play } from 'lucide-react';
+import { Download, Play } from 'lucide-react';
 import { Pagination } from '#/components/pagination';
 import { providerOptions } from '#/features/voice/voice-cloning-dialog/constants';
 import { normalizeApiFailedMessage } from '#/services/api';
@@ -65,13 +65,13 @@ export function HistoryPanel({ items, total, page, pageSize, isLoading, error, a
             {group.items.map((item) => {
               const active = activeId === item.id;
               return (
-                <li key={item.id}>
+                <li key={item.id} className="group flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => onSelect(item)}
-                    className={`flex w-full items-center gap-3 rounded-lg border bg-background p-2 text-left transition-colors hover:bg-accent ${active ? 'border-primary bg-accent' : ''}`}
+                    className={`flex min-w-0 flex-1 items-center gap-3 rounded-lg border bg-background p-2 text-left transition-colors hover:bg-accent ${active ? 'border-primary bg-accent' : ''}`}
                   >
-                    <span className="grid size-9 shrink-0 place-items-center rounded-md bg-secondary">
+                    <span className={`grid size-9 shrink-0 place-items-center rounded-md bg-secondary ${active ? 'text-primary' : ''}`}>
                       <Play className="size-4" />
                     </span>
                     <span className="min-w-0">
@@ -81,6 +81,17 @@ export function HistoryPanel({ items, total, page, pageSize, isLoading, error, a
                       </span>
                     </span>
                   </button>
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label="下载音频"
+                    title="下载音频"
+                    className="shrink-0 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+                    render={<a href={item.audioUrl} download={`${item.model}-${item.id}.mp3`} />}
+                  >
+                    <Download />
+                  </Button>
                 </li>
               );
             })}

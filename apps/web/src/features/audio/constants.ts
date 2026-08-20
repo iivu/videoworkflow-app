@@ -108,12 +108,6 @@ export function formatDuration(seconds: number) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export function hashString(input: string) {
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) hash = (hash * 31 + input.charCodeAt(i)) >>> 0;
-  return hash;
-}
-
 /** 容错解析后端记录上的 configs（JSON string） */
 export function parseAudioConfigs(configs: string | null | undefined): Record<string, unknown> {
   if (!configs) return {};

@@ -9,10 +9,8 @@ import { ConfigPanel } from './config-panel';
 import { type AudioModelValue, BAILIAN_DEFAULT_CONFIGS, MINIMAXI_DEFAULT_CONFIGS, providerOfModel } from './constants';
 import { EditorCard } from './editor-card';
 import { HistoryPanel } from './history-panel';
-import { ModelSelect } from './model-select';
 import { PlayerBar } from './player-bar';
 import type { BailianAudioConfigs, BusyAction, CreativeAudioItem, MinimaxiAudioConfigs, VoiceItem } from './types';
-import { VoiceSelect } from './voice-select';
 
 const HISTORY_PAGE_SIZE = 20;
 
@@ -38,14 +36,6 @@ export function AudioCreatePage() {
     setSelectedVoice(voice);
     // 切换音色时模型默认重置为音色自身的模型
     setModel(voice.model);
-  }
-
-  function handlePolish() {
-    // 暂不实现
-  }
-
-  function handleFixTypos() {
-    // 暂不实现
   }
 
   function handleGenerate() {
@@ -93,7 +83,7 @@ export function AudioCreatePage() {
   }
 
   return (
-    <div className="flex h-(--content-min-height) flex-col overflow-hidden">
+    <div className="flex h-(--content-min-height) flex-col overflow-hidden bg-muted/20">
       <div className="flex min-h-0 flex-1">
         {/* 左侧主区域 */}
         <main className="flex min-w-0 flex-1 flex-col gap-4 p-6">
@@ -109,15 +99,25 @@ export function AudioCreatePage() {
                   <History />
                 </Button>
               </ButtonGroup>
-              <VoiceSelect voice={selectedVoice} onChange={handleVoiceChange} />
-              <ModelSelect provider={provider} voiceModel={selectedVoice?.model ?? null} value={model} onChange={setModel} />
             </div>
           </div>
-          <EditorCard text={text} busy={busy} onTextChange={setText} onPolish={handlePolish} onFixTypos={handleFixTypos} onGenerate={handleGenerate} />
+          <EditorCard
+            text={text}
+            busy={busy}
+            canSubmit={canSubmit}
+            voice={selectedVoice}
+            provider={provider}
+            voiceModel={selectedVoice?.model ?? null}
+            model={model}
+            onTextChange={setText}
+            onVoiceChange={handleVoiceChange}
+            onModelChange={setModel}
+            onGenerate={handleGenerate}
+          />
         </main>
 
         {/* 右侧：配置 / 生成历史 */}
-        <aside className="flex w-80 shrink-0 flex-col overflow-hidden border-l bg-muted/30">
+        <aside className="flex w-88 shrink-0 flex-col overflow-hidden border-l bg-card">
           <Tabs defaultValue="config" className="flex min-h-0 flex-1 flex-col">
             <TabsList variant="line" className="shrink-0 border-b px-4">
               <TabsTrigger value="config" className="flex-1 gap-1.5 text-sm">
@@ -136,6 +136,10 @@ export function AudioCreatePage() {
                 minimaxiConfigs={minimaxiConfigs}
                 onBailianChange={(patch) => setBailianConfigs((prev) => ({ ...prev, ...patch }))}
                 onMinimaxiChange={(patch) => setMinimaxiConfigs((prev) => ({ ...prev, ...patch }))}
+                onReset={() => {
+                  if (provider === 'bailian') setBailianConfigs(BAILIAN_DEFAULT_CONFIGS);
+                  else if (provider === 'minimaxi') setMinimaxiConfigs(MINIMAXI_DEFAULT_CONFIGS);
+                }}
               />
             </TabsContent>
             <TabsContent value="history" className="min-h-0 flex-1 overflow-y-auto p-4">

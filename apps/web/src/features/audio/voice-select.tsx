@@ -7,10 +7,11 @@ import type { VoiceItem } from './types';
 type VoiceSelectProps = {
   voice: VoiceItem | null;
   onChange: (voice: VoiceItem) => void;
+  disabled?: boolean;
 };
 
 /** 音色选择按钮：打开音色列表弹窗（选择模式），选中后回传完整音色记录 */
-export function VoiceSelect({ voice, onChange }: VoiceSelectProps) {
+export function VoiceSelect({ voice, onChange, disabled = false }: VoiceSelectProps) {
   const { selectVoice } = useVoiceListDialog();
   const [pending, setPending] = useState(false);
 
@@ -26,7 +27,7 @@ export function VoiceSelect({ voice, onChange }: VoiceSelectProps) {
   }
 
   return (
-    <Button type="button" variant="outline" aria-label="音色" disabled={pending} onClick={handleClick} className="w-56 justify-start font-normal">
+    <Button type="button" variant="outline" aria-label="音色" disabled={pending || disabled} onClick={handleClick} className="w-56 justify-start font-normal">
       <span className="shrink-0 text-muted-foreground">音色</span>
       <span className="h-4 w-px shrink-0 bg-border" />
       <span className={`line-clamp-1 ${voice ? '' : 'text-muted-foreground'}`}>{voice?.name ?? '选择音色'}</span>
