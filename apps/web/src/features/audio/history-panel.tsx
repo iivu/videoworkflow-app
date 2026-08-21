@@ -57,48 +57,52 @@ export function HistoryPanel({ items, total, page, pageSize, isLoading, error, a
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {groups.map((group) => (
-        <section key={group.label}>
-          <h3 className="mb-2 text-sm font-semibold">{group.label}</h3>
-          <ul className="flex flex-col gap-1">
-            {group.items.map((item) => {
-              const active = activeId === item.id;
-              return (
-                <li key={item.id} className="group flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => onSelect(item)}
-                    className={`flex min-w-0 flex-1 items-center gap-3 rounded-lg border bg-background p-2 text-left transition-colors hover:bg-accent ${active ? 'border-primary bg-accent' : ''}`}
-                  >
-                    <span className={`grid size-9 shrink-0 place-items-center rounded-md bg-secondary ${active ? 'text-primary' : ''}`}>
-                      <Play className="size-4" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium">{item.text}</span>
-                      <span className="block truncate text-xs text-muted-foreground">
-                        {providerLabel(item.provider)} · {item.model} · {dayjs(item.createdAt).format('HH:mm')}
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+        {groups.map((group) => (
+          <section key={group.label}>
+            <h3 className="mb-2 text-sm font-semibold">{group.label}</h3>
+            <ul className="flex flex-col gap-1">
+              {group.items.map((item) => {
+                const active = activeId === item.id;
+                return (
+                  <li key={item.id} className="group flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => onSelect(item)}
+                      className={`flex min-w-0 flex-1 items-center gap-3 rounded-lg border bg-background p-2 text-left transition-colors hover:bg-accent ${active ? 'border-primary bg-accent' : ''}`}
+                    >
+                      <span className={`grid size-9 shrink-0 place-items-center rounded-md bg-secondary ${active ? 'text-primary' : ''}`}>
+                        <Play className="size-4" />
                       </span>
-                    </span>
-                  </button>
-                  <Button
-                    type="button"
-                    size="icon-sm"
-                    variant="ghost"
-                    aria-label="下载音频"
-                    title="下载音频"
-                    className="shrink-0 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
-                    render={<a href={item.audioUrl} download={`${item.model}-${item.id}.mp3`} />}
-                  >
-                    <Download />
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ))}
-      <Pagination className="w-fit self-center" size={pageSize} currentPage={page} total={total} onPageChange={onPageChange} />
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium">{item.text}</span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {providerLabel(item.provider)} · {item.model} · {dayjs(item.createdAt).format('HH:mm')}
+                        </span>
+                      </span>
+                    </button>
+                    <Button
+                      type="button"
+                      size="icon-sm"
+                      variant="ghost"
+                      aria-label="下载音频"
+                      title="下载音频"
+                      className="shrink-0 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+                      render={<a href={item.audioUrl} download={`${item.model}-${item.id}.mp3`} />}
+                    >
+                      <Download />
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))}
+      </div>
+      <div className="shrink-0 border-t pt-3">
+        <Pagination className="mx-auto w-fit" size={pageSize} currentPage={page} total={total} onPageChange={onPageChange} />
+      </div>
     </div>
   );
 }
