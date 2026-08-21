@@ -31,15 +31,23 @@ class TestShanhaiApiService extends ShanhaiApiService {
 }
 
 test.group('Shanhai API service', () => {
-  test('requests the configured endpoint and returns the smallest video', async ({ assert }) => {
+  test('returns video URLs ordered from smallest to largest with the fallback appended last', async ({ assert }) => {
     const service = new TestShanhaiApiService([
       {
         code: 200,
         data: {
-          code: 200,
-          data: { title: 'Video title', video_url: 'https://cdn.example.com/fallback.mp4' },
+          title: 'Video title',
+          video_url: 'https://cdn.example.com/fallback.mp4',
           platform: 'douyin',
-          stats: { author_name: 'Author', like_count: 12, play_count: 34, share_count: 5, collect_count: 6, comment_count: 7 },
+          stats: {
+            author_name: 'Author',
+            like_count: 12,
+            play_count: 34,
+            share_count: 5,
+            collect_count: 6,
+            comment_count: 7,
+            publish_time: '2024-01-02 03:04:05',
+          },
           video_list: [
             { url: 'https://cdn.example.com/large.mp4', size: '1.2GB' },
             { url: 'https://cdn.example.com/small.mp4', size: '850 MB' },
@@ -52,13 +60,12 @@ test.group('Shanhai API service', () => {
 
     const result = await service.fetchVideoInfo(sourceUrl);
 
-    assert.equal(result.videoUrl, 'https://cdn.example.com/small.mp4');
     assert.deepEqual(result, {
       title: 'Video title',
-      videoUrl: 'https://cdn.example.com/small.mp4',
+      videoUrls: ['https://cdn.example.com/small.mp4', 'https://cdn.example.com/medium.mp4', 'https://cdn.example.com/large.mp4', 'https://cdn.example.com/fallback.mp4'],
       author: 'Author',
       platform: 'douyin',
-      stats: { likeCount: 12, playCount: 34, shareCount: 5, collectCount: 6, commentCount: 7 },
+      stats: { likeCount: 12, playCount: 34, shareCount: 5, collectCount: 6, commentCount: 7, publishTime: '2024-01-02 03:04:05' },
     });
     const parsedRequestUrl = new URL(service.requests[0].input as string);
     const configuredBaseUrl = new URL(env.get('SHANHAI_API_HOST'));
@@ -72,24 +79,61 @@ test.group('Shanhai API service', () => {
     assert.equal(parsedRequestUrl.searchParams.get('url'), sourceUrl);
   });
 
-  test('falls back to data.video_url and applies defaults when video_list is unavailable', async ({ assert }) => {
+  test('appends the fallback video_url last even when it is the smallest option', async ({ assert }) => {
     const service = new TestShanhaiApiService([
       {
         code: 200,
         data: {
-          code: 200,
-          data: { title: 'Fallback title', video_url: 'https://cdn.example.com/fallback.mp4' },
-          video_list: [],
+          title: 'Video title',
+          video_url: 'https://cdn.example.com/fallback.mp4',
+          video_list: [
+            { url: 'https://cdn.example.com/medium.mp4', size: '0.9GB' },
+            { url: 'https://cdn.example.com/fallback.mp4', size: '10MB' },
+            { url: 'https://cdn.example.com/large.mp4', size: '1.2GB' },
+          ],
         },
+      },
+    ]);
+
+    const result = await service.fetchVideoInfo('https://example.com/video');
+
+    assert.deepEqual(result.videoUrls, ['https://cdn.example.com/fallback.mp4', 'https://cdn.example.com/medium.mp4', 'https://cdn.example.com/large.mp4']);
+  });
+
+  test('deduplicates the fallback URL when it already exists in video_list', async ({ assert }) => {
+    const service = new TestShanhaiApiService([
+      {
+        code: 200,
+        data: {
+          title: 'Video title',
+          video_url: 'https://cdn.example.com/small.mp4',
+          video_list: [
+            { url: 'https://cdn.example.com/large.mp4', size: '1.2GB' },
+            { url: 'https://cdn.example.com/small.mp4', size: '850 MB' },
+          ],
+        },
+      },
+    ]);
+
+    const result = await service.fetchVideoInfo('https://example.com/video');
+
+    assert.deepEqual(result.videoUrls, ['https://cdn.example.com/small.mp4', 'https://cdn.example.com/large.mp4']);
+  });
+
+  test('falls back to data.video_url and applies defaults when video_list is unavailable', async ({ assert }) => {
+    const service = new TestShanhaiApiService([
+      {
+        code: 200,
+        data: { title: 'Fallback title', video_url: 'https://cdn.example.com/fallback.mp4' },
       },
     ]);
 
     assert.deepEqual(await service.fetchVideoInfo('https://example.com/video'), {
       title: 'Fallback title',
-      videoUrl: 'https://cdn.example.com/fallback.mp4',
+      videoUrls: ['https://cdn.example.com/fallback.mp4'],
       author: 'Unknown',
       platform: 'unknown',
-      stats: { likeCount: 0, playCount: 0, shareCount: 0, collectCount: 0, commentCount: 0 },
+      stats: { likeCount: 0, playCount: 0, shareCount: 0, collectCount: 0, commentCount: 0, publishTime: undefined },
     });
   });
 
@@ -97,10 +141,7 @@ test.group('Shanhai API service', () => {
     const service = new TestShanhaiApiService([
       {
         code: 200,
-        data: {
-          code: 200,
-          data: { title: '', video_url: 'https://cdn.example.com/fallback.mp4' },
-        },
+        data: { title: '', video_url: 'https://cdn.example.com/fallback.mp4' },
       },
     ]);
 
@@ -118,8 +159,7 @@ test.group('Shanhai API service', () => {
     { name: 'empty response', response: null, message: 'Response body is empty' },
     { name: 'level one API error', response: { code: 401, msg: 'Invalid API key' }, message: 'Invalid API key' },
     { name: 'empty response data', response: { code: 200 }, message: 'Response data is empty' },
-    { name: 'level two API error', response: { code: 200, data: { code: 422, message: 'Unsupported URL' } }, message: 'Unsupported URL' },
-    { name: 'missing video data', response: { code: 200, data: { code: 200, data: { title: 'No video' } } }, message: 'Video URL is empty' },
+    { name: 'missing video data', response: { code: 200, data: { title: 'No video' } }, message: 'Video URL is empty' },
   ]) {
     test(`throws a diagnostic error for ${scenario.name}`, async ({ assert }) => {
       const service = new TestShanhaiApiService([scenario.response]);

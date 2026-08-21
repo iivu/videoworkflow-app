@@ -38,7 +38,8 @@ type ShanhaiApiResponse = {
 
 export type ShanhaiVideoInfo = {
   title: string;
-  videoUrl: string;
+  /** 候选视频地址，按大小从小到大排列，兜底视频（video_url）在最后 */
+  videoUrls: string[];
   author: string;
   platform: string;
   stats: {
@@ -68,11 +69,11 @@ function parseSizeToBytes(size: string) {
   return value * SIZE_UNITS[unit];
 }
 
-function mapVideoInfo(data: ShanhaiApiData, videoUrl: string, title: string): ShanhaiVideoInfo {
+function mapVideoInfo(data: ShanhaiApiData, videoUrls: string[], title: string): ShanhaiVideoInfo {
   const stats = data.stats;
   return {
     title,
-    videoUrl,
+    videoUrls,
     author: stats?.author_name || 'Unknown',
     platform: data.platform || 'unknown',
     stats: {
@@ -108,22 +109,21 @@ export class ShanhaiApiService {
     if (response.code !== 200 && response.code !== 0) throw new Error(response.msg || response.message || 'API error (level 1)');
     if (!response.data) throw new Error('Response data is empty');
 
-    const videoList = response.data.video_list;
-    if (Array.isArray(videoList) && videoList.length > 0) {
-      const smallestVideo = videoList.reduce((smallest, video) => (parseSizeToBytes(video.size) < parseSizeToBytes(smallest.size) ? video : smallest));
-      if (smallestVideo.url) {
-        const result = mapVideoInfo(response.data, smallestVideo.url, response.data?.title || 'Unknown');
-        logger.info({ source: 'video_list', title: result.title }, 'Shanhai video info retrieved');
-        return result;
-      }
+    const data = response.data;
+    const videoList = Array.isArray(data.video_list) ? data.video_list : [];
+    const videoUrls = videoList
+      .filter((video) => Boolean(video.url))
+      .sort((a, b) => parseSizeToBytes(a.size) - parseSizeToBytes(b.size))
+      .map((video) => video.url);
+
+    if (data.video_url && !videoUrls.includes(data.video_url)) {
+      videoUrls.push(data.video_url);
     }
 
-    const fallbackData = response.data;
-    const fallbackUrl = fallbackData?.video_url;
-    if (!fallbackUrl) throw new Error('Video URL is empty');
+    if (videoUrls.length === 0) throw new Error('Video URL is empty');
 
-    const result = mapVideoInfo(response.data, fallbackUrl, fallbackData.title);
-    logger.info({ source: 'data', title: result.title }, 'Shanhai video info retrieved');
+    const result = mapVideoInfo(data, videoUrls, data.title ?? 'Unknown');
+    logger.info({ source: 'video_list', title: result.title, candidates: videoUrls.length }, 'Shanhai video info retrieved');
     return result;
   }
 }

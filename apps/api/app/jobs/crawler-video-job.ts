@@ -6,6 +6,7 @@ import type { JobOptions } from '@adonisjs/queue/types';
 import { DateTime } from 'luxon';
 import { v4 as uuidv4 } from 'uuid';
 import { TASK_STATUS } from '#models/crawler-video-task';
+import type { OssClient } from '#providers/oss-provider';
 import { CrawlerVideoTaskService } from '#services/crawler-video-task-service';
 import { ShanhaiApiService } from '#services/shanhai-api-service';
 import { VideoService } from '#services/video-service';
@@ -35,11 +36,26 @@ export default class CrawlerVideoJob extends Job<CrawlerVideoPayload> {
   async execute() {
     const { taskId, videoUrl, userId } = this.payload;
     logger.info(`Executing CrawlerVideoJob for taskId: ${taskId}, videoUrl: ${videoUrl}, userId: ${userId}`);
-    // 1. 从山海 API 获取视频信息
+    // 1. 从山海 API 获取候选视频地址（按大小从小到大排列，兜底视频在最后）
     const videoInfo = await this.shanhaiApiService.fetchVideoInfo(videoUrl);
-    const oss = await app.container.make('oss');
-    const ossKey = `cv/${uuidv4()}.mp4`;
-    const ossResp = await oss.putURL(videoInfo.videoUrl, ossKey);
+
+    // 2. 逐个尝试下载，直到成功；全部失败才视为失败
+    const oss = await this.makeOssClient();
+    let ossResp: Awaited<ReturnType<typeof oss.putURL>> | undefined;
+    let lastError: Error | undefined;
+    for (const candidateUrl of videoInfo.videoUrls) {
+      try {
+        const ossKey = `cv/${uuidv4()}.mp4`;
+        ossResp = await oss.putURL(candidateUrl, ossKey);
+        logger.info({ url: candidateUrl }, 'Video candidate downloaded successfully');
+        break;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        logger.warn({ url: candidateUrl, error: lastError.message }, 'Video candidate download failed, trying next');
+      }
+    }
+    if (!ossResp) throw lastError ?? new Error('All video download attempts failed');
+
     await this.videoService.createVideos({
       userId,
       payload: [
@@ -60,6 +76,10 @@ export default class CrawlerVideoJob extends Job<CrawlerVideoPayload> {
     await this.crawlerVideoTaskService.update({
       payload: { status: TASK_STATUS.COMPLETED, taskId },
     });
+  }
+
+  protected async makeOssClient(): Promise<OssClient> {
+    return app.container.make('oss');
   }
 
   async failed(error: Error) {
