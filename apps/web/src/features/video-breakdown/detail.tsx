@@ -61,7 +61,7 @@ export function VideoBreakdownDetailPage() {
 function BreakdownHeader({ videoUrl }: { videoUrl: string }) {
   const navigate = useNavigate();
   return (
-    <div className="flex h-13 shrink-0 items-center gap-3 border-b px-4">
+    <div className="flex h-16 shrink-0 items-center gap-3 border-b px-4">
       <button
         type="button"
         onClick={() => navigate({ to: '/video-breakdown' })}

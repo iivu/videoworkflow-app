@@ -27,7 +27,7 @@ export function DetailHeader({ video, onBack }: { video: VideoData; onBack: () =
   const meta = [video.author ? `@${video.author}` : '', video.platform, video.publishAt ? dayjs(video.publishAt).format('YYYY-MM-DD') : ''].filter(Boolean).join(' · ');
 
   return (
-    <header className="flex h-13 shrink-0 items-center gap-3 border-b bg-background px-4">
+    <header className="flex h-16 shrink-0 items-center gap-3 border-b bg-background px-4">
       <button
         type="button"
         onClick={onBack}
@@ -37,7 +37,7 @@ export function DetailHeader({ video, onBack }: { video: VideoData; onBack: () =
         <ArrowLeft className="size-4" />
       </button>
       <div className="min-w-0 flex-1">
-        <h1 className="truncate text-lg font-semibold" title={video.title}>
+        <h1 className="max-w-md truncate text-lg font-semibold" title={video.title}>
           {video.title}
         </h1>
         <p className="truncate text-xs text-muted-foreground">{meta}</p>
@@ -56,7 +56,7 @@ export function DetailHeader({ video, onBack }: { video: VideoData; onBack: () =
 
 export function DetailHeaderSkeleton() {
   return (
-    <div className="flex h-13 shrink-0 items-center gap-3 border-b bg-background px-4" role="status" aria-label="正在加载视频详情">
+    <div className="flex h-16 shrink-0 items-center gap-3 border-b bg-background px-4" role="status" aria-label="正在加载视频详情">
       <Skeleton className="size-8 rounded-md" />
       <div className="min-w-0 flex-1 space-y-2">
         <Skeleton className="h-5 w-2/5" />
