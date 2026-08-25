@@ -86,6 +86,10 @@ export default await Env.create(new URL('../', import.meta.url), {
   SHANHAI_API_HOST: Env.schema.string({ format: 'url' }),
   SHANHAI_API_PREFIX: Env.schema.string(),
 
+  // 52API
+  API_52API_KEY: Env.schema.string(),
+  API_52API_BASE_URL: Env.schema.string({ format: 'url' }),
+
   /*
   |----------------------------------------------------------
   | Variables for configuring @adonisjs/queue
