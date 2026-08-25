@@ -27,3 +27,19 @@ export function extractUrl(content: string) {
   const match = content.match(urlRegex);
   return match ? match[0] : null;
 }
+
+export type VideoPlatform = 'douyin' | 'sph';
+
+/**
+ * 简单校验 URL 所属平台：抖音（douyin.com / iesdouyin.com）或微信视频号（weixin.qq.com）
+ */
+export function detectPlatformFromUrl(url: string) {
+  try {
+    const hostname = new URL(url).hostname;
+    if (hostname.endsWith('douyin.com') || hostname.endsWith('iesdouyin.com')) return 'douyin';
+    if (hostname.endsWith('weixin.qq.com')) return 'sph';
+    return null;
+  } catch {
+    return null;
+  }
+}

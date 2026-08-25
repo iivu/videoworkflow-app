@@ -2,7 +2,10 @@ import { createUuid } from '#/shared/uuid';
 
 export const MAX_VIDEO_COUNT = 10;
 
-export const VIDEO_PLATFORMS = [{ value: 'douyin', label: '抖音' }] as const;
+export const VIDEO_PLATFORMS = [
+  { value: 'douyin', label: '抖音' },
+  { value: 'sph', label: '视频号' },
+] as const;
 
 export type VideoPlatform = (typeof VIDEO_PLATFORMS)[number]['value'];
 

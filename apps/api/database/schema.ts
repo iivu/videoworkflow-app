@@ -33,12 +33,14 @@ export class AuthAccessTokenSchema extends BaseModel {
 }
 
 export class CrawlerVideoTaskSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'reason', 'result', 'status', 'updatedAt', 'url', 'userId', 'userInput'] as const
+  static $columns = ['createdAt', 'id', 'platform', 'reason', 'result', 'status', 'updatedAt', 'url', 'userId', 'userInput'] as const
   $columns = CrawlerVideoTaskSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare platform: string
   @column()
   declare reason: string | null
   @column()

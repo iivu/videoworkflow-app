@@ -34,6 +34,11 @@ const STATUS_LABELS: Record<string, string> = {
   failed: '失败',
 };
 
+const PLATFORM_LABELS: Record<string, string> = {
+  douyin: '抖音',
+  sph: '视频号',
+};
+
 function TaskStatus({ status }: { status: string }) {
   const variant = status === 'failed' ? 'destructive' : status === 'completed' ? 'default' : 'secondary';
   return <Badge variant={variant}>{STATUS_LABELS[status] ?? status}</Badge>;
@@ -46,6 +51,9 @@ function TaskRow({ task }: { task: Data.CrawlerVideoTask }) {
         <div className="wrap-break-word font-medium truncate-2">{task.userInput || task.url}</div>
         {task.userInput && task.url !== task.userInput ? <div className="mt-1 break-all text-xs text-muted-foreground">提取目标：{task.url}</div> : null}
         {task.status === 'failed' && task.reason ? <div className="mt-2 wrap-break-word text-xs text-destructive">失败原因：{task.reason}</div> : null}
+      </TableCell>
+      <TableCell className="w-20">
+        <Badge variant="outline">{PLATFORM_LABELS[task.platform] ?? task.platform}</Badge>
       </TableCell>
       <TableCell>
         <TaskStatus status={task.status} />
@@ -120,6 +128,7 @@ export function CrawlerTaskHistoryDialog({ open, onOpenChange }: Props) {
               <TableHeader>
                 <TableRow>
                   <TableHead>原始输入 / 视频链接</TableHead>
+                  <TableHead className="w-20">平台</TableHead>
                   <TableHead className="w-24">状态</TableHead>
                   <TableHead className="w-36">提交时间</TableHead>
                 </TableRow>

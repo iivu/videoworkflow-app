@@ -2,6 +2,7 @@ import vine from '@vinejs/vine';
 
 export const createCrawlerVideoTaskValidator = vine.create({
   userInput: vine.array(vine.string().trim()).minLength(1),
+  platform: vine.enum(['douyin', 'sph']),
 });
 
 export const listCrawlerVideoTasksValidator = vine.create({
