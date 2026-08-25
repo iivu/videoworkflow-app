@@ -73,22 +73,24 @@ export function VideoItem({ video, onEdit }: { video: Video; onEdit: () => void 
 
 function Data({ video }: { video: Video }) {
   return (
-    <div className="absolute bottom-2 left-2 flex items-center gap-2 text-center text-white">
-      <div className="flex flex-col items-center">
-        <Heart className="size-5" />
-        <span className="mt-0.5 text-xs drop-shadow-md">{formatCount(video.likeCount || 0)}</span>
-      </div>
-      <div className="flex flex-col items-center">
-        <Share2 className="size-5" />
-        <span className="mt-0.5 text-xs drop-shadow-md">{formatCount(video.shareCount || 0)}</span>
-      </div>
-      <div className="flex flex-col items-center">
-        <Bookmark className="size-5" />
-        <span className="mt-0.5 text-xs drop-shadow-md">{formatCount(video.favoriteCount || 0)}</span>
-      </div>
-      <div className="flex flex-col items-center">
-        <MessageCircle className="size-5" />
-        <span className="mt-0.5 text-xs drop-shadow-md">{formatCount(video.commentCount || 0)}</span>
+    <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/35 to-transparent px-2 pb-1.5 pt-8">
+      <div className="flex items-center gap-2 text-center text-white drop-shadow-md">
+        <div className="flex flex-col items-center">
+          <Heart className="size-5" />
+          <span className="mt-0.5 text-xs">{formatCount(video.likeCount || 0)}</span>
+        </div>
+        <div className="flex flex-col items-center">
+          <Share2 className="size-5" />
+          <span className="mt-0.5 text-xs">{formatCount(video.shareCount || 0)}</span>
+        </div>
+        <div className="flex flex-col items-center">
+          <Bookmark className="size-5" />
+          <span className="mt-0.5 text-xs">{formatCount(video.favoriteCount || 0)}</span>
+        </div>
+        <div className="flex flex-col items-center">
+          <MessageCircle className="size-5" />
+          <span className="mt-0.5 text-xs">{formatCount(video.commentCount || 0)}</span>
+        </div>
       </div>
     </div>
   );
