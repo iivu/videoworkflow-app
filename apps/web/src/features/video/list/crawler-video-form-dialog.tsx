@@ -1,6 +1,21 @@
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, toast } from '@r/ui';
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  toast,
+} from '@r/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { LoaderCircle } from 'lucide-react';
+import { AlertCircle, LoaderCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import z from 'zod';
 
@@ -42,9 +57,6 @@ function CrawlerVideoForm({ onSuccess, onCancel }: { onSuccess?: () => void; onC
       await queryClient.invalidateQueries({ queryKey: query.videos.listCrawlerTasks.queryKey() });
       await queryClient.invalidateQueries({ queryKey: query.videos.list.queryKey() });
       onSuccess?.();
-    },
-    onError: (error) => {
-      toast.add({ type: 'error', description: normalizeApiFailedMessage(error) || '任务提交失败，请重试' });
     },
   });
   const busy = createMutation.isPending;
@@ -97,6 +109,12 @@ function CrawlerVideoForm({ onSuccess, onCancel }: { onSuccess?: () => void; onC
       <form.AppField name="links">
         {(field) => <field.FieldTextarea rows={6} placeholder="粘贴视频分享链接或分享文本，每行一条" description="支持直接粘贴 App 分享文本，提交后自动提取并下载视频" />}
       </form.AppField>
+      {createMutation.error ? (
+        <Alert variant="destructive">
+          <AlertCircle />
+          <AlertDescription>{normalizeApiFailedMessage(createMutation.error) || '任务提交失败，请重试'}</AlertDescription>
+        </Alert>
+      ) : null}
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" disabled={busy} onClick={onCancel}>
           取消
