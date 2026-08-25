@@ -28,8 +28,8 @@ async function toBusinessException(response: Response) {
     return new BusinessException(`${ERROR_PREFIX} ${fallbackMessage}`, response.status);
   }
 
-  const error = body as { message?: unknown; code?: unknown; data?: unknown };
-  const message = typeof error.message === 'string' ? error.message : fallbackMessage;
+  const error = body as { message?: unknown; code?: unknown; data?: unknown; msg?: unknown };
+  const message = typeof error.message === 'string' ? error.message : typeof error.msg === 'string' ? error.msg : fallbackMessage;
   const code = typeof error.code === 'string' || typeof error.code === 'number' ? error.code : response.status;
 
   return new BusinessException(`${ERROR_PREFIX} ${message}`, code, error.data ?? body);
