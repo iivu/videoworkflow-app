@@ -1,5 +1,6 @@
 import app from '@adonisjs/core/services/app';
 import logger from '@adonisjs/core/services/logger';
+import BusinessException from '#exceptions/business-exception';
 
 import type { FetchClient } from '#providers/fetch-provider';
 import env from '#start/env';
@@ -105,9 +106,9 @@ export class ShanhaiApiService {
     apiUrl.searchParams.set('flat', '1');
     const fetchClient = await this.getFetchClient();
     const response = await fetchClient.json<ShanhaiApiResponse | null>(apiUrl);
-    if (!response) throw new Error('Response body is empty');
-    if (response.code !== 200 && response.code !== 0) throw new Error(response.msg || response.message || 'API error (level 1)');
-    if (!response.data) throw new Error('Response data is empty');
+    if (!response) throw new BusinessException('Response body is empty');
+    if (response.code !== 200 && response.code !== 0) throw new BusinessException(response.msg || response.message || 'API error (level 1)');
+    if (!response.data) throw new BusinessException('Response data is empty');
 
     const data = response.data;
     const videoList = Array.isArray(data.video_list) ? data.video_list : [];
@@ -120,7 +121,7 @@ export class ShanhaiApiService {
       videoUrls.push(data.video_url);
     }
 
-    if (videoUrls.length === 0) throw new Error('Video URL is empty');
+    if (videoUrls.length === 0) throw new BusinessException('Video URL is empty');
 
     const result = mapVideoInfo(data, videoUrls, data.title ?? 'Unknown');
     logger.info({ source: 'video_list', title: result.title, candidates: videoUrls.length }, 'Shanhai video info retrieved');
