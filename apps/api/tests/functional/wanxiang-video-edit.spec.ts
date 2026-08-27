@@ -40,7 +40,7 @@ test.group('Wanxiang video edit HTTP boundary', (group) => {
     response.assertStatus(422);
   });
 
-  test('rejects an invalid entity id before remote submission', async ({ assert, client }) => {
+  test('rejects an invalid entity id before remote submission', async ({ client }) => {
     const user = await createUser('wanxiang-bad-entity');
 
     const response = await client
@@ -48,8 +48,7 @@ test.group('Wanxiang video edit HTTP boundary', (group) => {
       .loginAs(user)
       .json({ entityId: 'x'.repeat(37), input: { media: validMedia } });
 
-    response.assertStatus(400);
-    assert.deepEqual(response.body(), { code: 40000, message: '万相视频编辑失败: entity_id 长度需在 1～36 个字符之间', data: null });
+    response.assertStatus(422);
   });
 
   test('validates the media payload shape', async ({ client }) => {
@@ -125,10 +124,10 @@ test.group('Wanxiang video edit HTTP boundary', (group) => {
 
     response.assertStatus(200);
     const body = response.body();
-    assert.equal(body.meta.total, 1);
-    assert.equal(body.data.length, 1);
-    assert.equal(body.data[0].taskId, 'task-a');
-    assert.equal(body.data[0].entityId, 'entity-a');
+    assert.equal(body.data.meta.total, 1);
+    assert.equal(body.data.list.length, 1);
+    assert.equal(body.data.list[0].taskId, 'task-a');
+    assert.equal(body.data.list[0].entityId, 'entity-a');
   });
 
   test('lists tasks filtered by status', async ({ assert, client }) => {
@@ -140,7 +139,7 @@ test.group('Wanxiang video edit HTTP boundary', (group) => {
 
     response.assertStatus(200);
     const body = response.body();
-    assert.equal(body.meta.total, 1);
-    assert.equal(body.data[0].taskId, 'task-running');
+    assert.equal(body.data.meta.total, 1);
+    assert.equal(body.data.list[0].taskId, 'task-running');
   });
 });

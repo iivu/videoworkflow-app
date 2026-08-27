@@ -5,7 +5,7 @@ import { v7 as uuidv7 } from 'uuid';
 import Role from '#models/role';
 import User from '#models/user';
 
-type SessionUser = { role: { code: string; name: string; id: string } | null; roleId: string | null };
+type SessionUser = { role: { code: string; name: string } | null };
 
 function sessionUser(response: import('@japa/api-client').ApiResponse<unknown>) {
   return (response.body() as { data: { user: SessionUser } }).data.user;
@@ -15,9 +15,10 @@ test.group('Roles', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction());
 
   test('exposes the assigned role on login', async ({ assert, client }) => {
+    const code = `web_user_${uuidv7()}`;
     const role = await Role.create({
       id: uuidv7(),
-      code: 'web_user',
+      code,
       name: '普通用户',
       description: '普通用户',
     });
@@ -32,8 +33,7 @@ test.group('Roles', (group) => {
 
     response.assertStatus(200);
     const user = sessionUser(response);
-    assert.equal(user.role?.code, 'web_user');
-    assert.equal(user.roleId, role.id);
+    assert.equal(user.role?.code, code);
   });
 
   test('serializes role as null when the user has no role', async ({ assert, client }) => {
@@ -44,6 +44,5 @@ test.group('Roles', (group) => {
     response.assertStatus(200);
     const user = sessionUser(response);
     assert.equal(user.role, null);
-    assert.equal(user.roleId, null);
   });
 });

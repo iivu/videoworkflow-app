@@ -323,3 +323,30 @@ export class WanxiangVideoEditTaskSchema extends BaseModel {
   @column()
   declare videoUrl: string | null
 }
+
+export class WanxiangVideoTaskSchema extends BaseModel {
+  static $columns = ['config', 'createdAt', 'entityId', 'id', 'reason', 'result', 'status', 'taskId', 'updatedAt', 'userId', 'videoUrl'] as const
+  $columns = WanxiangVideoTaskSchema.$columns
+  @column()
+  declare config: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare entityId: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare reason: string | null
+  @column()
+  declare result: string | null
+  @column()
+  declare status: string
+  @column()
+  declare taskId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+  @column()
+  declare videoUrl: string | null
+}

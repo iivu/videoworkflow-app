@@ -69,6 +69,11 @@ test.group('Wanxiang video edit service', () => {
         prompt: '将整个画面转换为黏土风格',
         media: [{ type: 'video', url: 'https://cdn.example.com/video.mp4' }],
       },
+      parameters: {
+        resolution: '1080P',
+        prompt_extend: true,
+        watermark: false,
+      },
     });
   });
 

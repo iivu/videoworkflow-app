@@ -97,7 +97,7 @@ test.group('Video breakdown job', (group) => {
         '-i',
         app.tmpPath(`video-breakdown/${taskId}/source-video`),
         '-vf',
-        'fps=4,scdet=t=1,metadata=mode=print:file=-',
+        'fps=16,scdet=t=1,metadata=mode=print:file=-',
         '-an',
         '-f',
         'null',

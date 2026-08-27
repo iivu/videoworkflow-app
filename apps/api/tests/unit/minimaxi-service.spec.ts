@@ -130,11 +130,12 @@ test.group('Minimaxi service', () => {
       baseResp: { statusCode: 0 },
     });
     assert.deepEqual(service.uploads, [{ url: 'https://minimax.example.com/audio.mp3', key: service.uploads[0].key }]);
-    assert.match(service.uploads[0].key, /^audio\/voice\/.+\.mp3$/);
+    assert.match(service.uploads[0].key, /^creative-audio\/.+\.mp3$/);
     assert.deepEqual(JSON.parse(String(service.requests[0].init?.body)), {
       model: 'speech-2.8-turbo',
       text: '你好',
       stream: false,
+      output_format: 'url',
       voice_setting: { voice_id: 'Voice_123', speed: 1.1 },
       audio_setting: { format: 'mp3', sample_rate: 32000 },
     });

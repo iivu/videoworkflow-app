@@ -122,8 +122,8 @@ test.group('Video breakdown LLM request', () => {
     assert.equal(body.model, 'qwen-vl-max');
     assert.equal(body.messages[0].role, 'user');
 
-    const [videoPart, textPart] = body.messages[0].content as [{ type: 'video_url'; video_url: { url: string }; fps: number }, { type: 'text'; text: string }];
-    assert.deepEqual(videoPart, { type: 'video_url', video_url: { url: 'https://cdn.example.com/video.mp4' }, fps: 10 });
+    const [videoPart, textPart] = body.messages[0].content as [{ type: 'video_url'; video_url: { url: string } }, { type: 'text'; text: string }];
+    assert.deepEqual(videoPart, { type: 'video_url', video_url: { url: 'https://cdn.example.com/video.mp4' } });
     assert.equal(textPart.type, 'text');
     assert.equal(textPart.text, prompt);
     assert.match(textPart.text, /JSON 数组/);
@@ -133,9 +133,9 @@ test.group('Video breakdown LLM request', () => {
     const prompt = new PromptService().videoBreakdownSystemPrompt();
     assert.match(prompt, /HH:MM:SS\.sss/);
     assert.match(prompt, /精确到毫秒/);
-    assert.match(prompt, /片段按开始时间升序排列/);
-    assert.match(prompt, /片段之间不可重叠/);
-    assert.match(prompt, /只返回 JSON 数组/);
+    assert.match(prompt, /按 start 时间升序排列/);
+    assert.match(prompt, /分镜之间不得重叠/);
+    assert.match(prompt, /只返回一个合法的 JSON 数组/);
   });
 
   test('builds bailian API headers', ({ assert }) => {

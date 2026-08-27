@@ -71,7 +71,7 @@ test.group('Video breakdown HTTP boundary', (group) => {
       taskId: data.taskId,
       videoUrl: 'https://cdn.example.com/video.mp4',
       userId: user.id,
-      model: 'qwen-vl-max',
+      model: 'qwen3.5-omni-plus',
     });
   });
 

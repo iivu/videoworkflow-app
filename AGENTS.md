@@ -25,7 +25,7 @@ Use Node.js 24+ and pnpm 10.33.3.
 
 ## Coding Style & Naming Conventions
 
-Write TypeScript with two-space indentation, single quotes, and organized imports; Biome enforces these rules with a 180-character line width. Use kebab-case filenames such as `video-service.ts`, PascalCase for React components and classes, and camelCase for functions and variables. Prefer configured aliases (`#/` in web, `#services/*`, `#models/*`, and similar in API) over long relative imports. Do not edit generated files such as `apps/web/src/routeTree.gen.ts` or `apps/api/.adonisjs/**` manually.
+Write TypeScript with two-space indentation, single quotes, and organized imports; Biome enforces these rules with a 180-character line width. Use kebab-case filenames such as `video-service.ts`, PascalCase for React components and classes, and camelCase for functions and variables. Prefer TypeScript type inference: omit annotations that merely repeat the inferred type (e.g. function return types, local variable/const types); annotate only when inference is impossible (empty collections, callback params) or to document a deliberate narrowing (e.g. override contracts, widened `null` fields). Prefer configured aliases (`#/` in web, `#services/*`, `#models/*`, and similar in API) over long relative imports. Do not edit generated files such as `apps/web/src/routeTree.gen.ts` or `apps/api/.adonisjs/**` manually.
 
 ## Testing Guidelines
 

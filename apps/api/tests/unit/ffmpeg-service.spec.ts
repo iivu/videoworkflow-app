@@ -41,7 +41,7 @@ test.group('FFmpeg service', () => {
       '-i',
       '/tmp/source.mp4',
       '-vf',
-      'fps=4,scdet=t=1,metadata=mode=print:file=-',
+      'fps=16,scdet=t=1,metadata=mode=print:file=-',
       '-an',
       '-f',
       'null',
