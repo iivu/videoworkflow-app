@@ -20,6 +20,7 @@ import { BreadcrumbBar } from '#/components/breadcrumb-bar';
 import { Now } from '#/components/now';
 import { ThemeSwitch } from '#/components/theme-switch';
 import { UserProfileDropdown } from '#/components/user-profile-dropdown';
+import Logo from '#/assets/logo.svg';
 
 const CONTENT_NAV_ITEMS = [{ to: '/videos', label: '视频库', icon: VideoIcon }];
 const CREATIVE_NAV_ITEMS = [{ to: '/creative/audio', label: '音频', icon: AudioLinesIcon }];
@@ -72,7 +73,7 @@ function AppLayoutSidebarHeader() {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-            <div className="flex size-8 items-center justify-center rounded-md bg-background shrink-0">{/* <img src={Logo} alt="logo" className="size-full rounded-sm" /> */}</div>
+            <div className="flex size-8 items-center justify-center rounded-md bg-background shrink-0"><img src={Logo} alt="logo" className="size-full rounded-sm" /></div>
             <div className="flex flex-col flex-1 text-start text-sm leading-relaxed">
               <span className="truncate font-semibold">{import.meta.env.VITE_APP_NAME}</span>
               <span className="truncate text-xs">
