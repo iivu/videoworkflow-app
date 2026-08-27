@@ -11,6 +11,7 @@ allowBuilds:
 catalog:
   '@adonisjs/assembler': ^8.4.0
   '@adonisjs/auth': ^10.1.0
+  '@adonisjs/bouncer': ^4.0.0
   '@adonisjs/core': ^7.3.3
   '@adonisjs/cors': ^3.0.0
   '@adonisjs/lucid': ^22.4.2
@@ -19,7 +20,6 @@ catalog:
   '@adonisjs/session': ^8.1.0
   '@adonisjs/shield': ^9.0.0
   '@adonisjs/static': ^2.0.1
-  '@adonisjs/bouncer': ^4.0.0
   '@adonisjs/tsconfig': ^2.0.0
   '@ai-sdk/alibaba': ^2.0.20
   '@ai-sdk/moonshotai': ^3.0.21
@@ -58,6 +58,7 @@ catalog:
   '@types/react-dom': ^19.2.0
   '@vinejs/vine': ^4.4.0
   '@vitejs/plugin-react': ^6.0.1
+  '@xyflow/react': ^12.11.5
   ai: ^7.0.64
   ali-oss: ^6.23.0
   antd: ^6.6.0

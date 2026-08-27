@@ -44,7 +44,8 @@
         "useSemanticElements": { "level": "info" },
         "noLabelWithoutControl": { "level": "off" },
         "useFocusableInteractive": { "level": "info" },
-        "useKeyWithClickEvents": { "level": "info" }
+        "useKeyWithClickEvents": { "level": "info" },
+        "noSvgWithoutTitle": { "level": "info" }
       },
       "complexity": {
         "noBannedTypes": { "level": "off" }

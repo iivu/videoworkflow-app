@@ -40,6 +40,7 @@
     "@tanstack/react-table": "catalog:",
     "@tuyau/core": "catalog:",
     "@tuyau/react-query": "catalog:",
+    "@xyflow/react": "catalog:",
     "ai": "catalog:",
     "antd": "catalog:",
     "api": "workspace:*",

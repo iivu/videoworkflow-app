@@ -14,7 +14,7 @@ import type { BailianAudioConfigs, BusyAction, CreativeAudioItem, MinimaxiAudioC
 
 const HISTORY_PAGE_SIZE = 20;
 
-export function AudioCreatePage() {
+export function CreativeAudioPage() {
   const queryClient = useQueryClient();
   const [text, setText] = useState('');
   const [selectedVoice, setSelectedVoice] = useState<VoiceItem | null>(null);
