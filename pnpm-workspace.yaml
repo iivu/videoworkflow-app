@@ -97,5 +97,6 @@ catalog:
   youch: ^4.1.1
   zhipu-ai-provider: ^0.4.0
   zod: ^4.3.6
+  zustand: ^5.0.15
 onlyBuiltDependencies:
   - better-sqlite3

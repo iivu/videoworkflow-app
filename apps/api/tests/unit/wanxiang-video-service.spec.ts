@@ -157,21 +157,21 @@ test.group('Wanxiang video service', () => {
   });
 
   for (const scenario of [
-    { name: 'missing prompt and media', params: { input: {} }, message: '万相视频生成失败: prompt 和 media 至少需要传入一个' },
+    { name: 'missing prompt and media', params: { input: {} }, message: '视频生成失败: prompt 和 media 至少需要传入一个' },
     {
       name: 'overlong prompt',
       params: { input: { prompt: 'a'.repeat(20001) } },
-      message: '万相视频生成失败: 提示词长度不能超过 20000 个字符',
+      message: '视频生成失败: 提示词长度不能超过 20000 个字符',
     },
     {
       name: 'blank media URL',
       params: { input: { media: [{ type: 'reference_image', url: '   ' }] } },
-      message: '万相视频生成失败: 媒体素材 URL 无效',
+      message: '视频生成失败: 媒体素材 URL 无效',
     },
     {
       name: 'invalid media type',
       params: { input: { media: [{ type: 'audio', url: 'https://cdn.example.com/a.mp3' }] } },
-      message: '万相视频生成失败: 不支持的媒体素材类型: audio',
+      message: '视频生成失败: 不支持的媒体素材类型: audio',
     },
     {
       name: 'too many first frames',
@@ -183,7 +183,7 @@ test.group('Wanxiang video service', () => {
           ],
         },
       },
-      message: '万相视频生成失败: media 中 first_frame 最多传入 1 个',
+      message: '视频生成失败: media 中 first_frame 最多传入 1 个',
     },
     {
       name: 'too many reference images',
@@ -192,7 +192,7 @@ test.group('Wanxiang video service', () => {
           media: [...Array.from({ length: 11 }, (_, index) => ({ type: 'reference_image' as const, url: `https://cdn.example.com/${index}.png` }))],
         },
       },
-      message: '万相视频生成失败: media 中 reference_image 最多传入 10 个',
+      message: '视频生成失败: media 中 reference_image 最多传入 10 个',
     },
     {
       name: 'too many reference videos',
@@ -201,7 +201,7 @@ test.group('Wanxiang video service', () => {
           media: [...Array.from({ length: 6 }, (_, index) => ({ type: 'reference_video' as const, url: `https://cdn.example.com/${index}.mp4` }))],
         },
       },
-      message: '万相视频生成失败: media 中 reference_video 最多传入 5 个',
+      message: '视频生成失败: media 中 reference_video 最多传入 5 个',
     },
     {
       name: 'file and link together',
@@ -213,7 +213,7 @@ test.group('Wanxiang video service', () => {
           ],
         },
       },
-      message: '万相视频生成失败: file 与 link 不能同时传入',
+      message: '视频生成失败: file 与 link 不能同时传入',
     },
     {
       name: 'frames mixed with reference media',
@@ -225,22 +225,22 @@ test.group('Wanxiang video service', () => {
           ],
         },
       },
-      message: '万相视频生成失败: first_frame/last_frame 与 reference_*/file/link 不能同时传入',
+      message: '视频生成失败: first_frame/last_frame 与 reference_*/file/link 不能同时传入',
     },
     {
       name: 'out of range duration',
       params: { input: defaultParams.input, parameters: { duration: 31 } },
-      message: '万相视频生成失败: 视频时长需为 -1 或 2～30 之间的整数',
+      message: '视频生成失败: 视频时长需为 -1 或 2～30 之间的整数',
     },
     {
       name: 'duration below minimum',
       params: { input: defaultParams.input, parameters: { duration: 1 } },
-      message: '万相视频生成失败: 视频时长需为 -1 或 2～30 之间的整数',
+      message: '视频生成失败: 视频时长需为 -1 或 2～30 之间的整数',
     },
     {
       name: 'out of range seed',
       params: { input: defaultParams.input, parameters: { seed: 2147483648 } },
-      message: '万相视频生成失败: 随机数种子取值范围为 [0, 2147483647]',
+      message: '视频生成失败: 随机数种子取值范围为 [0, 2147483647]',
     },
   ]) {
     test(`rejects ${scenario.name} before calling the API`, async ({ assert }) => {
@@ -254,9 +254,9 @@ test.group('Wanxiang video service', () => {
   }
 
   for (const scenario of [
-    { name: 'missing output', response: { message: 'InvalidApiKey' }, message: '万相视频生成失败: 创建任务失败: InvalidApiKey' },
-    { name: 'missing task ID', response: { output: { task_status: 'PENDING' } }, message: '万相视频生成失败: 创建任务失败: 服务响应格式无效' },
-    { name: 'missing task status', response: { output: { task_id: 'task-1' } }, message: '万相视频生成失败: 创建任务失败: 服务响应格式无效' },
+    { name: 'missing output', response: { message: 'InvalidApiKey' }, message: '视频生成失败: 创建任务失败: InvalidApiKey' },
+    { name: 'missing task ID', response: { output: { task_status: 'PENDING' } }, message: '视频生成失败: 创建任务失败: 服务响应格式无效' },
+    { name: 'missing task status', response: { output: { task_id: 'task-1' } }, message: '视频生成失败: 创建任务失败: 服务响应格式无效' },
   ]) {
     test(`rejects ${scenario.name}`, async ({ assert }) => {
       const error = await caught(new TestWanxiangVideoService([scenario.response]).submit(defaultParams));
@@ -388,8 +388,8 @@ test.group('Wanxiang video service', () => {
   });
 
   for (const scenario of [
-    { name: 'missing output', response: { message: 'task expired' }, message: '万相视频生成失败: 查询任务失败: task expired' },
-    { name: 'missing task ID', response: { output: { task_status: 'RUNNING' } }, message: '万相视频生成失败: 查询任务失败: 服务响应格式无效' },
+    { name: 'missing output', response: { message: 'task expired' }, message: '视频生成失败: 查询任务失败: task expired' },
+    { name: 'missing task ID', response: { output: { task_status: 'RUNNING' } }, message: '视频生成失败: 查询任务失败: 服务响应格式无效' },
   ]) {
     test(`rejects ${scenario.name}`, async ({ assert }) => {
       const error = await caught(new TestWanxiangVideoService([scenario.response]).getTask({ taskId: 'task-1' }));
@@ -440,7 +440,7 @@ test.group('Wanxiang video service', () => {
     const error = await caught(service.create({ userId: 'user-1', entityId: 'x'.repeat(37), input: defaultParams.input }));
 
     assert.instanceOf(error, BusinessException);
-    assert.equal((error as Error).message, '万相视频生成失败: entity_id 长度需在 1～36 个字符之间');
+    assert.equal((error as Error).message, '视频生成失败: entity_id 长度需在 1～36 个字符之间');
     assert.lengthOf(service.requests, 0);
   });
 });
@@ -462,17 +462,39 @@ test.group('Wanxiang video service occupancy and abandon', (group) => {
   }
 
   for (const status of [WANXIANG_VIDEO_TASK_STATUS.PENDING, WANXIANG_VIDEO_TASK_STATUS.RUNNING]) {
-    test(`rejects create when the user already has a ${status} task`, async ({ assert }) => {
+    test(`rejects create when the same node already has a ${status} task`, async ({ assert }) => {
       const service = new TestWanxiangVideoService([]);
       await createTask({ userId: 'user-1', entityId: 'entity-1', taskId: 'active-task', status });
 
-      const error = await caught(service.create({ userId: 'user-1', entityId: 'entity-2', input: defaultParams.input }));
+      const error = await caught(service.create({ userId: 'user-1', entityId: 'entity-1', input: defaultParams.input }));
 
       assert.instanceOf(error, BusinessException);
-      assert.equal((error as Error).message, '当前已有视频生成任务进行中，请等待其完成后再试');
+      assert.equal((error as Error).message, '该节点已有视频生成任务进行中，请等待其完成后再试');
       assert.lengthOf(service.requests, 0);
     });
   }
+
+  test('allows parallel tasks on different nodes while one node is active', async ({ assert }) => {
+    const service = new TestWanxiangVideoService([{ output: { task_id: 'task-new', task_status: 'PENDING' }, request_id: 'req-1' }]);
+    await createTask({ userId: 'user-1', entityId: 'entity-1', taskId: 'active-task', status: WANXIANG_VIDEO_TASK_STATUS.RUNNING });
+
+    const task = await service.create({ userId: 'user-1', entityId: 'entity-2', input: defaultParams.input });
+
+    assert.equal(task.taskId, 'task-new');
+    assert.equal(task.status, WANXIANG_VIDEO_TASK_STATUS.PENDING);
+    assert.lengthOf(service.requests, 1);
+  });
+
+  test('keeps the global check when no entity id is provided', async ({ assert }) => {
+    const service = new TestWanxiangVideoService([]);
+    await createTask({ userId: 'user-1', entityId: 'entity-1', taskId: 'active-task', status: WANXIANG_VIDEO_TASK_STATUS.PENDING });
+
+    const error = await caught(service.create({ userId: 'user-1', input: defaultParams.input }));
+
+    assert.instanceOf(error, BusinessException);
+    assert.equal((error as Error).message, '当前已有视频生成任务进行中，请等待其完成后再试');
+    assert.lengthOf(service.requests, 0);
+  });
 
   test('allows create when the user only has terminal tasks', async ({ assert }) => {
     const service = new TestWanxiangVideoService([{ output: { task_id: 'task-new', task_status: 'PENDING' }, request_id: 'req-1' }]);

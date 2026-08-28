@@ -235,6 +235,23 @@ export class VideoToVoiceTaskSchema extends BaseModel {
   declare voiceId: string | null
 }
 
+export class VideoWorkspaceSchema extends BaseModel {
+  static $columns = ['canvas', 'createdAt', 'id', 'name', 'updatedAt', 'userId'] as const
+  $columns = VideoWorkspaceSchema.$columns
+  @column()
+  declare canvas: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare name: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+}
+
 export class VideoSchema extends BaseModel {
   static $columns = ['author', 'commentCount', 'coverUrl', 'createdAt', 'favoriteCount', 'fileUrl', 'id', 'likeCount', 'platform', 'playCount', 'publishAt', 'shareCount', 'title', 'updatedAt', 'userId'] as const
   $columns = VideoSchema.$columns

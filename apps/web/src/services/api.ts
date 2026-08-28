@@ -27,6 +27,8 @@ export const client = createTuyau({
 
 export const query = createTuyauReactQueryClient({ client });
 
+export const urlFor = client.urlFor;
+
 export const normalizeApiFailedMessage = (error?: TuyauError | null) => {
   if (!error) return '';
   if (error.kind === 'network') return '网络错误，请检查网络连接';

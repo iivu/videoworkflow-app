@@ -50,6 +50,18 @@ r.group(() => {
     r.post('/video-breakdown/:taskId/video-edit/check', [controllers.VideoEditConversation, 'check']);
     r.post('/video-breakdown/:taskId/video-edit/abandon', [controllers.VideoEditConversation, 'abandon']);
 
+    r.get('/video-workspaces', [controllers.VideoWorkspaces, 'list']);
+    r.post('/video-workspaces', [controllers.VideoWorkspaces, 'create']);
+    r.get('/video-workspaces/:id', [controllers.VideoWorkspaces, 'show']);
+    r.put('/video-workspaces/:id', [controllers.VideoWorkspaces, 'rename']);
+    r.put('/video-workspaces/:id/canvas', [controllers.VideoWorkspaces, 'saveCanvas']);
+    r.delete('/video-workspaces/:id', [controllers.VideoWorkspaces, 'remove']);
+    r.post('/video-workspaces/:id/nodes/:nodeId/generate', [controllers.VideoWorkspaces, 'generate']);
+    r.get('/video-workspaces/:id/tasks', [controllers.VideoWorkspaces, 'listTasks']);
+    r.get('/video-workspaces/:id/tasks/:taskId', [controllers.VideoWorkspaces, 'showTask']);
+    r.get('/video-workspaces/:id/tasks/:taskId/check', [controllers.VideoWorkspaces, 'checkTask']);
+    r.post('/video-workspaces/:id/tasks/:taskId/abandon', [controllers.VideoWorkspaces, 'abandonTask']);
+
     r.post('/oss/upload', [controllers.Oss, 'upload']);
     r.post('/oss/url', [controllers.Oss, 'uploadURL']);
     r.get('/oss/policy', [controllers.Oss, 'getPolicy']);

@@ -48,6 +48,19 @@ export interface ApiDefinition {
     check: typeof routes['video_edit_conversation.check']
     abandon: typeof routes['video_edit_conversation.abandon']
   }
+  videoWorkspaces: {
+    list: typeof routes['video_workspaces.list']
+    create: typeof routes['video_workspaces.create']
+    show: typeof routes['video_workspaces.show']
+    rename: typeof routes['video_workspaces.rename']
+    saveCanvas: typeof routes['video_workspaces.save_canvas']
+    remove: typeof routes['video_workspaces.remove']
+    generate: typeof routes['video_workspaces.generate']
+    listTasks: typeof routes['video_workspaces.list_tasks']
+    showTask: typeof routes['video_workspaces.show_task']
+    checkTask: typeof routes['video_workspaces.check_task']
+    abandonTask: typeof routes['video_workspaces.abandon_task']
+  }
   oss: {
     upload: typeof routes['oss.upload']
     uploadUrl: typeof routes['oss.upload_url']

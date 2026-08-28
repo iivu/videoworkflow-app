@@ -14,8 +14,10 @@ import type VideoBreakdownTaskTransformer from '#transformers/video-breakdown-ta
 import type VideoEditMessageTransformer from '#transformers/video-edit-message-transformer'
 import type VideoToVoiceTaskTransformer from '#transformers/video-to-voice-task-transformer'
 import type VideoTransformer from '#transformers/video-transformer'
+import type VideoWorkspaceTransformer from '#transformers/video-workspace-transformer'
 import type VoiceTransformer from '#transformers/voice-transformer'
 import type WanxiangVideoEditTaskTransformer from '#transformers/wanxiang-video-edit-task-transformer'
+import type WanxiangVideoTaskTransformer from '#transformers/wanxiang-video-task-transformer'
 
 export namespace Data {
   export type CrawlerVideoTask = InferData<CrawlerVideoTaskTransformer>
@@ -54,6 +56,10 @@ export namespace Data {
   export namespace Video {
     export type Variants = InferVariants<VideoTransformer>
   }
+  export type VideoWorkspace = InferData<VideoWorkspaceTransformer>
+  export namespace VideoWorkspace {
+    export type Variants = InferVariants<VideoWorkspaceTransformer>
+  }
   export type Voice = InferData<VoiceTransformer>
   export namespace Voice {
     export type Variants = InferVariants<VoiceTransformer>
@@ -61,5 +67,9 @@ export namespace Data {
   export type WanxiangVideoEditTask = InferData<WanxiangVideoEditTaskTransformer>
   export namespace WanxiangVideoEditTask {
     export type Variants = InferVariants<WanxiangVideoEditTaskTransformer>
+  }
+  export type WanxiangVideoTask = InferData<WanxiangVideoTaskTransformer>
+  export namespace WanxiangVideoTask {
+    export type Variants = InferVariants<WanxiangVideoTaskTransformer>
   }
 }

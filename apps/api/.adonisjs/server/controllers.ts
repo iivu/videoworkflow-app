@@ -11,6 +11,7 @@ export const controllers = {
   Session: () => import('#controllers/session-controller'),
   VideoBreakdown: () => import('#controllers/video-breakdown-controller'),
   VideoEditConversation: () => import('#controllers/video-edit-conversation-controller'),
+  VideoWorkspaces: () => import('#controllers/video-workspaces-controller'),
   Videos: () => import('#controllers/videos-controller'),
   Voices: () => import('#controllers/voices-controller'),
   WanxiangVideoEdit: () => import('#controllers/wanxiang-video-edit-controller'),

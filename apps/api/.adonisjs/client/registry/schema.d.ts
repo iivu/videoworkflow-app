@@ -367,6 +367,138 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-edit-conversation-controller').default['abandon']>>>
     }
   }
+  'video_workspaces.list': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/video-workspaces'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['list']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['list']>>>
+    }
+  }
+  'video_workspaces.create': {
+    methods: ["POST"]
+    pattern: '/api/v1/video-workspaces'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/video-workspace').createVideoWorkspaceValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/video-workspace').createVideoWorkspaceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['create']>>>
+    }
+  }
+  'video_workspaces.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/video-workspaces/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/video-workspace').showVideoWorkspaceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['show']>>>
+    }
+  }
+  'video_workspaces.rename': {
+    methods: ["PUT"]
+    pattern: '/api/v1/video-workspaces/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/video-workspace').renameVideoWorkspaceValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/video-workspace').renameVideoWorkspaceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['rename']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['rename']>>>
+    }
+  }
+  'video_workspaces.save_canvas': {
+    methods: ["PUT"]
+    pattern: '/api/v1/video-workspaces/:id/canvas'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/video-workspace').saveVideoWorkspaceCanvasValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/video-workspace').saveVideoWorkspaceCanvasValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['saveCanvas']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['saveCanvas']>>>
+    }
+  }
+  'video_workspaces.remove': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/video-workspaces/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/video-workspace').removeVideoWorkspaceValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/video-workspace').removeVideoWorkspaceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['remove']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['remove']>>>
+    }
+  }
+  'video_workspaces.generate': {
+    methods: ["POST"]
+    pattern: '/api/v1/video-workspaces/:id/nodes/:nodeId/generate'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/canvas-generation').generateVideoWorkspaceNodeValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; nodeId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/canvas-generation').generateVideoWorkspaceNodeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['generate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['generate']>>>
+    }
+  }
+  'video_workspaces.list_tasks': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/video-workspaces/:id/tasks'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/canvas-generation').listVideoWorkspaceTasksValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['listTasks']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['listTasks']>>>
+    }
+  }
+  'video_workspaces.show_task': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/video-workspaces/:id/tasks/:taskId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; taskId: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/canvas-generation').showVideoWorkspaceTaskValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['showTask']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['showTask']>>>
+    }
+  }
+  'video_workspaces.check_task': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/video-workspaces/:id/tasks/:taskId/check'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; taskId: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/canvas-generation').showVideoWorkspaceTaskValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['checkTask']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['checkTask']>>>
+    }
+  }
+  'video_workspaces.abandon_task': {
+    methods: ["POST"]
+    pattern: '/api/v1/video-workspaces/:id/tasks/:taskId/abandon'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/canvas-generation').showVideoWorkspaceTaskValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; taskId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/canvas-generation').showVideoWorkspaceTaskValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['abandonTask']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/video-workspaces-controller').default['abandonTask']>>>
+    }
+  }
   'oss.upload': {
     methods: ["POST"]
     pattern: '/api/v1/oss/upload'

@@ -16,7 +16,7 @@ import {
 import { Link, useLocation, useMatches } from '@tanstack/react-router';
 import { AudioLinesIcon, VideoIcon } from 'lucide-react';
 import { useMemo } from 'react';
-import Logo from '#/assets/logo.svg';
+import Logo from '#/assets/logo2-animated.webp';
 import { BreadcrumbBar } from '#/components/breadcrumb-bar';
 import { Now } from '#/components/now';
 import { ThemeSwitch } from '#/components/theme-switch';

@@ -34,6 +34,17 @@ export type ScannedRoutes = {
     'video_edit_conversation.list_messages': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'video_edit_conversation.check': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'video_edit_conversation.abandon': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'video_workspaces.list': { paramsTuple?: []; params?: {} }
+    'video_workspaces.create': { paramsTuple?: []; params?: {} }
+    'video_workspaces.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'video_workspaces.rename': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'video_workspaces.save_canvas': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'video_workspaces.remove': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'video_workspaces.generate': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'nodeId': ParamValue} }
+    'video_workspaces.list_tasks': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'video_workspaces.show_task': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'taskId': ParamValue} }
+    'video_workspaces.check_task': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'taskId': ParamValue} }
+    'video_workspaces.abandon_task': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'taskId': ParamValue} }
     'oss.upload': { paramsTuple?: []; params?: {} }
     'oss.upload_url': { paramsTuple?: []; params?: {} }
     'oss.get_policy': { paramsTuple?: []; params?: {} }
@@ -56,6 +67,9 @@ export type ScannedRoutes = {
     'video_edit_conversation.send': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'video_edit_conversation.check': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'video_edit_conversation.abandon': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'video_workspaces.create': { paramsTuple?: []; params?: {} }
+    'video_workspaces.generate': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'nodeId': ParamValue} }
+    'video_workspaces.abandon_task': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'taskId': ParamValue} }
     'oss.upload': { paramsTuple?: []; params?: {} }
     'oss.upload_url': { paramsTuple?: []; params?: {} }
     'ai.polish_article': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
@@ -76,6 +90,11 @@ export type ScannedRoutes = {
     'wanxiang_video_edit.show': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'wanxiang_video_edit.check': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'video_edit_conversation.list_messages': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'video_workspaces.list': { paramsTuple?: []; params?: {} }
+    'video_workspaces.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'video_workspaces.list_tasks': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'video_workspaces.show_task': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'taskId': ParamValue} }
+    'video_workspaces.check_task': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'taskId': ParamValue} }
     'oss.get_policy': { paramsTuple?: []; params?: {} }
     'ai.list_messages': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
   }
@@ -95,8 +114,20 @@ export type ScannedRoutes = {
     'wanxiang_video_edit.show': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'wanxiang_video_edit.check': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'video_edit_conversation.list_messages': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'video_workspaces.list': { paramsTuple?: []; params?: {} }
+    'video_workspaces.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'video_workspaces.list_tasks': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'video_workspaces.show_task': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'taskId': ParamValue} }
+    'video_workspaces.check_task': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'taskId': ParamValue} }
     'oss.get_policy': { paramsTuple?: []; params?: {} }
     'ai.list_messages': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
+  }
+  PUT: {
+    'video_workspaces.rename': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'video_workspaces.save_canvas': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+  }
+  DELETE: {
+    'video_workspaces.remove': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

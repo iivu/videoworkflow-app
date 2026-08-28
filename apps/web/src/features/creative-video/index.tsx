@@ -1,38 +1,179 @@
+import { toast } from '@r/ui';
+import type { TuyauError } from '@tuyau/core/client';
 import {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
   Background,
   BackgroundVariant,
+  type Connection,
   type Edge,
-  type Node,
   type OnConnect,
   type OnEdgesChange,
+  type OnMoveEnd,
   type OnNodesChange,
   ReactFlow,
+  ReactFlowProvider,
 } from '@xyflow/react';
 import { useCallback, useState } from 'react';
-import { useTheme } from '#/providers/theme-provider';
 
-const initialNodes: Node[] = [
-  { id: 'n1', position: { x: 0, y: 0 }, data: { label: 'Node 1' } },
-  { id: 'n2', position: { x: 0, y: 100 }, data: { label: 'Node 2' } },
-];
-const initialEdges: Edge[] = [{ id: 'n1-n2', source: 'n1', target: 'n2' }];
+import { useConfirm } from '#/providers/confirm-dialog-provider';
+import { useTheme } from '#/providers/theme-provider';
+import { normalizeApiFailedMessage } from '#/services/api';
+import { createUuid } from '#/shared/uuid';
+import { CanvasToolbar } from './components/canvas-toolbar';
+import { CanvasAutoSave } from './components/data/canvas-auto-save';
+import { CanvasLoader } from './components/data/canvas-loader';
+import { CanvasViewportSync } from './components/data/canvas-viewport-sync';
+import { TaskPolling } from './components/data/task-polling';
+import { WorkspaceInit } from './components/data/workspace-init';
+import { SaveStatusPanel } from './components/save-status-panel';
+import { WorkspaceMenu } from './components/workspace-menu';
+import { WorkspaceNameDialog } from './components/workspace-name-dialog';
+import { isValidCanvasConnection, nodeTypes } from './nodes/definitions';
+import { selectCurrentWorkspace, useCanvasStore } from './store';
+import type { VideoWorkspaceEdge, VideoWorkspaceNode } from './types';
+
+type WorkspaceDialogState = 'create' | 'rename' | null;
+
+function failedMessage(error: unknown, fallback: string) {
+  return normalizeApiFailedMessage(error as TuyauError) || fallback;
+}
 
 export function CreativeVideoPage() {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
-  const { theme } = useTheme();
+  return (
+    <ReactFlowProvider>
+      <WorkspaceInit />
+      <CanvasLoader />
+      <CanvasAutoSave />
+      <TaskPolling />
+      <CreativeVideoCanvas />
+    </ReactFlowProvider>
+  );
+}
 
-  const onNodesChange = useCallback<OnNodesChange>((changes) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)), []);
-  const onEdgesChange = useCallback<OnEdgesChange>((changes) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)), []);
-  const onConnect = useCallback<OnConnect>((params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)), []);
+function CreativeVideoCanvas() {
+  const { theme } = useTheme();
+  const { confirm } = useConfirm();
+
+  const nodes = useCanvasStore((state) => state.nodes);
+  const edges = useCanvasStore((state) => state.edges);
+  const setNodes = useCanvasStore((state) => state.setNodes);
+  const setEdges = useCanvasStore((state) => state.setEdges);
+  const setViewport = useCanvasStore((state) => state.setViewport);
+  const workspaces = useCanvasStore((state) => state.workspaces);
+  const currentWorkspace = useCanvasStore(selectCurrentWorkspace);
+  const saveStatus = useCanvasStore((state) => state.saveStatus);
+  const selectWorkspace = useCanvasStore((state) => state.selectWorkspace);
+  const createWorkspace = useCanvasStore((state) => state.createWorkspace);
+  const renameWorkspace = useCanvasStore((state) => state.renameWorkspace);
+  const removeWorkspace = useCanvasStore((state) => state.removeWorkspace);
+  const addNode = useCanvasStore((state) => state.addNode);
+
+  const workspaceId = currentWorkspace ? String(currentWorkspace.id) : null;
+
+  const [dialog, setDialog] = useState<WorkspaceDialogState>(null);
+  const [nameInput, setNameInput] = useState('');
+  const [nameSubmitting, setNameSubmitting] = useState(false);
+
+  const onNodesChange = useCallback<OnNodesChange<VideoWorkspaceNode>>((changes) => setNodes((snapshot) => applyNodeChanges(changes, snapshot)), [setNodes]);
+  const onEdgesChange = useCallback<OnEdgesChange<VideoWorkspaceEdge>>((changes) => setEdges((snapshot) => applyEdgeChanges(changes, snapshot)), [setEdges]);
+
+  const onConnect = useCallback<OnConnect>(
+    (connection) => {
+      if (!isValidCanvasConnection(connection, edges)) return;
+      setEdges((snapshot) => addEdge({ ...connection, id: createUuid() }, snapshot));
+    },
+    [edges, setEdges],
+  );
+
+  const isValidConnection = useCallback((connection: Edge | Connection) => isValidCanvasConnection(connection, edges), [edges]);
+
+  const onMoveEnd = useCallback<OnMoveEnd>((_event, viewport) => setViewport(viewport), [setViewport]);
+
+  function openDialog(next: WorkspaceDialogState) {
+    if (!next) return;
+    setNameInput(next === 'rename' ? (currentWorkspace?.name ?? '') : '');
+    setDialog(next);
+  }
+
+  async function handleNameSubmit() {
+    const name = nameInput.trim();
+    if (!name || nameSubmitting) return;
+    setNameSubmitting(true);
+    try {
+      if (dialog === 'create') {
+        const id = await createWorkspace(name);
+        selectWorkspace(id);
+      } else {
+        if (!currentWorkspace) return;
+        await renameWorkspace(String(currentWorkspace.id), name);
+      }
+      setDialog(null);
+    } catch (error) {
+      toast.add({ type: 'error', description: failedMessage(error, '操作失败') });
+    } finally {
+      setNameSubmitting(false);
+    }
+  }
+
+  async function handleDeleteWorkspace() {
+    if (!currentWorkspace) return;
+    const ok = await confirm({
+      title: '删除创作空间',
+      description: '该空间的视频生成任务将一并删除，确定删除吗？',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await removeWorkspace(String(currentWorkspace.id));
+      toast.add({ type: 'success', description: '创作空间已删除' });
+    } catch (error) {
+      toast.add({ type: 'error', description: failedMessage(error, '删除失败') });
+    }
+  }
+
   return (
     <section className="h-(--content-min-height)">
-      <ReactFlow colorMode={theme} nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} fitView>
+      <CanvasViewportSync />
+      <ReactFlow
+        colorMode={theme}
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onMoveEnd={onMoveEnd}
+        isValidConnection={isValidConnection}
+        deleteKeyCode={null}
+        fitView
+      >
         <Background variant={BackgroundVariant.Dots} />
+
+        <WorkspaceMenu
+          workspaces={workspaces}
+          workspaceId={workspaceId}
+          currentName={currentWorkspace?.name ?? '创作空间'}
+          onSwitch={selectWorkspace}
+          onOpenDialog={openDialog}
+          onDelete={() => void handleDeleteWorkspace()}
+        />
+
+        <CanvasToolbar onAddNode={addNode} />
+
+        <SaveStatusPanel saveStatus={saveStatus} />
       </ReactFlow>
+
+      <WorkspaceNameDialog
+        open={dialog !== null}
+        mode={dialog ?? 'create'}
+        name={nameInput}
+        submitting={nameSubmitting}
+        onNameChange={setNameInput}
+        onClose={() => setDialog(null)}
+        onSubmit={() => void handleNameSubmit()}
+      />
     </section>
   );
 }

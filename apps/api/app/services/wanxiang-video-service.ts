@@ -236,12 +236,12 @@ export class WanxiangVideoService {
     };
   }
 
-  /** 提交任务并持久化任务记录；同一用户同一时间仅允许一个进行中的生成任务 */
+  /** 提交任务并持久化任务记录；按实体维度并发：同一节点同一时间仅一个任务，不同节点可并行，未传 entityId 时保持全局校验 */
   async create(params: { userId: string; entityId?: string; input: WanxiangVideoInput; parameters?: WanxiangVideoParameters; model?: WanxiangVideoModel }) {
     if (params.entityId !== undefined && !isValidWanxiangEntityId(params.entityId)) {
       throw providerError(`entity_id 长度需在 1～${ENTITY_ID_MAX_LENGTH} 个字符之间`);
     }
-    await this.assertNoActiveTask(params.userId);
+    await this.assertNoActiveTask(params.userId, params.entityId);
     const submission = await this.submit({ input: params.input, parameters: params.parameters, model: params.model });
     return WanxiangVideoTaskModel.create({
       userId: params.userId,
@@ -313,11 +313,15 @@ export class WanxiangVideoService {
     return query.paginate(params.page ?? 1, params.size ?? 10);
   }
 
-  /** 同一用户同一时间仅允许一个进行中的生成任务 */
-  private async assertNoActiveTask(userId: string) {
-    const active = await WanxiangVideoTaskModel.query().where('userId', userId).whereIn('status', [WANXIANG_VIDEO_TASK_STATUS.PENDING, WANXIANG_VIDEO_TASK_STATUS.RUNNING]).first();
+  /** 按实体维度并发校验：传入 entityId 时仅拦截同一节点上的进行中任务，未传时保持原有全局校验（向后兼容） */
+  private async assertNoActiveTask(userId: string, entityId?: string) {
+    const query = WanxiangVideoTaskModel.query().where('userId', userId).whereIn('status', [WANXIANG_VIDEO_TASK_STATUS.PENDING, WANXIANG_VIDEO_TASK_STATUS.RUNNING]);
+    if (entityId !== undefined) {
+      query.where('entityId', entityId);
+    }
+    const active = await query.first();
     if (active) {
-      throw new BusinessException('当前已有视频生成任务进行中，请等待其完成后再试');
+      throw new BusinessException(entityId !== undefined ? '该节点已有视频生成任务进行中，请等待其完成后再试' : '当前已有视频生成任务进行中，请等待其完成后再试');
     }
   }
 
