@@ -9,6 +9,8 @@ export type ImageNodeData = {
   kind: 'image';
   imageUrl: string | null;
   fileName?: string;
+  /** 作为生成视频的首帧还是尾帧 */
+  frame: 'first_frame' | 'last_frame';
 };
 
 export type GenerationParameters = {
@@ -55,12 +57,16 @@ export type VideoWorkspaceItem = {
 
 export const DEFAULT_WORKSPACE_NAME = '默认创作空间';
 
-/** 连线 handle 标识 */
+/** 连线 handle 标识：生成节点仅保留唯一输入 handle（提示词与图片均连入） */
 export const PROMPT_SOURCE_HANDLE = 'prompt';
 export const IMAGE_SOURCE_HANDLE = 'image';
 export const PROMPT_TARGET_HANDLE = 'prompt';
-export const FIRST_FRAME_TARGET_HANDLE = 'firstFrame';
-export const LAST_FRAME_TARGET_HANDLE = 'lastFrame';
+
+/** 图片节点帧角色选项 */
+export const IMAGE_FRAME_OPTIONS = [
+  { label: '首帧', value: 'first_frame' },
+  { label: '尾帧', value: 'last_frame' },
+] as const;
 
 /** 画布保存状态 */
 export type CanvasSaveStatus = 'idle' | 'saving' | 'saved';

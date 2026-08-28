@@ -9,6 +9,7 @@ import TanStackQueryDevtools from '#/integrations/tanstack-query/devtools';
 import { AuthProvider } from '#/providers/auth-provider';
 import { ConfirmDialogProvider } from '#/providers/confirm-dialog-provider';
 import { ThemeProvider } from '#/providers/theme-provider';
+import { VideoPlayerProvider } from '#/providers/video-player-provider';
 import { VoiceListDialogProvider } from '#/providers/voice-list-dialog-provider';
 
 interface AppRouterContext {
@@ -85,7 +86,9 @@ function RootComponent() {
         <AuthProvider>
           <ThemeProvider>
             <VoiceListDialogProvider>
-              <Outlet />
+              <VideoPlayerProvider>
+                <Outlet />
+              </VideoPlayerProvider>
             </VoiceListDialogProvider>
           </ThemeProvider>
         </AuthProvider>

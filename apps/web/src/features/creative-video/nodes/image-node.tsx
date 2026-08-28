@@ -1,17 +1,18 @@
-import { Button, toast } from '@r/ui';
+import { Button, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, toast } from '@r/ui';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { ImagePlus, LoaderCircle } from 'lucide-react';
 import { useRef } from 'react';
 
 import { useOss } from '#/hooks/use-oss';
 import { createUuid } from '#/shared/uuid';
-import { selectWorkspaceId, useCanvasStore } from '../store';
-import { IMAGE_SOURCE_HANDLE, type VideoWorkspaceNode } from '../types';
+import { selectIsNodeLocked, selectWorkspaceId, useCanvasStore } from '../store';
+import { IMAGE_FRAME_OPTIONS, IMAGE_SOURCE_HANDLE, type VideoWorkspaceNode } from '../types';
 import { NodeShell } from './node-shell';
 
 export function ImageNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
   const workspaceId = useCanvasStore(selectWorkspaceId);
   const updateNodeData = useCanvasStore((state) => state.updateNodeData);
+  const locked = useCanvasStore(selectIsNodeLocked(id));
   const { upload, uploading } = useOss();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -49,10 +50,29 @@ export function ImageNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
             {uploading ? <LoaderCircle className="size-5 animate-spin" /> : '暂无图片'}
           </div>
         )}
-        <Button type="button" variant="outline" size="sm" className="nodrag w-full" disabled={uploading} onClick={() => inputRef.current?.click()}>
+        <Button type="button" variant="outline" size="sm" className="nodrag w-full" disabled={locked || uploading} onClick={() => inputRef.current?.click()}>
           <ImagePlus />
           {data.imageUrl ? '更换图片' : '上传图片'}
         </Button>
+        <Select
+          items={IMAGE_FRAME_OPTIONS}
+          value={data.frame ?? 'first_frame'}
+          disabled={locked}
+          onValueChange={(value) => value && updateNodeData(id, { frame: value as 'first_frame' | 'last_frame' })}
+        >
+          <SelectTrigger size="sm" className="nodrag w-full" aria-label="首帧/尾帧">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {IMAGE_FRAME_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
     </NodeShell>
   );

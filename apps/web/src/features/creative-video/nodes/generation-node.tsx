@@ -1,19 +1,17 @@
 import { Button, Input, Label, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, Switch } from '@r/ui';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
-import { LoaderCircle, Play, Video } from 'lucide-react';
+import { CirclePlay, LoaderCircle, Play, Video } from 'lucide-react';
 import { useState } from 'react';
-import { useShallow } from 'zustand/react/shallow';
 
-import { selectGenerationNodeConnections, useCanvasStore } from '../store';
+import { useVideoPlayer } from '#/providers/video-player-provider';
+import { selectGenerationPromptReady, selectIsNodeLocked, useCanvasStore } from '../store';
 import {
-  FIRST_FRAME_TARGET_HANDLE,
   GENERATION_DURATION_OPTIONS,
   GENERATION_MODEL_OPTIONS,
   GENERATION_RATIO_OPTIONS,
   GENERATION_RESOLUTION_OPTIONS,
   type GenerationParameters,
   isActiveTaskStatus,
-  LAST_FRAME_TARGET_HANDLE,
   PROMPT_TARGET_HANDLE,
   type VideoWorkspaceNode,
   WANXIANG_TASK_STATUS,
@@ -30,10 +28,12 @@ function ParameterField({ label, children }: { label: string; children: React.Re
 }
 
 export function GenerationNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
+  const { playVideo } = useVideoPlayer();
   const generate = useCanvasStore((state) => state.generate);
   const abandon = useCanvasStore((state) => state.abandon);
   const updateNodeData = useCanvasStore((state) => state.updateNodeData);
-  const { promptReady, hasFirstFrame, hasLastFrame } = useCanvasStore(useShallow(selectGenerationNodeConnections(id)));
+  const promptReady = useCanvasStore(selectGenerationPromptReady(id));
+  const locked = useCanvasStore(selectIsNodeLocked(id));
   const [submitting, setSubmitting] = useState(false);
 
   if (data.kind !== 'generation') return null;
@@ -68,13 +68,11 @@ export function GenerationNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
   return (
     <NodeShell id={id} title="视频生成">
       <Handle type="target" position={Position.Left} id={PROMPT_TARGET_HANDLE} />
-      <Handle type="target" position={Position.Left} id={FIRST_FRAME_TARGET_HANDLE} style={{ top: 56 }} />
-      <Handle type="target" position={Position.Left} id={LAST_FRAME_TARGET_HANDLE} style={{ top: 72 }} />
 
       <div className="flex w-64 flex-col gap-2">
         <div className="grid grid-cols-2 gap-2">
           <ParameterField label="模型">
-            <Select items={GENERATION_MODEL_OPTIONS} value={parameters.model} onValueChange={(value) => value && updateParameters({ model: value })}>
+            <Select items={GENERATION_MODEL_OPTIONS} value={parameters.model} disabled={locked} onValueChange={(value) => value && updateParameters({ model: value })}>
               <SelectTrigger className="w-full nodrag" aria-label="模型">
                 <SelectValue />
               </SelectTrigger>
@@ -90,7 +88,12 @@ export function GenerationNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
             </Select>
           </ParameterField>
           <ParameterField label="分辨率">
-            <Select items={GENERATION_RESOLUTION_OPTIONS} value={parameters.resolution} onValueChange={(value) => value && updateParameters({ resolution: value })}>
+            <Select
+              items={GENERATION_RESOLUTION_OPTIONS}
+              value={parameters.resolution}
+              disabled={locked}
+              onValueChange={(value) => value && updateParameters({ resolution: value })}
+            >
               <SelectTrigger className="w-full nodrag" aria-label="分辨率">
                 <SelectValue />
               </SelectTrigger>
@@ -106,7 +109,7 @@ export function GenerationNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
             </Select>
           </ParameterField>
           <ParameterField label="画幅">
-            <Select items={GENERATION_RATIO_OPTIONS} value={parameters.ratio} onValueChange={(value) => value && updateParameters({ ratio: value })}>
+            <Select items={GENERATION_RATIO_OPTIONS} value={parameters.ratio} disabled={locked} onValueChange={(value) => value && updateParameters({ ratio: value })}>
               <SelectTrigger className="w-full nodrag" aria-label="画幅">
                 <SelectValue />
               </SelectTrigger>
@@ -122,7 +125,12 @@ export function GenerationNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
             </Select>
           </ParameterField>
           <ParameterField label="时长">
-            <Select items={GENERATION_DURATION_OPTIONS} value={String(parameters.duration)} onValueChange={(value) => value && updateParameters({ duration: Number(value) })}>
+            <Select
+              items={GENERATION_DURATION_OPTIONS}
+              value={String(parameters.duration)}
+              disabled={locked}
+              onValueChange={(value) => value && updateParameters({ duration: Number(value) })}
+            >
               <SelectTrigger className="w-full nodrag" aria-label="时长">
                 <SelectValue />
               </SelectTrigger>
@@ -148,6 +156,7 @@ export function GenerationNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
               value={parameters.seed ?? ''}
               placeholder="随机"
               className="h-8 w-full nodrag"
+              disabled={locked}
               onChange={(event) => {
                 const raw = event.target.value;
                 if (raw === '') {
@@ -163,7 +172,7 @@ export function GenerationNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
           </ParameterField>
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">音频</Label>
-            <Switch className="nodrag" checked={parameters.audio} onCheckedChange={(checked) => updateParameters({ audio: checked })} aria-label="音频" />
+            <Switch className="nodrag" disabled={locked} checked={parameters.audio} onCheckedChange={(checked) => updateParameters({ audio: checked })} aria-label="音频" />
           </div>
         </div>
 
@@ -173,8 +182,13 @@ export function GenerationNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
           {task && task.status === WANXIANG_TASK_STATUS.CANCELED ? <p className="text-xs text-muted-foreground">{task.reason || '已放弃'}</p> : null}
 
           {task && task.status === WANXIANG_TASK_STATUS.SUCCEEDED && task.videoUrl ? (
-            // biome-ignore lint/a11y/useMediaCaption: AI 生成视频无字幕资源，节点内仅做预览
-            <video src={task.videoUrl} controls className="w-full rounded-md bg-black/5" />
+            <button type="button" title="点击播放" className="nodrag group relative w-full overflow-hidden rounded-md bg-black/5" onClick={() => playVideo(task.videoUrl!)}>
+              {/* biome-ignore lint/a11y/useMediaCaption: AI 生成视频无字幕资源，节点内仅做封面预览 */}
+              <video src={task.videoUrl} preload="metadata" className="w-full" />
+              <span className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors group-hover:bg-black/20">
+                <CirclePlay className="size-8 text-white" />
+              </span>
+            </button>
           ) : null}
 
           <div className="flex items-center gap-2">
@@ -193,7 +207,6 @@ export function GenerationNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
             <p className="flex items-center gap-1 text-xs text-muted-foreground">
               <Video className="size-3" />
               {statusText}
-              {hasFirstFrame || hasLastFrame ? ` · 首帧${hasFirstFrame ? '✓' : '✗'} 尾帧${hasLastFrame ? '✓' : '✗'}` : ''}
             </p>
           ) : null}
         </div>

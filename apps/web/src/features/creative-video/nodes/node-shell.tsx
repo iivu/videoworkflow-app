@@ -1,25 +1,11 @@
 import { XIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-import { useConfirm } from '#/providers/confirm-dialog-provider';
-import { selectNodeHasActiveTask, useCanvasStore } from '../store';
+import { selectIsNodeLocked, useCanvasStore } from '../store';
 
 export function NodeShell({ id, title, children }: { id: string; title: string; children: ReactNode }) {
-  const { confirm } = useConfirm();
   const deleteNode = useCanvasStore((state) => state.deleteNode);
-  const hasActiveTask = useCanvasStore(selectNodeHasActiveTask(id));
-
-  async function handleDelete() {
-    if (hasActiveTask) {
-      const ok = await confirm({
-        title: '删除生成节点',
-        description: '该节点仍有视频生成任务进行中，删除后任务将丢失，确定删除吗？',
-        danger: true,
-      });
-      if (!ok) return;
-    }
-    deleteNode(id);
-  }
+  const locked = useCanvasStore(selectIsNodeLocked(id));
 
   return (
     <div className="relative rounded-xl border border-border bg-card p-3 shadow">
@@ -28,9 +14,10 @@ export function NodeShell({ id, title, children }: { id: string; title: string; 
       <button
         type="button"
         aria-label="删除节点"
-        title="删除节点"
-        className="absolute top-2 right-2 flex size-5 items-center justify-center rounded-md text-muted-foreground opacity-60 transition-opacity hover:bg-accent hover:opacity-100"
-        onClick={() => void handleDelete()}
+        title={locked ? '生成中，禁止删除' : '删除节点'}
+        disabled={locked}
+        className="absolute top-2 right-2 flex size-5 items-center justify-center rounded-md text-muted-foreground opacity-60 transition-opacity hover:bg-accent hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+        onClick={() => deleteNode(id)}
       >
         <XIcon className="size-3.5" />
       </button>

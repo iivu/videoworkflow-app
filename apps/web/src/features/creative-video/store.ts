@@ -8,11 +8,9 @@ import { getToken } from '#/shared/token';
 import { createUuid } from '#/shared/uuid';
 import {
   DEFAULT_WORKSPACE_NAME,
-  FIRST_FRAME_TARGET_HANDLE,
   GENERATION_DEFAULT_PARAMETERS,
   type GenerationTaskState,
   isActiveTaskStatus,
-  LAST_FRAME_TARGET_HANDLE,
   PROMPT_TARGET_HANDLE,
   type VideoWorkspaceEdge,
   type VideoWorkspaceItem,
@@ -173,7 +171,7 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
         kind === 'prompt'
           ? { id, type: 'prompt', position, data: { kind: 'prompt', prompt: '' } }
           : kind === 'image'
-            ? { id, type: 'image', position, data: { kind: 'image', imageUrl: null } }
+            ? { id, type: 'image', position, data: { kind: 'image', imageUrl: null, frame: 'first_frame' } }
             : { id, type: 'generation', position, data: { kind: 'generation', parameters: { ...GENERATION_DEFAULT_PARAMETERS }, task: null } };
       set({ nodes: [...nodes, node] });
     },
@@ -230,23 +228,21 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
       const target = state.nodes.find((node) => node.id === nodeId);
       if (target?.data.kind !== 'generation') return;
 
-      const promptEdge = state.edges.find((edge) => edge.target === nodeId && edge.targetHandle === PROMPT_TARGET_HANDLE);
-      const promptNode = promptEdge ? state.nodes.find((node) => node.id === promptEdge.source) : undefined;
+      const promptNode = state.nodes.find(
+        (node) => node.data.kind === 'prompt' && state.edges.some((edge) => edge.target === nodeId && edge.targetHandle === PROMPT_TARGET_HANDLE && edge.source === node.id),
+      );
       const prompt = promptNode?.data.kind === 'prompt' ? (promptNode.data.prompt ?? '').trim() : '';
-      if (!promptEdge || !prompt) {
+      if (!promptNode || !prompt) {
         toast.add({ type: 'warning', description: '请先连接提示词节点并填写提示词' });
         return;
       }
 
       const media: Array<{ type: 'first_frame' | 'last_frame'; url: string }> = [];
-      for (const [handle, type] of [
-        [FIRST_FRAME_TARGET_HANDLE, 'first_frame'],
-        [LAST_FRAME_TARGET_HANDLE, 'last_frame'],
-      ] as const) {
-        const edge = state.edges.find((item) => item.target === nodeId && item.targetHandle === handle);
-        const imageNode = edge ? state.nodes.find((item) => item.id === edge.source) : undefined;
+      for (const edge of state.edges) {
+        if (edge.target !== nodeId || edge.targetHandle !== PROMPT_TARGET_HANDLE) continue;
+        const imageNode = state.nodes.find((node) => node.id === edge.source);
         if (imageNode && imageNode.data.kind === 'image' && imageNode.data.imageUrl) {
-          media.push({ type, url: imageNode.data.imageUrl });
+          media.push({ type: imageNode.data.frame ?? 'first_frame', url: imageNode.data.imageUrl });
         }
       }
 
@@ -306,19 +302,43 @@ export const selectWorkspaceId = (state: CreativeVideoStore) => {
   return current ? String(current.id) : null;
 };
 
-export const selectNodeHasActiveTask = (nodeId: string) => (state: CreativeVideoStore) => {
-  const node = state.nodes.find((item) => item.id === nodeId);
-  return node?.data.kind === 'generation' && node.data.task ? isActiveTaskStatus(node.data.task.status) : false;
+/** 进行中生成任务的节点 id 集合（内部复用） */
+function selectActiveGenerationNodeIds(state: CreativeVideoStore) {
+  const ids = new Set<string>();
+  for (const node of state.nodes) {
+    if (node.data.kind === 'generation' && node.data.task && isActiveTaskStatus(node.data.task.status)) {
+      ids.add(node.id);
+    }
+  }
+  return ids;
+}
+
+/** 生成中的节点是否锁定（生成节点自身及其相连的提示词/图片节点），锁定期间禁止删除/修改 */
+export const selectIsNodeLocked = (nodeId: string) => (state: CreativeVideoStore) => {
+  const active = selectActiveGenerationNodeIds(state);
+  if (active.has(nodeId)) return true;
+  for (const edge of state.edges) {
+    if ((active.has(edge.target) || active.has(edge.source)) && (edge.source === nodeId || edge.target === nodeId)) return true;
+  }
+  return false;
 };
 
-/** 生成节点的提示词就绪 / 首尾帧连接状态（布尔派生，仅在变化时触发重渲染） */
-export const selectGenerationNodeConnections = (nodeId: string) => (state: CreativeVideoStore) => {
-  const promptSourceId = state.edges.find((edge) => edge.target === nodeId && edge.targetHandle === PROMPT_TARGET_HANDLE)?.source;
-  const promptNode = promptSourceId ? state.nodes.find((node) => node.id === promptSourceId) : undefined;
-  const promptReady = promptNode?.data.kind === 'prompt' ? (promptNode.data.prompt ?? '').trim().length > 0 : false;
-  const hasFirstFrame = state.edges.some((edge) => edge.target === nodeId && edge.targetHandle === FIRST_FRAME_TARGET_HANDLE);
-  const hasLastFrame = state.edges.some((edge) => edge.target === nodeId && edge.targetHandle === LAST_FRAME_TARGET_HANDLE);
-  return { promptReady, hasFirstFrame, hasLastFrame };
+/** 与进行中生成任务相连的连线 id 集合（用于线条动画） */
+export const selectGeneratingEdgeIds = (state: CreativeVideoStore) => {
+  const active = selectActiveGenerationNodeIds(state);
+  const ids = new Set<string>();
+  for (const edge of state.edges) {
+    if (active.has(edge.target) || active.has(edge.source)) ids.add(edge.id);
+  }
+  return ids;
+};
+
+/** 生成节点的提示词就绪状态（布尔派生，仅变化时触发重渲染） */
+export const selectGenerationPromptReady = (nodeId: string) => (state: CreativeVideoStore) => {
+  const promptNode = state.nodes.find(
+    (node) => node.data.kind === 'prompt' && state.edges.some((edge) => edge.target === nodeId && edge.targetHandle === PROMPT_TARGET_HANDLE && edge.source === node.id),
+  );
+  return promptNode?.data.kind === 'prompt' ? (promptNode.data.prompt ?? '').trim().length > 0 : false;
 };
 
 /** 进行中的任务集合（Map：nodeId -> task）；配合 activeTasksEqual 只在任务集合变化时通知订阅者 */

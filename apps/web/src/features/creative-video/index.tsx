@@ -15,7 +15,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
 } from '@xyflow/react';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useConfirm } from '#/providers/confirm-dialog-provider';
 import { useTheme } from '#/providers/theme-provider';
@@ -31,13 +31,21 @@ import { SaveStatusPanel } from './components/save-status-panel';
 import { WorkspaceMenu } from './components/workspace-menu';
 import { WorkspaceNameDialog } from './components/workspace-name-dialog';
 import { isValidCanvasConnection, nodeTypes } from './nodes/definitions';
-import { selectCurrentWorkspace, useCanvasStore } from './store';
+import { selectCurrentWorkspace, selectGeneratingEdgeIds, useCanvasStore } from './store';
 import type { VideoWorkspaceEdge, VideoWorkspaceNode } from './types';
 
 type WorkspaceDialogState = 'create' | 'rename' | null;
 
 function failedMessage(error: unknown, fallback: string) {
   return normalizeApiFailedMessage(error as TuyauError) || fallback;
+}
+
+function stringSetsEqual(a: Set<string>, b: Set<string>) {
+  if (a.size !== b.size) return false;
+  for (const value of a) {
+    if (!b.has(value)) return false;
+  }
+  return true;
 }
 
 export function CreativeVideoPage() {
@@ -58,6 +66,9 @@ function CreativeVideoCanvas() {
 
   const nodes = useCanvasStore((state) => state.nodes);
   const edges = useCanvasStore((state) => state.edges);
+  const generatingEdgeIds = useCanvasStore(selectGeneratingEdgeIds, stringSetsEqual);
+  // 生成进行中的相连连线加动画（展示层派生，不写回存储）
+  const displayEdges = useMemo(() => edges.map((edge) => (generatingEdgeIds.has(edge.id) ? { ...edge, animated: true } : edge)), [edges, generatingEdgeIds]);
   const setNodes = useCanvasStore((state) => state.setNodes);
   const setEdges = useCanvasStore((state) => state.setEdges);
   const setViewport = useCanvasStore((state) => state.setViewport);
@@ -81,13 +92,13 @@ function CreativeVideoCanvas() {
 
   const onConnect = useCallback<OnConnect>(
     (connection) => {
-      if (!isValidCanvasConnection(connection, edges)) return;
+      if (!isValidCanvasConnection(connection, edges, nodes)) return;
       setEdges((snapshot) => addEdge({ ...connection, id: createUuid() }, snapshot));
     },
-    [edges, setEdges],
+    [edges, nodes, setEdges],
   );
 
-  const isValidConnection = useCallback((connection: Edge | Connection) => isValidCanvasConnection(connection, edges), [edges]);
+  const isValidConnection = useCallback((connection: Edge | Connection) => isValidCanvasConnection(connection, edges, nodes), [edges, nodes]);
 
   const onMoveEnd = useCallback<OnMoveEnd>((_event, viewport) => setViewport(viewport), [setViewport]);
 
@@ -139,7 +150,7 @@ function CreativeVideoCanvas() {
       <ReactFlow
         colorMode={theme}
         nodes={nodes}
-        edges={edges}
+        edges={displayEdges}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
