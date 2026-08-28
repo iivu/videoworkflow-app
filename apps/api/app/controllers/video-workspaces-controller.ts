@@ -21,7 +21,7 @@ export default class VideoWorkspacesController {
   async list(ctx: HttpContext) {
     const user = await ctx.auth.getUserOrFail();
     const workspaces = await this.videoWorkspaceService.list({ userId: user.id });
-    return ctx.ok(await ctx.serialize.withoutWrapping(VideoWorkspaceTransformer.transform(workspaces)));
+    return ctx.ok(await ctx.serialize.withoutWrapping(VideoWorkspaceTransformer.transform(workspaces).useVariant('toList')));
   }
 
   /** 新建创作空间（空画布） */

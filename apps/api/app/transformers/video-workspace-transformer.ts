@@ -31,4 +31,9 @@ export default class VideoWorkspaceTransformer extends BaseTransformer<VideoWork
       canvas: parseVideoWorkspaceCanvas(this.resource.canvas),
     };
   }
+
+  /** 列表变体：不返回画布数据（画布由详情接口返回） */
+  toList() {
+    return this.pick(this.resource, ['id', 'name', 'createdAt', 'updatedAt']);
+  }
 }

@@ -88,6 +88,11 @@ test.group('Video workspaces HTTP boundary', (group) => {
       body.map((item) => item.id),
       [first.id, second.id],
     );
+    // 列表不应返回画布数据（画布由详情接口返回）
+    assert.ok(
+      body.every((item) => !('canvas' in item)),
+      '列表不应返回画布数据',
+    );
   });
 
   test('shows a workspace with its canvas', async ({ assert, client }) => {
