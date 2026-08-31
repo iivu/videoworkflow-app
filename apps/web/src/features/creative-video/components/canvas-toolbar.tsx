@@ -1,8 +1,8 @@
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@r/ui';
 import { Panel } from '@xyflow/react';
-import { ChevronDown, Clapperboard, Image as ImageIcon, Plus, Type } from 'lucide-react';
+import { ChevronDown, Clapperboard, Image as ImageIcon, Plus } from 'lucide-react';
 
-type CanvasNodeKind = 'prompt' | 'image' | 'generation';
+type CanvasNodeKind = 'image' | 'generation';
 
 type CanvasToolbarProps = {
   onAddNode(kind: CanvasNodeKind): void;
@@ -22,10 +22,6 @@ export function CanvasToolbar({ onAddNode }: CanvasToolbarProps) {
         <DropdownMenuContent className="w-44">
           <DropdownMenuGroup>
             <DropdownMenuLabel>添加节点</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => onAddNode('prompt')}>
-              <Type />
-              提示词
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onAddNode('image')}>
               <ImageIcon />
               图片素材

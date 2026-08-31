@@ -1,4 +1,4 @@
-import { Button, Input, Label, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, Switch } from '@r/ui';
+import { Button, Input, Label, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, Switch, Textarea } from '@r/ui';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { CirclePlay, LoaderCircle, Play, Video } from 'lucide-react';
 import { useState } from 'react';
@@ -7,12 +7,12 @@ import { useVideoPlayer } from '#/providers/video-player-provider';
 import { selectGenerationPromptReady, selectIsNodeLocked, useCanvasStore } from '../store';
 import {
   GENERATION_DURATION_OPTIONS,
+  GENERATION_INPUT_HANDLE,
   GENERATION_MODEL_OPTIONS,
   GENERATION_RATIO_OPTIONS,
   GENERATION_RESOLUTION_OPTIONS,
   type GenerationParameters,
   isActiveTaskStatus,
-  PROMPT_TARGET_HANDLE,
   type VideoWorkspaceNode,
   WANXIANG_TASK_STATUS,
 } from '../types';
@@ -67,9 +67,19 @@ export function GenerationNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
 
   return (
     <NodeShell id={id} title="视频生成">
-      <Handle type="target" position={Position.Left} id={PROMPT_TARGET_HANDLE} />
+      <Handle type="target" position={Position.Left} id={GENERATION_INPUT_HANDLE} />
 
       <div className="flex w-64 flex-col gap-2">
+        <ParameterField label="提示词">
+          <Textarea
+            value={parameters.prompt}
+            placeholder="输入画面提示词…"
+            disabled={locked}
+            className="nodrag min-h-20 resize-y"
+            onChange={(event) => updateParameters({ prompt: event.target.value })}
+          />
+        </ParameterField>
+
         <div className="grid grid-cols-2 gap-2">
           <ParameterField label="模型">
             <Select items={GENERATION_MODEL_OPTIONS} value={parameters.model} disabled={locked} onValueChange={(value) => value && updateParameters({ model: value })}>
@@ -177,7 +187,7 @@ export function GenerationNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          {!promptReady ? <p className="text-xs text-muted-foreground">请连接提示词节点并填写内容</p> : null}
+          {!promptReady ? <p className="text-xs text-muted-foreground">请填写提示词</p> : null}
           {task && task.status === WANXIANG_TASK_STATUS.FAILED ? <p className="text-xs text-destructive">{task.reason || '生成失败'}</p> : null}
           {task && task.status === WANXIANG_TASK_STATUS.CANCELED ? <p className="text-xs text-muted-foreground">{task.reason || '已放弃'}</p> : null}
 

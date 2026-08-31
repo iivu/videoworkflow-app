@@ -6,9 +6,9 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "vite dev --port 3000",
+    "dev": "vite dev --port 3000 --mode=development",
     "generate-routes": "tsr generate",
-    "build": "vite build",
+    "build": "vite build --mode=production",
     "preview": "vite preview",
     "format": "biome format",
     "lint": "biome lint",

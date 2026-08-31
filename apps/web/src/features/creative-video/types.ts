@@ -1,10 +1,5 @@
 import type { Edge, Node, Viewport } from '@xyflow/react';
 
-export type PromptNodeData = {
-  kind: 'prompt';
-  prompt: string;
-};
-
 export type ImageNodeData = {
   kind: 'image';
   imageUrl: string | null;
@@ -20,6 +15,8 @@ export type GenerationParameters = {
   duration: number;
   seed?: number;
   audio: boolean;
+  /** 画面提示词（自 v2 起并入生成节点） */
+  prompt: string;
 };
 
 export type GenerationTaskState = {
@@ -35,17 +32,25 @@ export type GenerationNodeData = {
   task: GenerationTaskState | null;
 };
 
-export type VideoWorkspaceNodeData = PromptNodeData | ImageNodeData | GenerationNodeData;
+export type VideoWorkspaceNodeData = ImageNodeData | GenerationNodeData;
 
 export type VideoWorkspaceNode = Node<VideoWorkspaceNodeData>;
 
 export type VideoWorkspaceEdge = Edge;
 
 export type VideoWorkspaceCanvas = {
+  /** 画布数据格式版本；缺失时按 LEGACY_CANVAS_VERSION（旧数据）处理 */
+  version: number;
   nodes: VideoWorkspaceNode[];
   edges: VideoWorkspaceEdge[];
   viewport: Viewport | null;
 };
+
+/** 画布数据格式当前（最新）版本；数据结构变更时递增并注册对应迁移步骤 */
+export const CANVAS_VERSION = 2;
+
+/** 无 version 字段的旧画布数据视为该版本 */
+export const LEGACY_CANVAS_VERSION = 1;
 
 /** 创作空间列表项（与 list 接口返回对齐） */
 export type VideoWorkspaceItem = {
@@ -57,10 +62,9 @@ export type VideoWorkspaceItem = {
 
 export const DEFAULT_WORKSPACE_NAME = '默认创作空间';
 
-/** 连线 handle 标识：生成节点仅保留唯一输入 handle（提示词与图片均连入） */
-export const PROMPT_SOURCE_HANDLE = 'prompt';
+/** 连线 handle 标识：生成节点唯一输入 handle，图片素材连入；值为历史遗留的 'prompt'，与已落库连线数据保持一致，请勿改动 */
+export const GENERATION_INPUT_HANDLE = 'prompt';
 export const IMAGE_SOURCE_HANDLE = 'image';
-export const PROMPT_TARGET_HANDLE = 'prompt';
 
 /** 图片节点帧角色选项 */
 export const IMAGE_FRAME_OPTIONS = [
@@ -89,6 +93,7 @@ export const GENERATION_DEFAULT_PARAMETERS: GenerationParameters = {
   ratio: 'adaptive',
   duration: 5,
   audio: true,
+  prompt: '',
 };
 
 export const GENERATION_MODEL_OPTIONS = [

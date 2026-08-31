@@ -6,12 +6,14 @@ import { createWithEqualityFn } from 'zustand/traditional';
 import { client, normalizeApiFailedMessage, urlFor } from '#/services/api';
 import { getToken } from '#/shared/token';
 import { createUuid } from '#/shared/uuid';
+import { migrateCanvas } from './canvas-migration';
 import {
+  CANVAS_VERSION,
   DEFAULT_WORKSPACE_NAME,
   GENERATION_DEFAULT_PARAMETERS,
+  GENERATION_INPUT_HANDLE,
   type GenerationTaskState,
   isActiveTaskStatus,
-  PROMPT_TARGET_HANDLE,
   type VideoWorkspaceEdge,
   type VideoWorkspaceItem,
   type VideoWorkspaceNode,
@@ -53,6 +55,7 @@ export type CreativeVideoStore = {
   nodes: VideoWorkspaceNode[];
   edges: VideoWorkspaceEdge[];
   viewport: Viewport | null;
+  version: number;
   saveStatus: 'idle' | 'saving' | 'saved';
   canvasLoaded: boolean;
   loadCanvas: (workspaceId: string) => Promise<void>;
@@ -60,7 +63,7 @@ export type CreativeVideoStore = {
   setEdges: (updater: (snapshot: VideoWorkspaceEdge[]) => VideoWorkspaceEdge[]) => void;
   setViewport: (viewport: Viewport | null) => void;
   updateNodeData: (nodeId: string, patch: Partial<VideoWorkspaceNodeData>) => void;
-  addNode: (kind: 'prompt' | 'image' | 'generation') => void;
+  addNode: (kind: 'image' | 'generation') => void;
   deleteNode: (nodeId: string) => void;
   updateNodeTask: (nodeId: string, task: GenerationTaskState) => void;
   generate: (nodeId: string) => Promise<void>;
@@ -77,6 +80,7 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
     nodes: [],
     edges: [],
     viewport: null,
+    version: CANVAS_VERSION,
     saveStatus: 'idle',
     canvasLoaded: false,
 
@@ -136,15 +140,19 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
     },
 
     loadCanvas: async (workspaceId) => {
-      set({ canvasLoaded: false, nodes: [], edges: [], viewport: null, saveStatus: 'idle' });
+      set({ canvasLoaded: false, nodes: [], edges: [], viewport: null, version: CANVAS_VERSION, saveStatus: 'idle' });
       try {
         const response = await client.api.videoWorkspaces.show({ params: { id: workspaceId } });
-        const canvas = response.data.canvas;
-        lastSavedSerialized = JSON.stringify({ nodes: canvas.nodes ?? [], edges: canvas.edges ?? [], viewport: canvas.viewport ?? null });
+        const raw = response.data.canvas as unknown;
+        // 基线记录后端原始画布（nodes/edges/viewport）；若迁移产生了差异，下一次 flush 会回写迁移结果
+        const rawRecord = (raw ?? {}) as { nodes?: unknown; edges?: unknown; viewport?: unknown };
+        lastSavedSerialized = JSON.stringify({ nodes: rawRecord.nodes ?? [], edges: rawRecord.edges ?? [], viewport: rawRecord.viewport ?? null });
+        const canvas = migrateCanvas(raw);
         set({
-          nodes: canvas.nodes as unknown as VideoWorkspaceNode[],
-          edges: canvas.edges as unknown as VideoWorkspaceEdge[],
-          viewport: (canvas.viewport ?? null) as unknown as Viewport | null,
+          nodes: canvas.nodes,
+          edges: canvas.edges,
+          viewport: canvas.viewport,
+          version: canvas.version,
           canvasLoaded: true,
           saveStatus: 'saved',
         });
@@ -168,11 +176,9 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
       const id = createUuid();
       const position = centerPosition(viewport, addNodeIndex++);
       const node: VideoWorkspaceNode =
-        kind === 'prompt'
-          ? { id, type: 'prompt', position, data: { kind: 'prompt', prompt: '' } }
-          : kind === 'image'
-            ? { id, type: 'image', position, data: { kind: 'image', imageUrl: null, frame: 'first_frame' } }
-            : { id, type: 'generation', position, data: { kind: 'generation', parameters: { ...GENERATION_DEFAULT_PARAMETERS }, task: null } };
+        kind === 'image'
+          ? { id, type: 'image', position, data: { kind: 'image', imageUrl: null, frame: 'first_frame' } }
+          : { id, type: 'generation', position, data: { kind: 'generation', parameters: { ...GENERATION_DEFAULT_PARAMETERS }, task: null } };
       set({ nodes: [...nodes, node] });
     },
 
@@ -188,10 +194,11 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
       })),
 
     flushCanvas: async () => {
-      const { currentId, nodes, edges, viewport, canvasLoaded } = get();
+      const { currentId, version, nodes, edges, viewport, canvasLoaded } = get();
       if (!currentId || !canvasLoaded) return;
-      const canvas = { nodes, edges, viewport };
-      const serialized = JSON.stringify(canvas);
+      const canvas = { version, nodes, edges, viewport };
+      // 差异比较不含 version：后端落库仅保留 nodes/edges/viewport，version 由前端迁移维护
+      const serialized = JSON.stringify({ nodes, edges, viewport });
       if (serialized === lastSavedSerialized) {
         set({ saveStatus: 'saved' });
         return;
@@ -208,7 +215,7 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
     },
 
     flushCanvasKeepalive: () => {
-      const { currentId, nodes, edges, viewport, canvasLoaded } = get();
+      const { currentId, version, nodes, edges, viewport, canvasLoaded } = get();
       if (!currentId || !canvasLoaded) return;
       const serialized = JSON.stringify({ nodes, edges, viewport });
       if (serialized === lastSavedSerialized) return;
@@ -216,7 +223,7 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
       void fetch(urlFor('video_workspaces.save_canvas', { id: currentId }), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: serialized,
+        body: JSON.stringify({ version, nodes, edges, viewport }),
         keepalive: true,
       });
     },
@@ -228,18 +235,15 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
       const target = state.nodes.find((node) => node.id === nodeId);
       if (target?.data.kind !== 'generation') return;
 
-      const promptNode = state.nodes.find(
-        (node) => node.data.kind === 'prompt' && state.edges.some((edge) => edge.target === nodeId && edge.targetHandle === PROMPT_TARGET_HANDLE && edge.source === node.id),
-      );
-      const prompt = promptNode?.data.kind === 'prompt' ? (promptNode.data.prompt ?? '').trim() : '';
-      if (!promptNode || !prompt) {
-        toast.add({ type: 'warning', description: '请先连接提示词节点并填写提示词' });
+      const prompt = (target.data.parameters.prompt ?? '').trim();
+      if (!prompt) {
+        toast.add({ type: 'warning', description: '请先填写提示词' });
         return;
       }
 
       const media: Array<{ type: 'first_frame' | 'last_frame'; url: string }> = [];
       for (const edge of state.edges) {
-        if (edge.target !== nodeId || edge.targetHandle !== PROMPT_TARGET_HANDLE) continue;
+        if (edge.target !== nodeId || edge.targetHandle !== GENERATION_INPUT_HANDLE) continue;
         const imageNode = state.nodes.find((node) => node.id === edge.source);
         if (imageNode && imageNode.data.kind === 'image' && imageNode.data.imageUrl) {
           media.push({ type: imageNode.data.frame ?? 'first_frame', url: imageNode.data.imageUrl });
@@ -313,7 +317,7 @@ function selectActiveGenerationNodeIds(state: CreativeVideoStore) {
   return ids;
 }
 
-/** 生成中的节点是否锁定（生成节点自身及其相连的提示词/图片节点），锁定期间禁止删除/修改 */
+/** 生成中的节点是否锁定（生成节点自身及其相连的图片节点），锁定期间禁止删除/修改 */
 export const selectIsNodeLocked = (nodeId: string) => (state: CreativeVideoStore) => {
   const active = selectActiveGenerationNodeIds(state);
   if (active.has(nodeId)) return true;
@@ -335,10 +339,8 @@ export const selectGeneratingEdgeIds = (state: CreativeVideoStore) => {
 
 /** 生成节点的提示词就绪状态（布尔派生，仅变化时触发重渲染） */
 export const selectGenerationPromptReady = (nodeId: string) => (state: CreativeVideoStore) => {
-  const promptNode = state.nodes.find(
-    (node) => node.data.kind === 'prompt' && state.edges.some((edge) => edge.target === nodeId && edge.targetHandle === PROMPT_TARGET_HANDLE && edge.source === node.id),
-  );
-  return promptNode?.data.kind === 'prompt' ? (promptNode.data.prompt ?? '').trim().length > 0 : false;
+  const node = state.nodes.find((item) => item.id === nodeId);
+  return node?.data.kind === 'generation' ? (node.data.parameters.prompt ?? '').trim().length > 0 : false;
 };
 
 /** 进行中的任务集合（Map：nodeId -> task）；配合 activeTasksEqual 只在任务集合变化时通知订阅者 */
