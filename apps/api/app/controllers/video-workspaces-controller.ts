@@ -55,7 +55,12 @@ export default class VideoWorkspacesController {
     const workspace = await this.videoWorkspaceService.saveCanvas({
       userId: user.id,
       id: payload.params.id,
-      canvas: { nodes: payload.nodes, edges: payload.edges, viewport: payload.viewport ?? null },
+      canvas: {
+        ...(payload.version !== undefined ? { version: payload.version } : {}),
+        nodes: payload.nodes,
+        edges: payload.edges,
+        viewport: payload.viewport ?? null,
+      },
     });
     return ctx.ok(await ctx.serialize.withoutWrapping(VideoWorkspaceTransformer.transform(workspace)));
   }

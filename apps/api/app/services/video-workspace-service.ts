@@ -7,6 +7,8 @@ import { type WanxiangVideoInput, type WanxiangVideoModel, type WanxiangVideoPar
 import { EMPTY_VIDEO_WORKSPACE_CANVAS, parseVideoWorkspaceCanvas } from '#transformers/video-workspace-transformer';
 
 export type SaveVideoWorkspaceCanvasPayload = {
+  /** 画布数据格式版本（前端维护）；随画布一并持久化，载入时据此跳过已完成的迁移 */
+  version?: number;
   nodes: unknown[];
   edges: unknown[];
   viewport: unknown;
@@ -65,6 +67,8 @@ export class VideoWorkspaceService {
     await workspace
       .merge({
         canvas: JSON.stringify({
+          // 版本字段缺失的历史数据不补写，交由前端迁移后回写；存量画布随后续保存自动带上版本
+          ...(params.canvas.version !== undefined ? { version: params.canvas.version } : {}),
           nodes: params.canvas.nodes,
           edges: params.canvas.edges,
           viewport: params.canvas.viewport ?? null,

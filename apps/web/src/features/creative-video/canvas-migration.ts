@@ -1,4 +1,4 @@
-import type { GenerationImageAsset, ImageNodeData, VideoWorkspaceCanvas } from './types';
+import type { GenerationImageAsset, GenerationImageRole, ImageNodeData, VideoWorkspaceCanvas } from './types';
 import { CANVAS_VERSION, GENERATION_INPUT_HANDLE, LEGACY_CANVAS_VERSION } from './types';
 
 type CanvasMigrator = (canvas: VideoWorkspaceCanvas) => VideoWorkspaceCanvas;
@@ -93,14 +93,31 @@ function migrateCanvasV2ToV3(canvas: VideoWorkspaceCanvas): VideoWorkspaceCanvas
 /**
  * v3 → v4：图片节点移除首/尾帧角色字段（只负责上传/选择）；
  * 生成节点新增图片素材配置 assets，按存量连线把已连入图片的原角色（first_frame/last_frame）迁移进来。
+ *
+ * 幂等兼容说明（后端此前未持久化 version，存量数据载入时会重复执行迁移链）：
+ * - 生成节点已有 assets（v4 数据）时原样保留，仅做角色去重修正（首/尾帧至多各 1 张，超出降级为参考图），
+ *   避免 v4 图片节点已无 frame 字段时被整体冲刷为 first_frame；
+ * - 存量 v1~v3 数据按连线重建 assets：v2/v3 读取图片节点 frame，v1 按历史连线 handle（firstFrame/lastFrame）映射角色；
+ * - 历史 firstFrame/lastFrame 连线 handle 统一改写为 GENERATION_INPUT_HANDLE，保证连线在 v4 画布可渲染、可参与生成。
  */
 function migrateCanvasV3ToV4(canvas: VideoWorkspaceCanvas): VideoWorkspaceCanvas {
+  /** 历史 v1 连线 handle → 素材角色（v2 起统一为 GENERATION_INPUT_HANDLE） */
+  const legacyRoleByHandle: Record<string, GenerationImageRole> = {
+    firstFrame: 'first_frame',
+    lastFrame: 'last_frame',
+  };
+
+  // 已具备 assets 的生成节点（v4 数据）不再重建，避免重复迁移把角色冲刷为 first_frame
   const assetsByTarget = new Map<string, GenerationImageAsset[]>();
   for (const edge of canvas.edges) {
-    if (!edge.source || !edge.target || edge.targetHandle !== GENERATION_INPUT_HANDLE) continue;
+    if (!edge.source || !edge.target) continue;
     const sourceData = canvas.nodes.find((node) => node.id === edge.source)?.data as { kind?: unknown; frame?: unknown } | null;
     if (sourceData?.kind !== 'image') continue;
-    const role = sourceData.frame === 'last_frame' ? 'last_frame' : 'first_frame';
+    const targetData = canvas.nodes.find((node) => node.id === edge.target)?.data as { kind?: unknown; assets?: unknown } | null;
+    if (targetData?.kind !== 'generation' || Array.isArray(targetData.assets)) continue;
+    // 角色优先级：图片节点 frame（v2/v3）> 历史连线 handle（v1）> 默认首帧
+    const role: GenerationImageRole =
+      sourceData.frame === 'first_frame' || sourceData.frame === 'last_frame' ? sourceData.frame : (legacyRoleByHandle[edge.targetHandle ?? ''] ?? 'first_frame');
     const list = assetsByTarget.get(edge.target) ?? [];
     list.push({ nodeId: edge.source, role });
     assetsByTarget.set(edge.target, list);
@@ -112,10 +129,26 @@ function migrateCanvasV3ToV4(canvas: VideoWorkspaceCanvas): VideoWorkspaceCanvas
       return { ...node, data: rest };
     }
     if (node.data?.kind === 'generation') {
-      return { ...node, data: { ...node.data, assets: assetsByTarget.get(node.id) ?? [] } };
+      const existing = (node.data as { assets?: unknown }).assets;
+      const assets = Array.isArray(existing) ? (existing as GenerationImageAsset[]) : (assetsByTarget.get(node.id) ?? []);
+      return { ...node, data: { ...node.data, assets: normalizeFrameRoles(assets) } };
     }
     return node;
   });
 
-  return { ...canvas, version: 4, nodes };
+  // 历史 v1 连线 handle 改写为生成节点唯一输入 handle，保证连线在 v4 画布中可渲染、可参与生成
+  const edges = canvas.edges.map((edge) => (edge.targetHandle === 'firstFrame' || edge.targetHandle === 'lastFrame' ? { ...edge, targetHandle: GENERATION_INPUT_HANDLE } : edge));
+
+  return { ...canvas, version: 4, nodes, edges };
+}
+
+/** 首/尾帧各至多保留 1 张，超出部分降级为参考图（与后端 media 上限对齐，防止渲染数据出现重复首/尾帧） */
+function normalizeFrameRoles(assets: GenerationImageAsset[]): GenerationImageAsset[] {
+  let firstCount = 0;
+  let lastCount = 0;
+  return assets.map((asset) => {
+    if (asset.role === 'first_frame' && firstCount++ > 0) return { ...asset, role: 'reference_image' };
+    if (asset.role === 'last_frame' && lastCount++ > 0) return { ...asset, role: 'reference_image' };
+    return asset;
+  });
 }

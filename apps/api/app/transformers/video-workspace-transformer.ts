@@ -5,6 +5,8 @@ import type VideoWorkspace from '#models/video-workspace';
 export type CanvasJsonValue = string | number | boolean | null | CanvasJsonValue[] | { [key: string]: CanvasJsonValue };
 
 export type VideoWorkspaceCanvas = {
+  /** 画布数据格式版本（前端维护）；历史数据可能缺失，缺失时前端按旧版本迁移 */
+  version?: number;
   nodes: CanvasJsonValue[];
   edges: CanvasJsonValue[];
   viewport: CanvasJsonValue | null;

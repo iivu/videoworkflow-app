@@ -144,6 +144,24 @@ test.group('Video workspaces HTTP boundary', (group) => {
     assert.deepEqual(bodyOf<WorkspaceItemBody>(showResponse).canvas, canvas);
   });
 
+  test('persists the canvas version so the client skips re-migration on reload', async ({ assert, client }) => {
+    const user = await createUser('workspace-canvas-version');
+    const workspace = await createWorkspace({ userId: user.id, name: '画布空间' });
+    const canvas = {
+      version: 4,
+      nodes: [{ id: 'node-1', position: { x: 0, y: 0 }, data: { kind: 'generation', parameters: { prompt: 'hello' }, assets: [] } }],
+      edges: [],
+      viewport: null,
+    };
+
+    const saveResponse = await client.put(`/api/v1/video-workspaces/${workspace.id}/canvas`).loginAs(user).json(canvas);
+    saveResponse.assertStatus(200);
+    assert.deepEqual(bodyOf<WorkspaceItemBody>(saveResponse).canvas, canvas);
+
+    const showResponse = await client.get(`/api/v1/video-workspaces/${workspace.id}`).loginAs(user);
+    assert.deepEqual(bodyOf<WorkspaceItemBody>(showResponse).canvas, canvas);
+  });
+
   test('rejects a non-array canvas structure', async ({ client }) => {
     const user = await createUser('workspace-canvas-invalid');
     const workspace = await createWorkspace({ userId: user.id, name: '画布空间' });

@@ -21,6 +21,8 @@ export const showVideoWorkspaceValidator = vine.create({
 
 export const saveVideoWorkspaceCanvasValidator = vine.create({
   params: videoWorkspaceParamsSchema,
+  /** 画布数据格式版本；由前端维护，随画布一并持久化，避免载入时重复迁移 */
+  version: vine.number().optional(),
   nodes: vine.array(vine.any()),
   edges: vine.array(vine.any()),
   viewport: vine.any().optional(),

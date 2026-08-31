@@ -150,10 +150,14 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
       try {
         const response = await client.api.videoWorkspaces.show({ params: { id: workspaceId } });
         const raw = response.data.canvas as unknown;
-        const rawRecord = (raw ?? {}) as { nodes?: unknown; edges?: unknown; viewport?: unknown };
+        const rawRecord = (raw ?? {}) as { version?: unknown; nodes?: unknown; edges?: unknown; viewport?: unknown };
         const canvas = migrateCanvas(raw);
-        // 迁移是否改写画布内容（仅载入时一次性比较，不参与后续 flush）；若改写则置脏，下一次 flush 回写迁移结果
-        const needsWriteBack = JSON.stringify(canvas.nodes) !== JSON.stringify(rawRecord.nodes ?? []) || JSON.stringify(canvas.edges) !== JSON.stringify(rawRecord.edges ?? []);
+        // 迁移是否改写画布内容（仅载入时一次性比较，不参与后续 flush）；若改写则置脏，下一次 flush 回写迁移结果。
+        // 版本缺失/落后（后端此前未持久化 version）同样视为改写，回写时一并补全最新版本，避免每次载入重复迁移。
+        const needsWriteBack =
+          canvas.version !== rawRecord.version ||
+          JSON.stringify(canvas.nodes) !== JSON.stringify(rawRecord.nodes ?? []) ||
+          JSON.stringify(canvas.edges) !== JSON.stringify(rawRecord.edges ?? []);
         set({
           nodes: canvas.nodes,
           edges: canvas.edges,
@@ -281,12 +285,19 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
       const linkedSources = new Set(state.edges.filter((edge) => edge.target === nodeId && edge.targetHandle === GENERATION_INPUT_HANDLE).map((edge) => edge.source));
       const media: Array<{ type: 'first_frame' | 'last_frame' | 'reference_image'; url: string }> = [];
       let referenceCount = 0;
+      let firstFrameCount = 0;
+      let lastFrameCount = 0;
       for (const asset of target.data.assets ?? []) {
         if (!linkedSources.has(asset.nodeId)) continue;
         if (asset.role === 'reference_image' && referenceCount >= MAX_REFERENCE_IMAGES) continue;
+        // 首/尾帧各至多 1 张（与后端 media 上限一致），超出部分跳过，防止生成请求被拒
+        if (asset.role === 'first_frame' && firstFrameCount >= 1) continue;
+        if (asset.role === 'last_frame' && lastFrameCount >= 1) continue;
         const imageNode = state.nodes.find((node) => node.id === asset.nodeId);
         if (imageNode?.data.kind === 'image' && imageNode.data.imageUrl) {
           if (asset.role === 'reference_image') referenceCount++;
+          if (asset.role === 'first_frame') firstFrameCount++;
+          if (asset.role === 'last_frame') lastFrameCount++;
           media.push({ type: asset.role, url: imageNode.data.imageUrl });
         }
       }

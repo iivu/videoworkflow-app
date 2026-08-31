@@ -121,6 +121,23 @@ test.group('Video workspace service', (group) => {
     assert.deepEqual(parseVideoWorkspaceCanvas(loaded.canvas), canvas);
   });
 
+  test('persists the canvas version through save and show', async ({ assert }) => {
+    const user = await createUser('workspace-canvas-version');
+    const service = new VideoWorkspaceService(createFakeWanxiangService() as never);
+    const workspace = await service.create({ userId: user.id, name: '画布空间' });
+    const canvas = {
+      version: 4,
+      nodes: [{ id: 'node-1', position: { x: 0, y: 0 }, data: { kind: 'generation', parameters: { prompt: '一只猫' }, assets: [] } }],
+      edges: [],
+      viewport: null,
+    };
+
+    await service.saveCanvas({ userId: user.id, id: String(workspace.id), canvas });
+    const loaded = await service.show({ userId: user.id, id: String(workspace.id) });
+
+    assert.deepEqual(parseVideoWorkspaceCanvas(loaded.canvas), canvas);
+  });
+
   test('accepts a null viewport when saving the canvas', async ({ assert }) => {
     const user = await createUser('workspace-canvas-null-viewport');
     const service = new VideoWorkspaceService(createFakeWanxiangService() as never);
