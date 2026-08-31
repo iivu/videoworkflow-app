@@ -50,6 +50,7 @@
     "drizzle-orm": "catalog:",
     "lucide-react": "catalog:",
     "mitt": "catalog:",
+    "motion": "catalog:",
     "nitro": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
