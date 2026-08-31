@@ -258,8 +258,8 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
     },
 
     flushCanvasKeepalive: () => {
-      const { currentId, version, nodes, edges, viewport, canvasLoaded, dirty } = get();
-      if (!currentId || !canvasLoaded || !dirty) return;
+      const { currentId, version, nodes, edges, viewport, canvasLoaded } = get();
+      if (!currentId || !canvasLoaded) return;
       const token = getToken();
       void fetch(urlFor('video_workspaces.save_canvas', { id: currentId }), {
         method: 'PUT',
