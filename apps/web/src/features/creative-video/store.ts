@@ -261,7 +261,7 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
       const { currentId, version, nodes, edges, viewport, canvasLoaded } = get();
       if (!currentId || !canvasLoaded) return;
       const token = getToken();
-      void fetch(urlFor('video_workspaces.save_canvas', { id: currentId }), {
+      void fetch(`${import.meta.env.VITE_API_URL}${urlFor('video_workspaces.save_canvas', { id: currentId })}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ version, nodes, edges, viewport }),
