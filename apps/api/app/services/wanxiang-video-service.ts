@@ -102,7 +102,6 @@ const MAX_DURATION = 30;
 const DEFAULT_DURATION = 5;
 const MAX_SEED = 2147483647;
 const ENTITY_ID_MAX_LENGTH = 36;
-const REFERENCE_MEDIA_TYPES = ['reference_image', 'reference_video', 'reference_audio', 'file', 'link'] as const;
 const MEDIA_LIMITS: Record<WanxiangVideoMediaType, number> = {
   first_frame: 1,
   last_frame: 1,
@@ -346,12 +345,9 @@ export class WanxiangVideoService {
       if (count > limit) throw providerError(`media 中 ${type} 最多传入 ${limit} 个`);
     }
 
-    const hasFrame = (counts.get('first_frame') ?? 0) + (counts.get('last_frame') ?? 0) > 0;
-    const hasReference = REFERENCE_MEDIA_TYPES.some((type) => (counts.get(type) ?? 0) > 0);
-    if (hasFrame && hasReference) {
-      throw providerError('first_frame/last_frame 与 reference_*/file/link 不能同时传入');
-    }
-    if ((counts.get('file') ?? 0) > 0 && (counts.get('link') ?? 0) > 0) {
+    const hasFile = (counts.get('file') ?? 0) > 0;
+    const hasLink = (counts.get('link') ?? 0) > 0;
+    if (hasFile && hasLink) {
       throw providerError('file 与 link 不能同时传入');
     }
   }

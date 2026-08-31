@@ -96,17 +96,35 @@ test.group('Video workspace generation HTTP boundary', (group) => {
     response.assertStatus(422);
   });
 
-  test('rejects unsupported media types and too many frames', async ({ client }) => {
-    const user = await createUser('workspace-gen-bad-media');
+  test('accepts frame and reference image media through the boundary', async ({ assert, client }) => {
+    const user = await createUser('workspace-gen-media-ok');
     const workspace = await createCanvasWorkspace(user.id, ['node-1']);
+    fetchQueue.responses = [{ output: { task_id: 'task-media-ok', task_status: 'PENDING' }, request_id: 'req-1' }];
 
-    const badType = await client
+    const response = await client
       .post(`/api/v1/video-workspaces/${workspace.id}/nodes/node-1/generate`)
       .loginAs(user)
-      .json({ input: { prompt: '一只猫', media: [{ type: 'reference_image', url: 'https://cdn.example.com/ref.png' }] } });
-    badType.assertStatus(422);
+      .json({
+        input: {
+          prompt: '一只猫',
+          media: [
+            { type: 'first_frame', url: 'https://cdn.example.com/1.png' },
+            { type: 'last_frame', url: 'https://cdn.example.com/2.png' },
+            { type: 'reference_image', url: 'https://cdn.example.com/3.png' },
+            { type: 'reference_image', url: 'https://cdn.example.com/4.png' },
+          ],
+        },
+      });
 
-    const tooMany = await client
+    response.assertStatus(200);
+    assert.equal(response.body().data.taskId, 'task-media-ok');
+  });
+
+  test('rejects too many frames at the service boundary', async ({ client }) => {
+    const user = await createUser('workspace-gen-too-many-frames');
+    const workspace = await createCanvasWorkspace(user.id, ['node-1']);
+
+    const response = await client
       .post(`/api/v1/video-workspaces/${workspace.id}/nodes/node-1/generate`)
       .loginAs(user)
       .json({
@@ -119,7 +137,8 @@ test.group('Video workspace generation HTTP boundary', (group) => {
           ],
         },
       });
-    tooMany.assertStatus(422);
+
+    response.assertStatus(400);
   });
 
   test('rejects out-of-range parameters', async ({ client }) => {

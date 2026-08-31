@@ -14,6 +14,7 @@ import {
   GENERATION_INPUT_HANDLE,
   type GenerationTaskState,
   isActiveTaskStatus,
+  MAX_REFERENCE_IMAGES,
   type VideoWorkspaceEdge,
   type VideoWorkspaceItem,
   type VideoWorkspaceNode,
@@ -62,6 +63,8 @@ export type CreativeVideoStore = {
   setNodes: (updater: (snapshot: VideoWorkspaceNode[]) => VideoWorkspaceNode[]) => void;
   setEdges: (updater: (snapshot: VideoWorkspaceEdge[]) => VideoWorkspaceEdge[]) => void;
   setViewport: (viewport: Viewport | null) => void;
+  /** 以当前连线为准重建各生成节点的图片素材列表（连线增删时调用）；保留已有角色，新连入图片默认作为参考图 */
+  syncGenerationAssets: () => void;
   updateNodeData: (nodeId: string, patch: Partial<VideoWorkspaceNodeData>) => void;
   addNode: (kind: 'image' | 'generation') => void;
   deleteNode: (nodeId: string) => void;
@@ -165,6 +168,31 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
     setEdges: (updater) => set((state) => ({ edges: updater(state.edges) })),
     setViewport: (viewport) => set({ viewport }),
 
+    syncGenerationAssets: () =>
+      set((state) => {
+        const sourcesByTarget = new Map<string, string[]>();
+        for (const edge of state.edges) {
+          if (edge.source && edge.target && edge.targetHandle === GENERATION_INPUT_HANDLE) {
+            const list = sourcesByTarget.get(edge.target) ?? [];
+            list.push(edge.source);
+            sourcesByTarget.set(edge.target, list);
+          }
+        }
+        return {
+          nodes: state.nodes.map((node) => {
+            if (node.data.kind !== 'generation') return node;
+            const linked = sourcesByTarget.get(node.id) ?? [];
+            const linkedSet = new Set(linked);
+            const previous = node.data.assets;
+            const roleByNodeId = new Map(previous.map((asset) => [asset.nodeId, asset.role]));
+            // 保留已有素材的顺序与角色，新连入的图片追加到末尾并默认作为参考图
+            const kept = previous.filter((asset) => linkedSet.has(asset.nodeId));
+            const added = linked.filter((nodeId) => !roleByNodeId.has(nodeId)).map((nodeId) => ({ nodeId, role: 'reference_image' as const }));
+            return { ...node, data: { ...node.data, assets: [...kept, ...added] } };
+          }),
+        };
+      }),
+
     updateNodeData: (nodeId, patch) =>
       set((state) => ({
         nodes: state.nodes.map((node) => (node.id === nodeId ? { ...node, data: { ...node.data, ...patch } as VideoWorkspaceNodeData } : node)),
@@ -177,14 +205,21 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
       const position = centerPosition(viewport, addNodeIndex++);
       const node: VideoWorkspaceNode =
         kind === 'image'
-          ? { id, type: 'image', position, data: { kind: 'image', imageUrl: null, frame: 'first_frame' } }
-          : { id, type: 'generation', position, data: { kind: 'generation', parameters: { ...GENERATION_DEFAULT_PARAMETERS }, task: null } };
+          ? { id, type: 'image', position, data: { kind: 'image', imageUrl: null } }
+          : {
+              id,
+              type: 'generation',
+              position,
+              data: { kind: 'generation', parameters: { ...GENERATION_DEFAULT_PARAMETERS }, assets: [], task: null },
+            };
       set({ nodes: [...nodes, node] });
     },
 
     deleteNode: (nodeId) =>
       set((state) => ({
-        nodes: state.nodes.filter((node) => node.id !== nodeId),
+        nodes: state.nodes
+          .filter((node) => node.id !== nodeId)
+          .map((node) => (node.data.kind === 'generation' ? { ...node, data: { ...node.data, assets: node.data.assets.filter((asset) => asset.nodeId !== nodeId) } } : node)),
         edges: state.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId),
       })),
 
@@ -241,12 +276,16 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
         return;
       }
 
-      const media: Array<{ type: 'first_frame' | 'last_frame'; url: string }> = [];
-      for (const edge of state.edges) {
-        if (edge.target !== nodeId || edge.targetHandle !== GENERATION_INPUT_HANDLE) continue;
-        const imageNode = state.nodes.find((node) => node.id === edge.source);
-        if (imageNode && imageNode.data.kind === 'image' && imageNode.data.imageUrl) {
-          media.push({ type: imageNode.data.frame ?? 'first_frame', url: imageNode.data.imageUrl });
+      const linkedSources = new Set(state.edges.filter((edge) => edge.target === nodeId && edge.targetHandle === GENERATION_INPUT_HANDLE).map((edge) => edge.source));
+      const media: Array<{ type: 'first_frame' | 'last_frame' | 'reference_image'; url: string }> = [];
+      let referenceCount = 0;
+      for (const asset of target.data.assets ?? []) {
+        if (!linkedSources.has(asset.nodeId)) continue;
+        if (asset.role === 'reference_image' && referenceCount >= MAX_REFERENCE_IMAGES) continue;
+        const imageNode = state.nodes.find((node) => node.id === asset.nodeId);
+        if (imageNode?.data.kind === 'image' && imageNode.data.imageUrl) {
+          if (asset.role === 'reference_image') referenceCount++;
+          media.push({ type: asset.role, url: imageNode.data.imageUrl });
         }
       }
 

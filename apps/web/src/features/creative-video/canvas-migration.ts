@@ -1,5 +1,5 @@
-import type { VideoWorkspaceCanvas } from './types';
-import { CANVAS_VERSION, LEGACY_CANVAS_VERSION } from './types';
+import type { GenerationImageAsset, ImageNodeData, VideoWorkspaceCanvas } from './types';
+import { CANVAS_VERSION, GENERATION_INPUT_HANDLE, LEGACY_CANVAS_VERSION } from './types';
 
 type CanvasMigrator = (canvas: VideoWorkspaceCanvas) => VideoWorkspaceCanvas;
 
@@ -10,6 +10,7 @@ type CanvasMigrator = (canvas: VideoWorkspaceCanvas) => VideoWorkspaceCanvas;
 const canvasMigrators: Record<number, CanvasMigrator> = {
   1: migrateCanvasV1ToV2,
   2: migrateCanvasV2ToV3,
+  3: migrateCanvasV3ToV4,
 };
 
 /**
@@ -87,4 +88,34 @@ function migrateCanvasV2ToV3(canvas: VideoWorkspaceCanvas): VideoWorkspaceCanvas
   });
 
   return { ...canvas, version: 3, nodes };
+}
+
+/**
+ * v3 → v4：图片节点移除首/尾帧角色字段（只负责上传/选择）；
+ * 生成节点新增图片素材配置 assets，按存量连线把已连入图片的原角色（first_frame/last_frame）迁移进来。
+ */
+function migrateCanvasV3ToV4(canvas: VideoWorkspaceCanvas): VideoWorkspaceCanvas {
+  const assetsByTarget = new Map<string, GenerationImageAsset[]>();
+  for (const edge of canvas.edges) {
+    if (!edge.source || !edge.target || edge.targetHandle !== GENERATION_INPUT_HANDLE) continue;
+    const sourceData = canvas.nodes.find((node) => node.id === edge.source)?.data as { kind?: unknown; frame?: unknown } | null;
+    if (sourceData?.kind !== 'image') continue;
+    const role = sourceData.frame === 'last_frame' ? 'last_frame' : 'first_frame';
+    const list = assetsByTarget.get(edge.target) ?? [];
+    list.push({ nodeId: edge.source, role });
+    assetsByTarget.set(edge.target, list);
+  }
+
+  const nodes = canvas.nodes.map((node) => {
+    if (node.data?.kind === 'image') {
+      const { frame: _frame, ...rest } = node.data as ImageNodeData & { frame?: unknown };
+      return { ...node, data: rest };
+    }
+    if (node.data?.kind === 'generation') {
+      return { ...node, data: { ...node.data, assets: assetsByTarget.get(node.id) ?? [] } };
+    }
+    return node;
+  });
+
+  return { ...canvas, version: 4, nodes };
 }

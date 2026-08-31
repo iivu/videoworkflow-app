@@ -16,6 +16,7 @@ import {
   type VideoWorkspaceNode,
   WANXIANG_TASK_STATUS,
 } from '../types';
+import { GenerationImageAssets } from './generation-image-assets';
 import { NodeShell } from './node-shell';
 
 function ParameterField({ label, children }: { label: string; children: React.ReactNode }) {
@@ -77,14 +78,15 @@ export function GenerationNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
   const videoUrl = task?.status === WANXIANG_TASK_STATUS.SUCCEEDED ? task.videoUrl : null;
 
   return (
-    <div className="flex items-start gap-3">
+    <div className="relative">
       <NodeShell id={id} title="视频生成">
         <Handle type="target" position={Position.Left} id={GENERATION_INPUT_HANDLE} />
-        <div className="flex w-120 flex-col gap-2">
+        <div className="flex w-[40rem] flex-col gap-2">
+          <GenerationImageAssets nodeId={id} />
           <ParameterField label="提示词">
             <Textarea
               value={parameters.prompt}
-              placeholder="输入画面提示词…"
+              placeholder="你想生成什么？可使用图1、图2引用参考图..."
               disabled={locked}
               className="nodrag min-h-20 resize-y"
               onChange={(event) => updateParameters({ prompt: event.target.value })}
@@ -218,26 +220,26 @@ export function GenerationNode({ id, data }: NodeProps<VideoWorkspaceNode>) {
       </NodeShell>
 
       {/* 独立于配置卡片的视频预览面板：固定基准宽度，高度随所选画幅变化；无视频时展示等待占位 */}
-  
-        <div
-          className="nodrag relative overflow-hidden rounded-md border border-border bg-muted/40"
-          style={{ width: PREVIEW_WIDTH, height: RATIO_PREVIEW_HEIGHTS[parameters.ratio] ?? PREVIEW_WIDTH }}
-        >
-          {videoUrl ? (
-            <button type="button" title="点击播放" className="group relative block size-full" onClick={() => playVideo(videoUrl)}>
-              {/* biome-ignore lint/a11y/useMediaCaption: AI 生成视频无字幕资源，节点内仅做封面预览 */}
-              <video src={videoUrl} preload="metadata" className="size-full bg-black/5 object-contain" />
-              <span className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors group-hover:bg-black/20">
-                <CirclePlay className="size-8 text-white" />
-              </span>
-            </button>
-          ) : (
-            <div className="flex size-full flex-col items-center justify-center gap-1 text-muted-foreground">
-              <Video className="size-5" />
-              <span className="text-xs">{statusText}</span>
-            </div>
-          )}
-        </div>
+
+      <div
+        className="nodrag absolute overflow-hidden rounded-md border border-border bg-muted/40"
+        style={{ width: PREVIEW_WIDTH, height: RATIO_PREVIEW_HEIGHTS[parameters.ratio] ?? PREVIEW_WIDTH, right: -PREVIEW_WIDTH - 12 , top: 0 }}
+      >
+        {videoUrl ? (
+          <button type="button" title="点击播放" className="group relative block size-full" onClick={() => playVideo(videoUrl)}>
+            {/* biome-ignore lint/a11y/useMediaCaption: AI 生成视频无字幕资源，节点内仅做封面预览 */}
+            <video src={videoUrl} preload="metadata" className="size-full bg-black/5 object-contain" />
+            <span className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors group-hover:bg-black/20">
+              <CirclePlay className="size-8 text-white" />
+            </span>
+          </button>
+        ) : (
+          <div className="flex size-full flex-col items-center justify-center gap-1 text-muted-foreground">
+            <Video className="size-5" />
+            <span className="text-xs">{statusText}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

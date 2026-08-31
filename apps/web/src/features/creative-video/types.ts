@@ -4,8 +4,16 @@ export type ImageNodeData = {
   kind: 'image';
   imageUrl: string | null;
   fileName?: string;
-  /** 作为生成视频的首帧还是尾帧 */
-  frame: 'first_frame' | 'last_frame';
+};
+
+/** 生成节点的图片素材角色 */
+export type GenerationImageRole = 'first_frame' | 'last_frame' | 'reference_image';
+
+export type GenerationImageAsset = {
+  /** 关联的图片节点 id（对应连线 source） */
+  nodeId: string;
+  /** 素材角色：首帧 / 尾帧 / 参考图 */
+  role: GenerationImageRole;
 };
 
 export type GenerationParameters = {
@@ -29,6 +37,8 @@ export type GenerationTaskState = {
 export type GenerationNodeData = {
   kind: 'generation';
   parameters: GenerationParameters;
+  /** 已连入的图片素材（角色与排序）：首帧/尾帧各至多 1 张，参考图至多 10 张 */
+  assets: GenerationImageAsset[];
   task: GenerationTaskState | null;
 };
 
@@ -47,7 +57,7 @@ export type VideoWorkspaceCanvas = {
 };
 
 /** 画布数据格式当前（最新）版本；数据结构变更时递增并注册对应迁移步骤 */
-export const CANVAS_VERSION = 3;
+export const CANVAS_VERSION = 4;
 
 /** 无 version 字段的旧画布数据视为该版本 */
 export const LEGACY_CANVAS_VERSION = 1;
@@ -66,11 +76,8 @@ export const DEFAULT_WORKSPACE_NAME = '默认创作空间';
 export const GENERATION_INPUT_HANDLE = 'prompt';
 export const IMAGE_SOURCE_HANDLE = 'image';
 
-/** 图片节点帧角色选项 */
-export const IMAGE_FRAME_OPTIONS = [
-  { label: '首帧', value: 'first_frame' },
-  { label: '尾帧', value: 'last_frame' },
-] as const;
+/** 参考图像区域最多可容纳的图片数量 */
+export const MAX_REFERENCE_IMAGES = 10;
 
 /** 画布保存状态 */
 export type CanvasSaveStatus = 'idle' | 'saving' | 'saved';

@@ -127,6 +127,29 @@ test.group('Wanxiang video service', () => {
     });
   });
 
+  test('supports frames mixed with reference images', async ({ assert }) => {
+    const service = new TestWanxiangVideoService([{ output: { task_id: 'task-1', task_status: 'PENDING' } }]);
+
+    await service.submit({
+      input: {
+        prompt: '人物随音乐起舞',
+        media: [
+          { type: 'first_frame', url: 'https://cdn.example.com/start.png' },
+          { type: 'last_frame', url: 'https://cdn.example.com/end.png' },
+          { type: 'reference_image', url: 'https://cdn.example.com/ref-1.png' },
+          { type: 'reference_image', url: 'https://cdn.example.com/ref-2.png' },
+        ],
+      },
+    });
+
+    assert.deepEqual(JSON.parse(String(service.requests[0].init?.body)).input.media, [
+      { type: 'first_frame', url: 'https://cdn.example.com/start.png' },
+      { type: 'last_frame', url: 'https://cdn.example.com/end.png' },
+      { type: 'reference_image', url: 'https://cdn.example.com/ref-1.png' },
+      { type: 'reference_image', url: 'https://cdn.example.com/ref-2.png' },
+    ]);
+  });
+
   test('supports media-only requests', async ({ assert }) => {
     const service = new TestWanxiangVideoService([{ output: { task_id: 'task-1', task_status: 'PENDING' } }]);
 
@@ -214,18 +237,6 @@ test.group('Wanxiang video service', () => {
         },
       },
       message: '视频生成失败: file 与 link 不能同时传入',
-    },
-    {
-      name: 'frames mixed with reference media',
-      params: {
-        input: {
-          media: [
-            { type: 'first_frame', url: 'https://cdn.example.com/start.png' },
-            { type: 'reference_image', url: 'https://cdn.example.com/ref.png' },
-          ],
-        },
-      },
-      message: '视频生成失败: first_frame/last_frame 与 reference_*/file/link 不能同时传入',
     },
     {
       name: 'out of range duration',

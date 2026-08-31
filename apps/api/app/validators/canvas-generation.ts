@@ -17,7 +17,7 @@ const videoWorkspaceTaskParamsSchema = vine.object({
 });
 
 export const wanxiangCanvasMedia = vine.object({
-  type: vine.enum(['first_frame', 'last_frame'] as const),
+  type: vine.enum(['first_frame', 'last_frame', 'reference_image'] as const),
   url: vine.string().trim().minLength(1),
 });
 
@@ -36,7 +36,7 @@ export const generateVideoWorkspaceNodeValidator = vine.create({
   model: vine.enum([...WANXIANG_VIDEO_MODELS]).optional(),
   input: vine.object({
     prompt: vine.string().trim().minLength(1).maxLength(20000),
-    media: vine.array(wanxiangCanvasMedia).maxLength(2).optional(),
+    media: vine.array(wanxiangCanvasMedia).maxLength(12).optional(),
   }),
   parameters: wanxiangCanvasParameters.optional(),
 });
