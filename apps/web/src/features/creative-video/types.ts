@@ -47,7 +47,7 @@ export type VideoWorkspaceCanvas = {
 };
 
 /** 画布数据格式当前（最新）版本；数据结构变更时递增并注册对应迁移步骤 */
-export const CANVAS_VERSION = 2;
+export const CANVAS_VERSION = 3;
 
 /** 无 version 字段的旧画布数据视为该版本 */
 export const LEGACY_CANVAS_VERSION = 1;
@@ -90,7 +90,7 @@ export type WanxiangVideoTaskStatus = (typeof WANXIANG_TASK_STATUS)[keyof typeof
 export const GENERATION_DEFAULT_PARAMETERS: GenerationParameters = {
   model: 'wan3.0-video',
   resolution: '1080P',
-  ratio: 'adaptive',
+  ratio: '9:16',
   duration: 5,
   audio: true,
   prompt: '',
@@ -103,7 +103,7 @@ export const GENERATION_MODEL_OPTIONS = [
 
 export const GENERATION_RESOLUTION_OPTIONS = ['1080P', '720P', '480P'].map((value) => ({ label: value, value }));
 
-export const GENERATION_RATIO_OPTIONS = ['adaptive', '16:9', '4:3', '1:1', '3:4', '9:16'].map((value) => ({ label: value, value }));
+export const GENERATION_RATIO_OPTIONS = ['16:9', '4:3', '1:1', '3:4', '9:16'].map((value) => ({ label: value, value }));
 
 export const GENERATION_DURATION_OPTIONS = [2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 30].map((value) => ({ label: `${value}s`, value: String(value) }));
 

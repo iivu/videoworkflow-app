@@ -1,4 +1,4 @@
-import { XIcon } from 'lucide-react';
+import { GripVertical, XIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { selectIsNodeLocked, useCanvasStore } from '../store';
@@ -9,8 +9,11 @@ export function NodeShell({ id, title, children }: { id: string; title: string; 
 
   return (
     <div className="relative rounded-xl border border-border bg-card p-3 shadow">
-      {/* 标题渲染在容器外（上方），不占用容器内空间 */}
-      <span className="absolute -top-5 left-1 rounded-sm bg-background/80 px-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm select-none">{title}</span>
+      {/* 标题渲染在容器外（上方），不占用容器内空间；前缀图标提示该区域可拖动 */}
+      <span className="absolute -top-5 left-1 flex cursor-grab items-center gap-0.5 rounded-sm bg-background/80 px-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm select-none">
+        <GripVertical className="size-3" />
+        {title}
+      </span>
       <button
         type="button"
         aria-label="删除节点"

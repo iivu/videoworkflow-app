@@ -9,6 +9,7 @@ type CanvasMigrator = (canvas: VideoWorkspaceCanvas) => VideoWorkspaceCanvas;
  */
 const canvasMigrators: Record<number, CanvasMigrator> = {
   1: migrateCanvasV1ToV2,
+  2: migrateCanvasV2ToV3,
 };
 
 /**
@@ -72,4 +73,18 @@ function migrateCanvasV1ToV2(canvas: VideoWorkspaceCanvas): VideoWorkspaceCanvas
   const edges = canvas.edges.filter((edge) => !promptNodeIds.has(edge.source) && !promptNodeIds.has(edge.target));
 
   return { ...canvas, version: 2, nodes, edges };
+}
+
+/**
+ * v2 → v3：生成节点画幅移除 adaptive 选项，存量 adaptive 一律改写为默认 9:16。
+ */
+function migrateCanvasV2ToV3(canvas: VideoWorkspaceCanvas): VideoWorkspaceCanvas {
+  const nodes = canvas.nodes.map((node) => {
+    if (node.data?.kind !== 'generation') return node;
+    const parameters = node.data.parameters as { ratio?: unknown };
+    if (parameters.ratio !== 'adaptive') return node;
+    return { ...node, data: { ...node.data, parameters: { ...node.data.parameters, ratio: '9:16' } } };
+  });
+
+  return { ...canvas, version: 3, nodes };
 }

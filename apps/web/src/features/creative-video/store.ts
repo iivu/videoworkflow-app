@@ -264,7 +264,7 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
             input: { prompt, media: media.length > 0 ? media : undefined },
             parameters: {
               resolution: parameters.resolution as '1080P' | '720P' | '480P',
-              ratio: parameters.ratio as 'adaptive' | '16:9' | '4:3' | '1:1' | '3:4' | '9:16',
+              ratio: parameters.ratio as '16:9' | '4:3' | '1:1' | '3:4' | '9:16',
               duration: parameters.duration,
               ...(parameters.seed !== undefined ? { seed: parameters.seed } : {}),
               audio: parameters.audio,
