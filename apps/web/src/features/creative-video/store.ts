@@ -24,8 +24,6 @@ import {
 const CURRENT_WORKSPACE_STORAGE_KEY = 'video-workspace.current-id';
 const NODE_OFFSET_STEP = 28;
 
-/** 最近一次成功保存的画布序列化（模块级，不参与渲染） */
-let lastSavedSerialized: string | null = null;
 let addNodeIndex = 0;
 
 function failedMessage(error: unknown, fallback: string) {
@@ -59,7 +57,11 @@ export type CreativeVideoStore = {
   version: number;
   saveStatus: 'idle' | 'saving' | 'saved';
   canvasLoaded: boolean;
+  /** 画布内容自上次保存后是否有变化（仅节点/连线的增删改置脏；节点位置、视口等瞬态变化不置脏） */
+  dirty: boolean;
   loadCanvas: (workspaceId: string) => Promise<void>;
+  /** 标记画布内容已变更（仅节点/连线结构或数据变化时调用，触发下一次定时保存） */
+  markDirty: () => void;
   setNodes: (updater: (snapshot: VideoWorkspaceNode[]) => VideoWorkspaceNode[]) => void;
   setEdges: (updater: (snapshot: VideoWorkspaceEdge[]) => VideoWorkspaceEdge[]) => void;
   setViewport: (viewport: Viewport | null) => void;
@@ -86,6 +88,7 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
     version: CANVAS_VERSION,
     saveStatus: 'idle',
     canvasLoaded: false,
+    dirty: false,
 
     initWorkspaces: async () => {
       set({ workspacesLoading: true });
@@ -143,14 +146,14 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
     },
 
     loadCanvas: async (workspaceId) => {
-      set({ canvasLoaded: false, nodes: [], edges: [], viewport: null, version: CANVAS_VERSION, saveStatus: 'idle' });
+      set({ canvasLoaded: false, nodes: [], edges: [], viewport: null, version: CANVAS_VERSION, saveStatus: 'idle', dirty: false });
       try {
         const response = await client.api.videoWorkspaces.show({ params: { id: workspaceId } });
         const raw = response.data.canvas as unknown;
-        // 基线记录后端原始画布（nodes/edges/viewport）；若迁移产生了差异，下一次 flush 会回写迁移结果
         const rawRecord = (raw ?? {}) as { nodes?: unknown; edges?: unknown; viewport?: unknown };
-        lastSavedSerialized = JSON.stringify({ nodes: rawRecord.nodes ?? [], edges: rawRecord.edges ?? [], viewport: rawRecord.viewport ?? null });
         const canvas = migrateCanvas(raw);
+        // 迁移是否改写画布内容（仅载入时一次性比较，不参与后续 flush）；若改写则置脏，下一次 flush 回写迁移结果
+        const needsWriteBack = JSON.stringify(canvas.nodes) !== JSON.stringify(rawRecord.nodes ?? []) || JSON.stringify(canvas.edges) !== JSON.stringify(rawRecord.edges ?? []);
         set({
           nodes: canvas.nodes,
           edges: canvas.edges,
@@ -158,11 +161,14 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
           version: canvas.version,
           canvasLoaded: true,
           saveStatus: 'saved',
+          dirty: needsWriteBack,
         });
       } catch {
         set({ canvasLoaded: false, saveStatus: 'saved' });
       }
     },
+
+    markDirty: () => set({ dirty: true }),
 
     setNodes: (updater) => set((state) => ({ nodes: updater(state.nodes) })),
     setEdges: (updater) => set((state) => ({ edges: updater(state.edges) })),
@@ -179,6 +185,7 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
           }
         }
         return {
+          dirty: true,
           nodes: state.nodes.map((node) => {
             if (node.data.kind !== 'generation') return node;
             const linked = sourcesByTarget.get(node.id) ?? [];
@@ -195,6 +202,7 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
 
     updateNodeData: (nodeId, patch) =>
       set((state) => ({
+        dirty: true,
         nodes: state.nodes.map((node) => (node.id === nodeId ? { ...node, data: { ...node.data, ...patch } as VideoWorkspaceNodeData } : node)),
       })),
 
@@ -212,11 +220,12 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
               position,
               data: { kind: 'generation', parameters: { ...GENERATION_DEFAULT_PARAMETERS }, assets: [], task: null },
             };
-      set({ nodes: [...nodes, node] });
+      set({ dirty: true, nodes: [...nodes, node] });
     },
 
     deleteNode: (nodeId) =>
       set((state) => ({
+        dirty: true,
         nodes: state.nodes
           .filter((node) => node.id !== nodeId)
           .map((node) => (node.data.kind === 'generation' ? { ...node, data: { ...node.data, assets: node.data.assets.filter((asset) => asset.nodeId !== nodeId) } } : node)),
@@ -225,35 +234,28 @@ export const useCanvasStore = createWithEqualityFn<CreativeVideoStore>()(
 
     updateNodeTask: (nodeId, task) =>
       set((state) => ({
+        dirty: true,
         nodes: state.nodes.map((node) => (node.id === nodeId && node.data.kind === 'generation' ? { ...node, data: { ...node.data, task } } : node)),
       })),
 
     flushCanvas: async () => {
-      const { currentId, version, nodes, edges, viewport, canvasLoaded } = get();
-      if (!currentId || !canvasLoaded) return;
+      const { currentId, version, nodes, edges, viewport, canvasLoaded, dirty } = get();
+      // 仅画布内容（节点/连线增删改）变化时才保存；节点位置、视口等瞬态变化不触发
+      if (!currentId || !canvasLoaded || !dirty) return;
       const canvas = { version, nodes, edges, viewport };
-      // 差异比较不含 version：后端落库仅保留 nodes/edges/viewport，version 由前端迁移维护
-      const serialized = JSON.stringify({ nodes, edges, viewport });
-      if (serialized === lastSavedSerialized) {
-        set({ saveStatus: 'saved' });
-        return;
-      }
       set({ saveStatus: 'saving' });
       try {
         await client.api.videoWorkspaces.saveCanvas({ params: { id: currentId }, body: canvas });
-        lastSavedSerialized = serialized;
-        set({ saveStatus: 'saved' });
+        set({ dirty: false, saveStatus: 'saved' });
       } catch {
-        // 保存失败不阻塞交互，下一个定时周期会重试
+        // 保存失败不阻塞交互，dirty 保持为 true，下一个定时周期会重试
         set({ saveStatus: 'saved' });
       }
     },
 
     flushCanvasKeepalive: () => {
-      const { currentId, version, nodes, edges, viewport, canvasLoaded } = get();
-      if (!currentId || !canvasLoaded) return;
-      const serialized = JSON.stringify({ nodes, edges, viewport });
-      if (serialized === lastSavedSerialized) return;
+      const { currentId, version, nodes, edges, viewport, canvasLoaded, dirty } = get();
+      if (!currentId || !canvasLoaded || !dirty) return;
       const token = getToken();
       void fetch(urlFor('video_workspaces.save_canvas', { id: currentId }), {
         method: 'PUT',

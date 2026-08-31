@@ -72,6 +72,7 @@ function CreativeVideoCanvas() {
   const setNodes = useCanvasStore((state) => state.setNodes);
   const setEdges = useCanvasStore((state) => state.setEdges);
   const setViewport = useCanvasStore((state) => state.setViewport);
+  const markDirty = useCanvasStore((state) => state.markDirty);
   const syncGenerationAssets = useCanvasStore((state) => state.syncGenerationAssets);
   const workspaces = useCanvasStore((state) => state.workspaces);
   const currentWorkspace = useCanvasStore(selectCurrentWorkspace);
@@ -88,14 +89,26 @@ function CreativeVideoCanvas() {
   const [nameInput, setNameInput] = useState('');
   const [nameSubmitting, setNameSubmitting] = useState(false);
 
-  const onNodesChange = useCallback<OnNodesChange<VideoWorkspaceNode>>((changes) => setNodes((snapshot) => applyNodeChanges(changes, snapshot)), [setNodes]);
+  const onNodesChange = useCallback<OnNodesChange<VideoWorkspaceNode>>(
+    (changes) => {
+      // 仅节点增删改（add/remove/replace）置脏触发保存；位置/尺寸/选中等瞬态变化不保存
+      const structural = changes.some((change) => change.type !== 'position' && change.type !== 'dimensions' && change.type !== 'select');
+      setNodes((snapshot) => applyNodeChanges(changes, snapshot));
+      if (structural) markDirty();
+    },
+    [setNodes, markDirty],
+  );
   const onEdgesChange = useCallback<OnEdgesChange<VideoWorkspaceEdge>>(
     (changes) => {
-      const structureChanged = changes.some((change) => change.type === 'add' || change.type === 'remove');
+      // 连线增删改置脏触发保存，选中态变化不保存
+      const structureChanged = changes.some((change) => change.type !== 'select');
       setEdges((snapshot) => applyEdgeChanges(changes, snapshot));
-      if (structureChanged) syncGenerationAssets();
+      if (structureChanged) {
+        syncGenerationAssets();
+        markDirty();
+      }
     },
-    [setEdges, syncGenerationAssets],
+    [setEdges, syncGenerationAssets, markDirty],
   );
 
   const onConnect = useCallback<OnConnect>(
@@ -103,8 +116,9 @@ function CreativeVideoCanvas() {
       if (!isValidCanvasConnection(connection, edges, nodes)) return;
       setEdges((snapshot) => addEdge({ ...connection, id: createUuid() }, snapshot));
       syncGenerationAssets();
+      markDirty();
     },
-    [edges, nodes, setEdges, syncGenerationAssets],
+    [edges, nodes, setEdges, syncGenerationAssets, markDirty],
   );
 
   const isValidConnection = useCallback((connection: Edge | Connection) => isValidCanvasConnection(connection, edges, nodes), [edges, nodes]);
