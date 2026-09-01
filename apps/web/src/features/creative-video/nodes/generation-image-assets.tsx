@@ -223,7 +223,6 @@ function AssetThumb({ asset, imageUrl, fileName, locked, onDrag, onDrop }: Asset
       dragSnapToOrigin
       dragElastic={0.12}
       dragMomentum={false}
-      layout
       whileDrag={{ scale: 1.08, zIndex: 20 }}
       className={cn('nodrag size-11 cursor-grab overflow-hidden rounded-md border border-border bg-muted/40 active:cursor-grabbing', locked && 'cursor-default')}
       onDrag={(_, info) => onDrag(info.point.x, info.point.y)}
