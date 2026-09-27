@@ -5,7 +5,7 @@ import { VideoListPage } from '#/features/video/list';
 
 const DEFAULT_QUERY = {
   page: 1,
-  size: 20,
+  size: 24,
   title: '',
   author: '',
 };
