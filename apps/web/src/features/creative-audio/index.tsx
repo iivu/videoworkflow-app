@@ -117,7 +117,7 @@ export function CreativeAudioPage() {
         </main>
 
         {/* 右侧：配置 / 生成历史 */}
-        <aside className="flex w-88 shrink-0 flex-col overflow-hidden border-l bg-card">
+        <aside className="flex w-100 shrink-0 flex-col overflow-hidden border-l bg-card">
           <Tabs defaultValue="config" className="flex min-h-0 flex-1 flex-col">
             <TabsList variant="line" className="shrink-0 border-b px-4">
               <TabsTrigger value="config" className="flex-1 gap-1.5 text-sm">
