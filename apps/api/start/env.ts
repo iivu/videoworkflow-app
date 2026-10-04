@@ -90,6 +90,10 @@ export default await Env.create(new URL('../', import.meta.url), {
   API_52API_KEY: Env.schema.string(),
   API_52API_BASE_URL: Env.schema.string({ format: 'url' }),
 
+  // 极数本源（ApiZero 视频解析）
+  API_ZERO_KEY: Env.schema.string(),
+  API_ZERO_BASE_URL: Env.schema.string({ format: 'url' }),
+
   /*
   |----------------------------------------------------------
   | Variables for configuring @adonisjs/queue

@@ -1,10 +1,10 @@
 import type { JobContext } from '@adonisjs/queue/types';
 import { test } from '@japa/runner';
 
-import CrawlerVideoJob, { mapToVideoPayload, parseCount } from '#jobs/crawler-video-job';
+import CrawlerVideoJob, { mapToVideoPayload } from '#jobs/crawler-video-job';
 import { TASK_STATUS } from '#models/crawler-video-task';
 import type { OssClient, PutStreamResponse } from '#providers/oss-provider';
-import { _52ApiService, type Api52DouyinVideoData, type Api52SphVideoData } from '#services/52api-service';
+import { ApizeroService, type ApizeroVideoData } from '#services/apizero-service';
 import { CrawlerVideoTaskService } from '#services/crawler-video-task-service';
 import { VideoService } from '#services/video-service';
 
@@ -18,65 +18,60 @@ const JOB_CONTEXT: JobContext = {
   stalledCount: 0,
 };
 
-const douyinVideoData: Api52DouyinVideoData = {
-  music: {
-    author: 'Artist',
-    avatar: 'https://cdn.example.com/music-avatar.jpg',
-    cover: 'https://cdn.example.com/music-cover.jpg',
-    name: 'Original sound',
-    url: 'https://cdn.example.com/music.mp3',
-  },
-  work_author: 'Author',
-  work_author_age: 23,
-  work_author_signature: 'Signature',
-  work_avatar: 'https://cdn.example.com/avatar.jpg',
-  work_collect_count: 14320,
-  work_comment_count: 10755,
-  work_cover: 'https://cdn.example.com/cover.jpg',
-  work_digg_count: 166744,
-  work_download_count: 2516,
-  work_duration: '18秒',
-  work_share_count: 14143,
-  work_time: '2022-11-12 18:01:34',
-  work_title: 'Video title',
-  work_type: 'video',
-  work_uid: 'author-id',
-  work_url: 'https://cdn.example.com/video.mp4',
-};
+function makeVideoData(overrides: Partial<ApizeroVideoData> = {}): ApizeroVideoData {
+  return {
+    platform: 'douyin',
+    type: '视频',
+    title: 'Video title',
+    desc: 'Video desc',
+    work_id: 'work-id',
+    video_url: 'https://cdn.example.com/video.mp4',
+    cover_url: 'https://cdn.example.com/cover.jpg',
+    audio_url: '',
+    imagelist: [],
+    stats: {
+      author_name: 'Author',
+      author_avatar: 'https://cdn.example.com/avatar.jpg',
+      author_account: '',
+      author_id: 'author-id',
+      like_count: 166744,
+      comment_count: 10755,
+      share_count: 14143,
+      play_count: 1234,
+      collect_count: 14320,
+      publish_time: '2022-11-12 18:01:34',
+    },
+    video_list: [],
+    source: {
+      platform: 'douyin',
+      platform_label: '抖音',
+      original_url: 'https://example.com/share',
+      work_id: 'work-id',
+      author_name: 'Author',
+      author_account: '',
+      author_id: 'author-id',
+      copyright_notice: '',
+      usage_restriction: '',
+      disclaimer_url: '',
+      dmca_contact: '',
+    },
+    duration_ms: 18000,
+    duration: 18,
+    ...overrides,
+  };
+}
 
-const sphVideoData: Api52SphVideoData = {
-  video_author: 'Author',
-  video_avatar: 'https://cdn.example.com/avatar.jpg',
-  video_commentNum: '199',
-  video_cover: 'https://cdn.example.com/cover.jpg',
-  video_createtime: '2026-04-10 16:30:00',
-  video_favNum: '3.4万',
-  video_forwardNum: '5842',
-  video_likeNum: '4.3万',
-  video_title: 'Video title',
-  video_url: 'https://cdn.example.com/video.mp4',
-};
+class StubApizeroService extends ApizeroService {
+  readonly calls: Array<{ url: string }> = [];
 
-class Stub52ApiService extends _52ApiService {
-  readonly calls: Array<{ method: string; url: string }> = [];
-
-  constructor(
-    private readonly douyinData: Api52DouyinVideoData | null,
-    private readonly sphData: Api52SphVideoData | null,
-  ) {
+  constructor(private readonly data: ApizeroVideoData | null) {
     super();
   }
 
-  override async douyin(url: string): Promise<Api52DouyinVideoData> {
-    this.calls.push({ method: 'douyin', url });
-    if (!this.douyinData) throw new Error('douyin fetch failed');
-    return this.douyinData;
-  }
-
-  override async sph(url: string): Promise<Api52SphVideoData> {
-    this.calls.push({ method: 'sph', url });
-    if (!this.sphData) throw new Error('sph fetch failed');
-    return this.sphData;
+  override async videoParse(url: string): Promise<ApizeroVideoData> {
+    this.calls.push({ url });
+    if (!this.data) throw new Error('video parse failed');
+    return this.data;
   }
 }
 
@@ -121,12 +116,12 @@ class StubOssClient implements OssClient {
 
 class StubCrawlerVideoJob extends CrawlerVideoJob {
   constructor(
-    api52Service: _52ApiService,
+    apizeroService: ApizeroService,
     crawlerVideoTaskService: CrawlerVideoTaskService,
     videoService: VideoService,
     private readonly ossClient: OssClient,
   ) {
-    super(api52Service, crawlerVideoTaskService, videoService);
+    super(apizeroService, crawlerVideoTaskService, videoService);
   }
 
   protected override async makeOssClient(): Promise<OssClient> {
@@ -135,22 +130,22 @@ class StubCrawlerVideoJob extends CrawlerVideoJob {
 }
 
 function createJob(platform: 'douyin' | 'sph', ossClient: StubOssClient) {
-  const api52Service = new Stub52ApiService(platform === 'douyin' ? douyinVideoData : null, platform === 'sph' ? sphVideoData : null);
+  const apizeroService = new StubApizeroService(makeVideoData());
   const taskService = new StubTaskService();
   const videoService = new StubVideoService();
-  const job = new StubCrawlerVideoJob(api52Service, taskService, videoService, ossClient);
+  const job = new StubCrawlerVideoJob(apizeroService, taskService, videoService, ossClient);
   job.$hydrate({ taskId: 1, videoUrl: 'https://example.com/share', platform, userId: 'user-1' }, JOB_CONTEXT);
-  return { job, api52Service, taskService, videoService, ossClient };
+  return { job, apizeroService, taskService, videoService, ossClient };
 }
 
 test.group('Crawler video job', () => {
-  test('calls the douyin endpoint and creates a video with the douyin platform', async ({ assert }) => {
+  test('parses the video and creates a video with the douyin platform', async ({ assert }) => {
     const ossClient = new StubOssClient();
-    const { job, api52Service, taskService, videoService, ossClient: client } = createJob('douyin', ossClient);
+    const { job, apizeroService, taskService, videoService, ossClient: client } = createJob('douyin', ossClient);
 
     await job.execute();
 
-    assert.deepEqual(api52Service.calls, [{ method: 'douyin', url: 'https://example.com/share' }]);
+    assert.deepEqual(apizeroService.calls, [{ url: 'https://example.com/share' }]);
     assert.deepEqual(client.attemptedUrls, ['https://cdn.example.com/video.mp4']);
     const creation = videoService.creations[0] as { payload: Array<Record<string, unknown>>; userId: string };
     assert.equal(creation.userId, 'user-1');
@@ -163,28 +158,27 @@ test.group('Crawler video job', () => {
     assert.equal(payload.favoriteCount, 14320);
     assert.equal(payload.shareCount, 14143);
     assert.equal(payload.commentCount, 10755);
+    assert.equal(payload.playCount, 1234);
     assert.match(String(payload.publishAt), /2022-11-12/);
     assert.deepEqual(taskService.updates, [{ payload: { status: TASK_STATUS.COMPLETED, taskId: 1 } }]);
   });
 
-  test('calls the sph endpoint, parses Chinese counts and creates a video with the sph platform', async ({ assert }) => {
+  test('creates a video with the sph platform', async ({ assert }) => {
     const ossClient = new StubOssClient();
-    const { job, api52Service, taskService, videoService } = createJob('sph', ossClient);
+    const { job, apizeroService, taskService, videoService } = createJob('sph', ossClient);
 
     await job.execute();
 
-    assert.deepEqual(api52Service.calls, [{ method: 'sph', url: 'https://example.com/share' }]);
+    assert.deepEqual(apizeroService.calls, [{ url: 'https://example.com/share' }]);
     const creation = videoService.creations[0] as { payload: Array<Record<string, unknown>> };
     const payload = creation.payload[0];
     assert.equal(payload.platform, 'sph');
     assert.equal(payload.title, 'Video title');
     assert.equal(payload.author, 'Author');
     assert.match(String(payload.fileUrl), /^https:\/\/cdn\.example\.com\/cv\//);
-    assert.equal(payload.likeCount, 43000);
-    assert.equal(payload.favoriteCount, 34000);
-    assert.equal(payload.shareCount, 5842);
-    assert.equal(payload.commentCount, 199);
-    assert.match(String(payload.publishAt), /2026-04-10/);
+    assert.equal(payload.likeCount, 166744);
+    assert.equal(payload.playCount, 1234);
+    assert.match(String(payload.publishAt), /2022-11-12/);
     assert.deepEqual(taskService.updates, [{ payload: { status: TASK_STATUS.COMPLETED, taskId: 1 } }]);
   });
 
@@ -213,10 +207,10 @@ test.group('Crawler video job', () => {
 
   test('fails when the API response has no video URL', async ({ assert }) => {
     const ossClient = new StubOssClient();
-    const api52Service = new Stub52ApiService({ ...douyinVideoData, work_url: '' }, null);
+    const apizeroService = new StubApizeroService(makeVideoData({ video_url: '' }));
     const taskService = new StubTaskService();
     const videoService = new StubVideoService();
-    const job = new StubCrawlerVideoJob(api52Service, taskService, videoService, ossClient);
+    const job = new StubCrawlerVideoJob(apizeroService, taskService, videoService, ossClient);
     job.$hydrate({ taskId: 1, videoUrl: 'https://example.com/share', platform: 'douyin', userId: 'user-1' }, JOB_CONTEXT);
 
     const error = await job.execute().catch((caught) => caught);
@@ -227,8 +221,11 @@ test.group('Crawler video job', () => {
 });
 
 test.group('mapToVideoPayload', () => {
-  test('maps douyin data and falls back to the current time for invalid publish time', async ({ assert }) => {
-    const payload = mapToVideoPayload({ ...douyinVideoData, work_time: 'invalid' }, 'douyin');
+  test('maps video data and falls back to the current time for invalid publish time', async ({ assert }) => {
+    const data = makeVideoData({
+      stats: { ...makeVideoData().stats, publish_time: 'invalid' },
+    });
+    const payload = mapToVideoPayload(data, 'douyin');
 
     assert.equal(payload.platform, 'douyin');
     assert.equal(payload.title, 'Video title');
@@ -236,17 +233,23 @@ test.group('mapToVideoPayload', () => {
     assert.equal(payload.fileUrl, 'https://cdn.example.com/video.mp4');
     assert.equal(payload.coverUrl, 'https://cdn.example.com/cover.jpg');
     assert.equal(payload.likeCount, 166744);
+    assert.equal(payload.playCount, 1234);
     assert.isTrue(payload.publishAt.isValid);
   });
 
   test('omits an empty cover URL', async ({ assert }) => {
-    const payload = mapToVideoPayload({ ...douyinVideoData, work_cover: '' }, 'douyin');
+    const payload = mapToVideoPayload(makeVideoData({ cover_url: '' }), 'douyin');
 
     assert.isUndefined(payload.coverUrl);
   });
 
-  test('maps sph data with parsed Chinese counts', async ({ assert }) => {
-    const payload = mapToVideoPayload(sphVideoData, 'sph');
+  test('maps all interaction counts from stats', async ({ assert }) => {
+    const payload = mapToVideoPayload(
+      makeVideoData({
+        stats: { ...makeVideoData().stats, like_count: 43000, collect_count: 34000, share_count: 5842, comment_count: 199, play_count: 0 },
+      }),
+      'sph',
+    );
 
     assert.equal(payload.platform, 'sph');
     assert.equal(payload.likeCount, 43000);
@@ -255,22 +258,4 @@ test.group('mapToVideoPayload', () => {
     assert.equal(payload.commentCount, 199);
     assert.equal(payload.playCount, 0);
   });
-});
-
-test.group('parseCount', () => {
-  for (const scenario of [
-    { input: '1234', expected: 1234 },
-    { input: '4.3万', expected: 43000 },
-    { input: '1.2亿', expected: 120000000 },
-    { input: '-', expected: 0 },
-    { input: '', expected: 0 },
-    { input: 'abc', expected: 0 },
-    { input: 42, expected: 42 },
-    { input: null, expected: 0 },
-    { input: undefined, expected: 0 },
-  ]) {
-    test(`parses ${String(scenario.input)} to ${scenario.expected}`, ({ assert }) => {
-      assert.equal(parseCount(scenario.input), scenario.expected);
-    });
-  }
 });
