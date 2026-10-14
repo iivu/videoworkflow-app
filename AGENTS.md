@@ -21,7 +21,6 @@ Use Node.js 24+ and pnpm 10.33.3.
 - `pnpm test` builds dependencies, then runs configured tests.
 - `pnpm typecheck` runs TypeScript checks across workspaces.
 - `pnpm check` runs Biome validation; `pnpm checkwrite` applies safe formatting/lint fixes.
-- `pnpm --filter api db:migrate:run` applies backend migrations.
 
 ## Coding Style & Naming Conventions
 
