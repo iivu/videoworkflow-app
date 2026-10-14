@@ -1,3 +1,7 @@
+import { createReadStream, createWriteStream } from 'node:fs';
+import { mkdir, rm } from 'node:fs/promises';
+import { pipeline, Readable } from 'node:stream';
+import { promisify } from 'node:util';
 import { inject } from '@adonisjs/core';
 import app from '@adonisjs/core/services/app';
 import logger from '@adonisjs/core/services/logger';
@@ -21,6 +25,7 @@ interface CrawlerVideoPayload {
 }
 
 export const QUEUE_NAME = 'crawler-video-queue';
+const pipelineAsync = promisify(pipeline);
 
 function parsePublishTime(value?: string | null) {
   if (!value) return DateTime.now().toUTC();
@@ -67,34 +72,53 @@ export default class CrawlerVideoJob extends Job<CrawlerVideoPayload> {
 
   async execute() {
     const { taskId, videoUrl, platform, userId } = this.payload;
-    logger.info(`Executing CrawlerVideoJob for taskId: ${taskId}, videoUrl: ${videoUrl}, platform: ${platform}, userId: ${userId}`);
+    const tempDir = app.tmpPath(`crawler-video/${uuidv4()}`);
+    const videoPath = `${tempDir}/source-video`;
     // 1. 调用 ApiZero 解析视频信息（平台由链接自动识别，flat=2）
     const data = await this.apizeroService.videoParse(videoUrl);
-
-    // 2. 映射为视频创建字段并下载到 OSS
+    // 2. 映射为视频创建字段并下载视频
     const videoInput = mapToVideoPayload(data, platform);
     const oss = await this.makeOssClient();
     const ossKey = `cv/${uuidv4()}.mp4`;
-    const ossResp = await oss.putURL(videoInput.fileUrl, ossKey);
-    logger.info({ url: ossResp.url }, 'Video downloaded successfully');
+    logger.info({ taskId, downloadUrl: videoInput.fileUrl, ossKey }, 'Downloading crawler video');
+    await mkdir(tempDir, { recursive: true });
+    try {
+      await this.downloadVideo(videoInput.fileUrl, videoPath);
+      logger.info({ taskId, downloadUrl: videoInput.fileUrl, ossKey, videoPath }, 'Crawler video downloaded');
 
-    await this.videoService.createVideos({
-      userId,
-      payload: [{ ...videoInput, fileUrl: ossResp.url }],
-    });
-    await this.crawlerVideoTaskService.update({
-      payload: { status: TASK_STATUS.COMPLETED, taskId },
-    });
+      const ossResp = await oss.putStream(createReadStream(videoPath), ossKey);
+      logger.info({ taskId, downloadUrl: videoInput.fileUrl, ossKey, ossUrl: ossResp.url }, 'Crawler video uploaded to OSS');
+
+      await this.videoService.createVideos({
+        userId,
+        payload: [{ ...videoInput, fileUrl: ossResp.url }],
+      });
+      await this.crawlerVideoTaskService.update({
+        payload: { status: TASK_STATUS.COMPLETED, taskId },
+      });
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
   }
 
   protected async makeOssClient(): Promise<OssClient> {
     return app.container.make('oss');
   }
 
+  protected async downloadVideo(videoUrl: string, videoPath: string) {
+    const fetchClient = await app.container.make('fetch');
+    const stream = await fetchClient.stream(videoUrl);
+    await pipelineAsync(Readable.fromWeb(stream), createWriteStream(videoPath));
+  }
+
   async failed(error: Error) {
     const { taskId } = this.payload;
-    await this.crawlerVideoTaskService.update({
-      payload: { status: TASK_STATUS.FAILED, taskId, reason: error.message },
-    });
+    try {
+      await this.crawlerVideoTaskService.update({
+        payload: { status: TASK_STATUS.FAILED, taskId, reason: error.message },
+      });
+    } catch (updateError) {
+      logger.error({ taskId, err: updateError instanceof Error ? updateError.message : String(updateError) }, 'Failed to persist CrawlerVideoJob failure');
+    }
   }
 }

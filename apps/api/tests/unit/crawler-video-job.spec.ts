@@ -1,3 +1,6 @@
+import { existsSync } from 'node:fs';
+import { writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import type { JobContext } from '@adonisjs/queue/types';
 import { test } from '@japa/runner';
 
@@ -95,7 +98,10 @@ class StubVideoService extends VideoService {
 
 class StubOssClient implements OssClient {
   readonly attemptedUrls: string[] = [];
+  readonly attemptedKeys: string[] = [];
+  readonly uploadedContents: string[] = [];
   failUrls = new Set<string>();
+  failUpload = false;
 
   putURL(url: string, key: string): Promise<PutStreamResponse> {
     this.attemptedUrls.push(url);
@@ -105,8 +111,17 @@ class StubOssClient implements OssClient {
     return Promise.resolve({ name: key, url: `https://cdn.example.com/${key}` } as PutStreamResponse);
   }
 
-  async putStream(): Promise<PutStreamResponse> {
-    throw new Error('putStream not implemented');
+  async putStream<T extends NodeJS.ReadableStream>(file: T, key: string): Promise<PutStreamResponse> {
+    this.attemptedKeys.push(key);
+    const chunks: Buffer[] = [];
+    for await (const chunk of file) {
+      chunks.push(Buffer.from(chunk));
+    }
+    this.uploadedContents.push(Buffer.concat(chunks).toString());
+    if (this.failUpload) {
+      return Promise.reject(new Error('download failed: https://cdn.example.com/video.mp4'));
+    }
+    return { name: key, url: `https://cdn.example.com/${key}` } as PutStreamResponse;
   }
 
   async delete(): Promise<unknown> {
@@ -115,6 +130,8 @@ class StubOssClient implements OssClient {
 }
 
 class StubCrawlerVideoJob extends CrawlerVideoJob {
+  readonly downloads: Array<{ url: string; path: string }> = [];
+
   constructor(
     apizeroService: ApizeroService,
     crawlerVideoTaskService: CrawlerVideoTaskService,
@@ -126,6 +143,11 @@ class StubCrawlerVideoJob extends CrawlerVideoJob {
 
   protected override async makeOssClient(): Promise<OssClient> {
     return this.ossClient;
+  }
+
+  protected override async downloadVideo(url: string, path: string) {
+    this.downloads.push({ url, path });
+    await writeFile(path, 'test video content');
   }
 }
 
@@ -146,7 +168,14 @@ test.group('Crawler video job', () => {
     await job.execute();
 
     assert.deepEqual(apizeroService.calls, [{ url: 'https://example.com/share' }]);
-    assert.deepEqual(client.attemptedUrls, ['https://cdn.example.com/video.mp4']);
+    assert.lengthOf(client.attemptedKeys, 1);
+    assert.match(client.attemptedKeys[0], /^cv\/[0-9a-f-]+\.mp4$/);
+    assert.deepEqual(
+      job.downloads.map((download) => download.url),
+      ['https://cdn.example.com/video.mp4'],
+    );
+    assert.deepEqual(client.uploadedContents, ['test video content']);
+    assert.isFalse(existsSync(dirname(job.downloads[0].path)));
     const creation = videoService.creations[0] as { payload: Array<Record<string, unknown>>; userId: string };
     assert.equal(creation.userId, 'user-1');
     const payload = creation.payload[0];
@@ -184,19 +213,21 @@ test.group('Crawler video job', () => {
 
   test('fails when the video download fails and propagates the error', async ({ assert }) => {
     const ossClient = new StubOssClient();
-    ossClient.failUrls = new Set(['https://cdn.example.com/video.mp4']);
-    const { job, taskService } = createJob('douyin', ossClient);
+    ossClient.failUpload = true;
+    const { job, taskService, videoService } = createJob('douyin', ossClient);
 
     const error = await job.execute().catch((caught) => caught);
 
     assert.instanceOf(error, Error);
     assert.equal((error as Error).message, 'download failed: https://cdn.example.com/video.mp4');
     assert.deepEqual(taskService.updates, []);
+    assert.deepEqual(videoService.creations, []);
+    assert.isFalse(existsSync(dirname(job.downloads[0].path)));
   });
 
   test('marks the task as failed with the download error', async ({ assert }) => {
     const ossClient = new StubOssClient();
-    ossClient.failUrls = new Set(['https://cdn.example.com/video.mp4']);
+    ossClient.failUpload = true;
     const { job, taskService } = createJob('douyin', ossClient);
 
     await job.execute().catch(() => undefined);
