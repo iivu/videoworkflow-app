@@ -3,6 +3,7 @@ import { writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import type { JobContext } from '@adonisjs/queue/types';
 import { test } from '@japa/runner';
+import { Settings } from 'luxon';
 
 import CrawlerVideoJob, { mapToVideoPayload } from '#jobs/crawler-video-job';
 import { TASK_STATUS } from '#models/crawler-video-task';
@@ -161,7 +162,12 @@ function createJob(platform: 'douyin' | 'sph', ossClient: StubOssClient) {
 }
 
 test.group('Crawler video job', () => {
-  test('parses the video and creates a video with the douyin platform', async ({ assert }) => {
+  test('parses the video and creates a video with the douyin platform', async ({ assert, cleanup }) => {
+    const originalNow = Settings.now;
+    Settings.now = () => new Date(2026, 0, 15, 12).getTime();
+    cleanup(() => {
+      Settings.now = originalNow;
+    });
     const ossClient = new StubOssClient();
     const { job, apizeroService, taskService, videoService, ossClient: client } = createJob('douyin', ossClient);
 
@@ -169,7 +175,7 @@ test.group('Crawler video job', () => {
 
     assert.deepEqual(apizeroService.calls, [{ url: 'https://example.com/share' }]);
     assert.lengthOf(client.attemptedKeys, 1);
-    assert.match(client.attemptedKeys[0], /^cv\/[0-9a-f-]+\.mp4$/);
+    assert.match(client.attemptedKeys[0], /^cv\/202601\/[0-9a-f-]+\.mp4$/);
     assert.deepEqual(
       job.downloads.map((download) => download.url),
       ['https://cdn.example.com/video.mp4'],

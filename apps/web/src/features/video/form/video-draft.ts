@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 import { createUuid } from '#/shared/uuid';
 
 export const MAX_VIDEO_COUNT = 10;
@@ -43,7 +45,7 @@ export function createDraft(file: File): VideoDraft {
   const extension = file.name.match(/\.[^.]+$/)?.[0].toLowerCase() ?? '';
   return {
     id,
-    objectKey: `videos/${id}${extension}`,
+    objectKey: `videos/${dayjs().format('YYYYMM')}/${id}${extension}`,
     file,
     title: file.name.replace(/\.[^.]+$/, ''),
     author: '',

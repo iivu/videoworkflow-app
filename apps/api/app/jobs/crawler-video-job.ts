@@ -79,7 +79,7 @@ export default class CrawlerVideoJob extends Job<CrawlerVideoPayload> {
     // 2. 映射为视频创建字段并下载视频
     const videoInput = mapToVideoPayload(data, platform);
     const oss = await this.makeOssClient();
-    const ossKey = `cv/${uuidv4()}.mp4`;
+    const ossKey = `cv/${DateTime.now().toFormat('yyyyMM')}/${uuidv4()}.mp4`;
     logger.info({ taskId, downloadUrl: videoInput.fileUrl, ossKey }, 'Downloading crawler video');
     await mkdir(tempDir, { recursive: true });
     try {
