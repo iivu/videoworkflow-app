@@ -94,6 +94,10 @@ export default await Env.create(new URL('../', import.meta.url), {
   API_ZERO_KEY: Env.schema.string(),
   API_ZERO_BASE_URL: Env.schema.string({ format: 'url' }),
 
+  // Guaikai API
+  GUAIKAI_API_TOKEN: Env.schema.string.optional(),
+  GUAIKAI_API_BASE_URL: Env.schema.string({ format: 'url' }),
+
   /*
   |----------------------------------------------------------
   | Variables for configuring @adonisjs/queue
