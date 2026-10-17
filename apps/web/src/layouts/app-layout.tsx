@@ -14,7 +14,7 @@ import {
   SidebarTrigger,
 } from '@r/ui';
 import { Link, useLocation, useMatches } from '@tanstack/react-router';
-import { AudioLinesIcon, VideoIcon } from 'lucide-react';
+import { AudioLinesIcon, UsersIcon, VideoIcon } from 'lucide-react';
 import { useMemo } from 'react';
 import Logo from '#/assets/logo2-animated.webp';
 import { BreadcrumbBar } from '#/components/breadcrumb-bar';
@@ -22,7 +22,10 @@ import { Now } from '#/components/now';
 import { ThemeSwitch } from '#/components/theme-switch';
 import { UserProfileDropdown } from '#/components/user-profile-dropdown';
 
-const CONTENT_NAV_ITEMS = [{ to: '/videos', label: '视频库', icon: VideoIcon }];
+const CONTENT_NAV_ITEMS = [
+  { to: '/videos', label: '视频库', icon: VideoIcon },
+  { to: '/douyin-creators', label: '抖音博主', icon: UsersIcon },
+];
 const CREATIVE_NAV_ITEMS = [
   { to: '/creative/audio', label: '音频', icon: AudioLinesIcon },
   { to: '/creative/video', label: '视频', icon: VideoIcon },

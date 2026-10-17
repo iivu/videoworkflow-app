@@ -15,6 +15,13 @@ export interface ApiDefinition {
     createCrawlerTask: typeof routes['videos.create_crawler_task']
     listCrawlerTasks: typeof routes['videos.list_crawler_tasks']
   }
+  douyinCreators: {
+    list: typeof routes['douyin_creators.list']
+    create: typeof routes['douyin_creators.create']
+    retry: typeof routes['douyin_creators.retry']
+    remove: typeof routes['douyin_creators.remove']
+    task: typeof routes['douyin_creators.task']
+  }
   voices: {
     list: typeof routes['voices.list']
     cloneAudio: typeof routes['voices.clone_audio']

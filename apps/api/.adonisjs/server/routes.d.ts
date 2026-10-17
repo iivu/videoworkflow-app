@@ -11,6 +11,11 @@ export type ScannedRoutes = {
     'videos.delete': { paramsTuple?: []; params?: {} }
     'videos.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list': { paramsTuple?: []; params?: {} }
+    'douyin_creators.list': { paramsTuple?: []; params?: {} }
+    'douyin_creators.create': { paramsTuple?: []; params?: {} }
+    'douyin_creators.retry': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_creators.remove': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_creators.task': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'voices.list': { paramsTuple?: []; params?: {} }
     'creative_audios.create': { paramsTuple?: []; params?: {} }
     'creative_audios.list': { paramsTuple?: []; params?: {} }
@@ -56,6 +61,8 @@ export type ScannedRoutes = {
     'videos.create': { paramsTuple?: []; params?: {} }
     'videos.delete': { paramsTuple?: []; params?: {} }
     'videos.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_creators.create': { paramsTuple?: []; params?: {} }
+    'douyin_creators.retry': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'creative_audios.create': { paramsTuple?: []; params?: {} }
     'voices.clone_audio': { paramsTuple?: []; params?: {} }
     'voices.clone_video': { paramsTuple?: []; params?: {} }
@@ -78,6 +85,8 @@ export type ScannedRoutes = {
     'session.validate': { paramsTuple?: []; params?: {} }
     'videos.check': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list': { paramsTuple?: []; params?: {} }
+    'douyin_creators.list': { paramsTuple?: []; params?: {} }
+    'douyin_creators.task': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'voices.list': { paramsTuple?: []; params?: {} }
     'creative_audios.list': { paramsTuple?: []; params?: {} }
     'voices.list_clone_tasks': { paramsTuple?: []; params?: {} }
@@ -102,6 +111,8 @@ export type ScannedRoutes = {
     'session.validate': { paramsTuple?: []; params?: {} }
     'videos.check': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list': { paramsTuple?: []; params?: {} }
+    'douyin_creators.list': { paramsTuple?: []; params?: {} }
+    'douyin_creators.task': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
     'voices.list': { paramsTuple?: []; params?: {} }
     'creative_audios.list': { paramsTuple?: []; params?: {} }
     'voices.list_clone_tasks': { paramsTuple?: []; params?: {} }
@@ -122,12 +133,13 @@ export type ScannedRoutes = {
     'oss.get_policy': { paramsTuple?: []; params?: {} }
     'ai.list_messages': { paramsTuple: [ParamValue]; params: {'videoId': ParamValue} }
   }
+  DELETE: {
+    'douyin_creators.remove': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'video_workspaces.remove': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+  }
   PUT: {
     'video_workspaces.rename': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'video_workspaces.save_canvas': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-  }
-  DELETE: {
-    'video_workspaces.remove': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

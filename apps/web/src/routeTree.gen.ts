@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as AuthIndexRouteImport } from './routes/_auth/index'
+import { Route as AuthDouyinCreatorsIndexRouteImport } from './routes/_auth/douyin-creators/index'
 import { Route as AuthVideoBreakdownIndexRouteImport } from './routes/_auth/video-breakdown/index'
 import { Route as AuthVideoBreakdownIdRouteImport } from './routes/_auth/video-breakdown/$id'
 import { Route as AuthVideosIndexRouteImport } from './routes/_auth/videos/index'
@@ -26,6 +27,11 @@ const AuthRouteRoute = AuthRouteRouteImport.update({
 const AuthIndexRoute = AuthIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthDouyinCreatorsIndexRoute = AuthDouyinCreatorsIndexRouteImport.update({
+  id: '/douyin-creators/',
+  path: '/douyin-creators/',
   getParentRoute: () => AuthRouteRoute,
 } as any)
 const AuthVideoBreakdownIndexRoute = AuthVideoBreakdownIndexRouteImport.update({
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/video-breakdown/$id': typeof AuthVideoBreakdownIdRoute
   '/videos/$id': typeof AuthVideosIdRoute
   '/videos/create': typeof AuthVideosCreateRoute
+  '/douyin-creators/': typeof AuthDouyinCreatorsIndexRoute
   '/video-breakdown/': typeof AuthVideoBreakdownIndexRoute
   '/videos/': typeof AuthVideosIndexRoute
   '/creative/audio/': typeof AuthCreativeAudioIndexRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByTo {
   '/video-breakdown/$id': typeof AuthVideoBreakdownIdRoute
   '/videos/$id': typeof AuthVideosIdRoute
   '/videos/create': typeof AuthVideosCreateRoute
+  '/douyin-creators': typeof AuthDouyinCreatorsIndexRoute
   '/video-breakdown': typeof AuthVideoBreakdownIndexRoute
   '/videos': typeof AuthVideosIndexRoute
   '/creative/audio': typeof AuthCreativeAudioIndexRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   '/_auth/video-breakdown/$id': typeof AuthVideoBreakdownIdRoute
   '/_auth/videos/$id': typeof AuthVideosIdRoute
   '/_auth/videos/create': typeof AuthVideosCreateRoute
+  '/_auth/douyin-creators/': typeof AuthDouyinCreatorsIndexRoute
   '/_auth/video-breakdown/': typeof AuthVideoBreakdownIndexRoute
   '/_auth/videos/': typeof AuthVideosIndexRoute
   '/_auth/creative/audio/': typeof AuthCreativeAudioIndexRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
     | '/video-breakdown/$id'
     | '/videos/$id'
     | '/videos/create'
+    | '/douyin-creators/'
     | '/video-breakdown/'
     | '/videos/'
     | '/creative/audio/'
@@ -113,6 +123,7 @@ export interface FileRouteTypes {
     | '/video-breakdown/$id'
     | '/videos/$id'
     | '/videos/create'
+    | '/douyin-creators'
     | '/video-breakdown'
     | '/videos'
     | '/creative/audio'
@@ -124,6 +135,7 @@ export interface FileRouteTypes {
     | '/_auth/video-breakdown/$id'
     | '/_auth/videos/$id'
     | '/_auth/videos/create'
+    | '/_auth/douyin-creators/'
     | '/_auth/video-breakdown/'
     | '/_auth/videos/'
     | '/_auth/creative/audio/'
@@ -148,6 +160,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/douyin-creators/': {
+      id: '/_auth/douyin-creators/'
+      path: '/douyin-creators'
+      fullPath: '/douyin-creators/'
+      preLoaderRoute: typeof AuthDouyinCreatorsIndexRouteImport
       parentRoute: typeof AuthRouteRoute
     }
     '/_auth/video-breakdown/': {
@@ -207,6 +226,7 @@ interface AuthRouteRouteChildren {
   AuthVideoBreakdownIdRoute: typeof AuthVideoBreakdownIdRoute
   AuthVideosIdRoute: typeof AuthVideosIdRoute
   AuthVideosCreateRoute: typeof AuthVideosCreateRoute
+  AuthDouyinCreatorsIndexRoute: typeof AuthDouyinCreatorsIndexRoute
   AuthVideoBreakdownIndexRoute: typeof AuthVideoBreakdownIndexRoute
   AuthVideosIndexRoute: typeof AuthVideosIndexRoute
   AuthCreativeAudioIndexRoute: typeof AuthCreativeAudioIndexRoute
@@ -218,6 +238,7 @@ const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthVideoBreakdownIdRoute: AuthVideoBreakdownIdRoute,
   AuthVideosIdRoute: AuthVideosIdRoute,
   AuthVideosCreateRoute: AuthVideosCreateRoute,
+  AuthDouyinCreatorsIndexRoute: AuthDouyinCreatorsIndexRoute,
   AuthVideoBreakdownIndexRoute: AuthVideoBreakdownIndexRoute,
   AuthVideosIndexRoute: AuthVideosIndexRoute,
   AuthCreativeAudioIndexRoute: AuthCreativeAudioIndexRoute,

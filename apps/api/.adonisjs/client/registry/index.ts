@@ -48,6 +48,36 @@ const routes = {
     tokens: [{"old":"/api/v1/videos","type":0,"val":"api","end":""},{"old":"/api/v1/videos","type":0,"val":"v1","end":""},{"old":"/api/v1/videos","type":0,"val":"videos","end":""}],
     types: placeholder as Registry['videos.list']['types'],
   },
+  'douyin_creators.list': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/douyin-creators',
+    tokens: [{"old":"/api/v1/douyin-creators","type":0,"val":"api","end":""},{"old":"/api/v1/douyin-creators","type":0,"val":"v1","end":""},{"old":"/api/v1/douyin-creators","type":0,"val":"douyin-creators","end":""}],
+    types: placeholder as Registry['douyin_creators.list']['types'],
+  },
+  'douyin_creators.create': {
+    methods: ["POST"],
+    pattern: '/api/v1/douyin-creators',
+    tokens: [{"old":"/api/v1/douyin-creators","type":0,"val":"api","end":""},{"old":"/api/v1/douyin-creators","type":0,"val":"v1","end":""},{"old":"/api/v1/douyin-creators","type":0,"val":"douyin-creators","end":""}],
+    types: placeholder as Registry['douyin_creators.create']['types'],
+  },
+  'douyin_creators.retry': {
+    methods: ["POST"],
+    pattern: '/api/v1/douyin-creators/:id/retry',
+    tokens: [{"old":"/api/v1/douyin-creators/:id/retry","type":0,"val":"api","end":""},{"old":"/api/v1/douyin-creators/:id/retry","type":0,"val":"v1","end":""},{"old":"/api/v1/douyin-creators/:id/retry","type":0,"val":"douyin-creators","end":""},{"old":"/api/v1/douyin-creators/:id/retry","type":1,"val":"id","end":""},{"old":"/api/v1/douyin-creators/:id/retry","type":0,"val":"retry","end":""}],
+    types: placeholder as Registry['douyin_creators.retry']['types'],
+  },
+  'douyin_creators.remove': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/douyin-creators/:id',
+    tokens: [{"old":"/api/v1/douyin-creators/:id","type":0,"val":"api","end":""},{"old":"/api/v1/douyin-creators/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/douyin-creators/:id","type":0,"val":"douyin-creators","end":""},{"old":"/api/v1/douyin-creators/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['douyin_creators.remove']['types'],
+  },
+  'douyin_creators.task': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/douyin-creator-tasks/:taskId',
+    tokens: [{"old":"/api/v1/douyin-creator-tasks/:taskId","type":0,"val":"api","end":""},{"old":"/api/v1/douyin-creator-tasks/:taskId","type":0,"val":"v1","end":""},{"old":"/api/v1/douyin-creator-tasks/:taskId","type":0,"val":"douyin-creator-tasks","end":""},{"old":"/api/v1/douyin-creator-tasks/:taskId","type":1,"val":"taskId","end":""}],
+    types: placeholder as Registry['douyin_creators.task']['types'],
+  },
   'voices.list': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/voices',

@@ -82,6 +82,76 @@ export class CreativeAudioSchema extends BaseModel {
   declare voiceId: string
 }
 
+export class DouyinCreatorTaskSchema extends BaseModel {
+  static $columns = ['createdAt', 'creatorId', 'id', 'providerTimestamp', 'reason', 'sourceUrl', 'status', 'updatedAt', 'userId'] as const
+  $columns = DouyinCreatorTaskSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare creatorId: number | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare providerTimestamp: number | null
+  @column()
+  declare reason: string | null
+  @column()
+  declare sourceUrl: string
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+}
+
+export class DouyinCreatorSchema extends BaseModel {
+  static $columns = ['avatarUrl', 'awemeCount', 'createdAt', 'currentTaskId', 'downloadedCount', 'favoritingCount', 'followerCount', 'followingCount', 'id', 'ipLocation', 'lastSyncedAt', 'maxFollowerCount', 'nickname', 'secUid', 'signature', 'sourceUrl', 'totalFavorited', 'uid', 'uniqueId', 'updatedAt', 'userId'] as const
+  $columns = DouyinCreatorSchema.$columns
+  @column()
+  declare avatarUrl: string | null
+  @column()
+  declare awemeCount: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare currentTaskId: number | null
+  @column()
+  declare downloadedCount: number
+  @column()
+  declare favoritingCount: number
+  @column()
+  declare followerCount: number
+  @column()
+  declare followingCount: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare ipLocation: string | null
+  @column.dateTime()
+  declare lastSyncedAt: DateTime | null
+  @column()
+  declare maxFollowerCount: number
+  @column()
+  declare nickname: string | null
+  @column()
+  declare secUid: string | null
+  @column()
+  declare signature: string | null
+  @column()
+  declare sourceUrl: string
+  @column()
+  declare totalFavorited: number
+  @column()
+  declare uid: string | null
+  @column()
+  declare uniqueId: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+}
+
 export class ParaformerTaskSchema extends BaseModel {
   static $columns = ['createdAt', 'id', 'reason', 'result', 'status', 'taskId', 'updatedAt', 'userId', 'videoId'] as const
   $columns = ParaformerTaskSchema.$columns

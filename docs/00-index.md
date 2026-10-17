@@ -15,6 +15,7 @@
 | [07 · 视频编辑](07-video-edit.md) | 拆解片段编辑、对话历史、编辑任务 | `video-edit-conversation-service.ts`、`wanxiang-video-edit-service.ts` |
 | [08 · 视频创作](08-creative-video.md) | 创作空间、节点画布、视频生成 | `video-workspace-service.ts`、`features/creative-video/` |
 | [09 · 开发与运行](09-development.md) | 环境、命令、代码规范、测试与交付 | 根目录及各 workspace 的 `package.json` |
+| [10 · 抖音博主库](10-douyin-creators.md) | 博主添加、资料抓取、刷新与卡片管理 | `douyin-creator-service.ts`、`features/douyin-creator/` |
 
 ## 维护规则
 

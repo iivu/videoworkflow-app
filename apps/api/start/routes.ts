@@ -21,6 +21,11 @@ r.group(() => {
     r.post('/videos/batch-delete', [controllers.Videos, 'delete']);
     r.post('/videos/:id', [controllers.Videos, 'update']);
     r.get('/videos', [controllers.Videos, 'list']);
+    r.get('/douyin-creators', [controllers.DouyinCreators, 'list']);
+    r.post('/douyin-creators', [controllers.DouyinCreators, 'create']);
+    r.post('/douyin-creators/:id/retry', [controllers.DouyinCreators, 'retry']);
+    r.delete('/douyin-creators/:id', [controllers.DouyinCreators, 'remove']);
+    r.get('/douyin-creator-tasks/:taskId', [controllers.DouyinCreators, 'task']);
     r.get('/voices', [controllers.Voices, 'list']);
     r.post('/creative-audios', [controllers.CreativeAudios, 'create']);
     r.get('/creative-audios', [controllers.CreativeAudios, 'list']);

@@ -9,7 +9,7 @@
 | `apps/api` | AdonisJS 7 后端；控制器处理 HTTP，service 处理业务，model 处理持久化，validator 校验请求，transformer 序列化响应 |
 | `apps/api/start`、`config` | 路由、中间件及运行配置 |
 | `apps/api/database` | migration、seeder 和自动生成的 schema |
-| `apps/api/app/jobs` | 链接采集、视频声音克隆、视频拆解的队列任务 |
+| `apps/api/app/jobs` | 异步业务队列任务，具体流程见各功能章节 |
 | `apps/web/src/routes` | TanStack Start / React 文件路由，登录后的页面位于 `_auth` 下 |
 | `apps/web/src/features` | 各功能的页面、交互及状态 |
 | `apps/web/src/components`、`providers` | 应用级组件与上下文 |

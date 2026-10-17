@@ -13,7 +13,7 @@
 | `pnpm check` / `pnpm checkwrite` | Biome 检查 / 安全修复 |
 | `pnpm test` | 先构建，再运行已配置测试 |
 | `pnpm --filter api test` | 后端 Japa 测试 |
-| `pnpm --filter api start:queue-worker` | 消费采集、视频声音克隆、视频拆解队列 |
+| `pnpm --filter api start:queue-worker` | 消费采集、视频声音克隆、视频拆解、[博主资料](10-douyin-creators.md)队列 |
 
 API 配置参考 `apps/api/.env.example` 和 `apps/api/start/env.ts`，Web API 地址使用 `VITE_API_URL`。按功能准备 MySQL、Redis、OSS 和供应商配置；视频切片和音频提取依赖可执行的 `ffmpeg` / `ffprobe`。API 和队列 worker 是不同运行进程，启动 API 不等于启动 worker。
 

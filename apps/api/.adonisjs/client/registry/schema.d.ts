@@ -91,6 +91,66 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/videos-controller').default['list']>>>
     }
   }
+  'douyin_creators.list': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/douyin-creators'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/douyin-creator').listDouyinCreatorsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['list']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['list']>>>
+    }
+  }
+  'douyin_creators.create': {
+    methods: ["POST"]
+    pattern: '/api/v1/douyin-creators'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/douyin-creator').createDouyinCreatorValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/douyin-creator').createDouyinCreatorValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['create']>>>
+    }
+  }
+  'douyin_creators.retry': {
+    methods: ["POST"]
+    pattern: '/api/v1/douyin-creators/:id/retry'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/douyin-creator').douyinCreatorIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/douyin-creator').douyinCreatorIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['retry']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['retry']>>>
+    }
+  }
+  'douyin_creators.remove': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/douyin-creators/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/douyin-creator').douyinCreatorIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/douyin-creator').douyinCreatorIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['remove']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['remove']>>>
+    }
+  }
+  'douyin_creators.task': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/douyin-creator-tasks/:taskId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { taskId: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/douyin-creator').douyinCreatorTaskIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['task']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['task']>>>
+    }
+  }
   'voices.list': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/voices'
