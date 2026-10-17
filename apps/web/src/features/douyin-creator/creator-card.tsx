@@ -1,8 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button, toast } from '@r/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import type { Route as ApiRoute } from '@tuyau/core/types';
 import dayjs from 'dayjs';
 import { LoaderCircle, RefreshCw, Trash2 } from 'lucide-react';
+import { useRefreshPosts } from '#/features/douyin-post/shared';
 import { useConfirm } from '#/providers/confirm-dialog-provider';
 import { normalizeApiFailedMessage, query } from '#/services/api';
 
@@ -22,6 +24,7 @@ function formatIpLocation(v: string | null) {
 export function CreatorCard({ creator, onRemoved }: { creator: Creator; onRemoved: () => void }) {
   const queryClient = useQueryClient();
   const { confirm } = useConfirm();
+  const refreshPosts = useRefreshPosts();
   const invalidate = () => queryClient.invalidateQueries({ queryKey: query.douyinCreators.list.queryKey() });
   const retry = useMutation({
     ...query.douyinCreators.retry.mutationOptions(),
@@ -36,7 +39,7 @@ export function CreatorCard({ creator, onRemoved }: { creator: Creator; onRemove
   const remove = useMutation({
     ...query.douyinCreators.remove.mutationOptions(),
     onSuccess: () => {
-      void invalidate();
+      void refreshPosts();
       onRemoved();
     },
     onError: (error) => {
@@ -59,7 +62,14 @@ export function CreatorCard({ creator, onRemoved }: { creator: Creator; onRemove
   };
 
   const handleRemove = async () => {
-    if (await confirm({ title: '删除博主', description: '确认删除这张卡片？进行中的采集结果将被丢弃。', confirmBtnText: '删除', danger: true })) {
+    if (
+      await confirm({
+        title: '删除博主',
+        description: '将永久删除该博主及其全部作品、下载任务、搜索记录和资料采集任务，同时删除作品文件。进行中的任务结果将被丢弃，且无法恢复。',
+        confirmBtnText: '全部删除',
+        danger: true,
+      })
+    ) {
       remove.mutate({ params: { id: creator.id } });
     }
   };
@@ -118,9 +128,9 @@ export function CreatorCard({ creator, onRemoved }: { creator: Creator; onRemove
           <span>
             作品 {hasSnapshot ? formatCount(creator.awemeCount) : '—'} · 已下载 {creator.downloadedCount}
           </span>
-          <Button type="button" variant="outline" size="sm">
+          <Link to="/douyin-creators/$id" params={{ id: String(creator.id) }} className="inline-flex h-8 items-center rounded-md border px-3 text-sm hover:bg-accent">
             查看详情
-          </Button>
+          </Link>
         </div>
         <div className="flex items-center justify-between gap-2 border-t pt-1.5">
           <span className="text-xs text-muted-foreground">{creator.lastSyncedAt ? `更新于 ${dayjs(creator.lastSyncedAt).format('YYYY-MM-DD HH:mm')}` : '尚未同步'}</span>

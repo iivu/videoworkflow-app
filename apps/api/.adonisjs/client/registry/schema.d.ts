@@ -103,6 +103,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['list']>>>
     }
   }
+  'douyin_creators.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/douyin-creators/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/douyin-creator').douyinCreatorIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['show']>>>
+    }
+  }
   'douyin_creators.create': {
     methods: ["POST"]
     pattern: '/api/v1/douyin-creators'
@@ -149,6 +161,138 @@ export interface Registry {
       query: ExtractQueryForGet<InferInput<(typeof import('#validators/douyin-creator').douyinCreatorTaskIdValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['task']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-creators-controller').default['task']>>>
+    }
+  }
+  'douyin_posts.search': {
+    methods: ["POST"]
+    pattern: '/api/v1/douyin-post-searches'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/douyin-post').createPostSearchValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/douyin-post').createPostSearchValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['search']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['search']>>>
+    }
+  }
+  'douyin_posts.searches_list': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/douyin-post-searches'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/douyin-post').listPostSearchesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['searchesList']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['searchesList']>>>
+    }
+  }
+  'douyin_posts.search_show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/douyin-post-searches/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/douyin-post').postSearchIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['searchShow']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['searchShow']>>>
+    }
+  }
+  'douyin_posts.results': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/douyin-post-searches/:id/results'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/douyin-post').postSearchResultsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['results']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['results']>>>
+    }
+  }
+  'douyin_posts.invalidate': {
+    methods: ["POST"]
+    pattern: '/api/v1/douyin-post-searches/:id/invalidate'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/douyin-post').postSearchIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/douyin-post').postSearchIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['invalidate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['invalidate']>>>
+    }
+  }
+  'douyin_posts.download': {
+    methods: ["POST"]
+    pattern: '/api/v1/douyin-downloads'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/douyin-post').createPostDownloadsValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/douyin-post').createPostDownloadsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['download']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['download']>>>
+    }
+  }
+  'douyin_posts.batches': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/douyin-downloads'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/douyin-post').listPostSearchesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['batches']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['batches']>>>
+    }
+  }
+  'douyin_posts.tasks': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/douyin-downloads/:id/tasks'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/douyin-post').postSearchResultsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['tasks']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['tasks']>>>
+    }
+  }
+  'douyin_posts.retry': {
+    methods: ["POST"]
+    pattern: '/api/v1/douyin-downloads/:id/retry'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/douyin-post').retryPostDownloadsValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/douyin-post').retryPostDownloadsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['retry']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['retry']>>>
+    }
+  }
+  'douyin_posts.works': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/douyin-works'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/douyin-post').listPostWorksValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['works']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['works']>>>
+    }
+  }
+  'douyin_posts.remove': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/douyin-works/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/douyin-post').postSearchIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/douyin-post').postSearchIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['remove']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/douyin-posts-controller').default['remove']>>>
     }
   }
   'voices.list': {

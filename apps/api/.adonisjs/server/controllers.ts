@@ -7,6 +7,7 @@ export const controllers = {
   Ai: () => import('#controllers/ai-controller'),
   CreativeAudios: () => import('#controllers/creative-audios-controller'),
   DouyinCreators: () => import('#controllers/douyin-creators-controller'),
+  DouyinPosts: () => import('#controllers/douyin-posts-controller'),
   Oss: () => import('#controllers/oss-controller'),
   Paraformer: () => import('#controllers/paraformer-controller'),
   Session: () => import('#controllers/session-controller'),

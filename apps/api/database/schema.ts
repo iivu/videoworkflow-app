@@ -152,6 +152,151 @@ export class DouyinCreatorSchema extends BaseModel {
   declare userId: string
 }
 
+export class DouyinDownloadBatchSchema extends BaseModel {
+  static $columns = ['createdAt', 'creatorId', 'creatorName', 'id', 'updatedAt', 'userId'] as const
+  $columns = DouyinDownloadBatchSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare creatorId: number
+  @column()
+  declare creatorName: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+}
+
+export class DouyinDownloadTaskSchema extends BaseModel {
+  static $columns = ['awemeId', 'batchId', 'createdAt', 'creatorId', 'executionToken', 'id', 'metadata', 'reason', 'startedAt', 'status', 'updatedAt', 'userId'] as const
+  $columns = DouyinDownloadTaskSchema.$columns
+  @column()
+  declare awemeId: string
+  @column()
+  declare batchId: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare creatorId: number
+  @column()
+  declare executionToken: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare metadata: string
+  @column()
+  declare reason: string | null
+  @column.dateTime()
+  declare startedAt: DateTime | null
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+}
+
+export class DouyinPostCacheSchema extends BaseModel {
+  static $columns = ['cacheKey', 'createdAt', 'expiresAt', 'id', 'postLimit', 'providerTimestamp', 'reason', 'result', 'secUid', 'startedAt', 'status', 'submitted', 'updatedAt', 'version'] as const
+  $columns = DouyinPostCacheSchema.$columns
+  @column()
+  declare cacheKey: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare expiresAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare postLimit: number
+  @column()
+  declare providerTimestamp: bigint | number | null
+  @column()
+  declare reason: string | null
+  @column()
+  declare result: string | null
+  @column()
+  declare secUid: string
+  @column.dateTime()
+  declare startedAt: DateTime
+  @column()
+  declare status: string
+  @column()
+  declare submitted: boolean
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare version: string
+}
+
+export class DouyinPostSearchSchema extends BaseModel {
+  static $columns = ['cacheHit', 'cacheId', 'cacheVersion', 'createdAt', 'creatorId', 'creatorName', 'creatorTaskId', 'fetchedCount', 'filters', 'id', 'matchedCount', 'reason', 'source', 'status', 'updatedAt', 'userId'] as const
+  $columns = DouyinPostSearchSchema.$columns
+  @column()
+  declare cacheHit: boolean
+  @column()
+  declare cacheId: number | null
+  @column()
+  declare cacheVersion: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare creatorId: number | null
+  @column()
+  declare creatorName: string | null
+  @column()
+  declare creatorTaskId: number | null
+  @column()
+  declare fetchedCount: number
+  @column()
+  declare filters: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare matchedCount: number
+  @column()
+  declare reason: string | null
+  @column()
+  declare source: string
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+}
+
+export class DouyinWorkSchema extends BaseModel {
+  static $columns = ['awemeId', 'coverKey', 'coverUrl', 'createdAt', 'creatorId', 'id', 'metadata', 'title', 'updatedAt', 'userId', 'videoKey', 'videoUrl'] as const
+  $columns = DouyinWorkSchema.$columns
+  @column()
+  declare awemeId: string
+  @column()
+  declare coverKey: string | null
+  @column()
+  declare coverUrl: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare creatorId: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare metadata: string
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+  @column()
+  declare videoKey: string
+  @column()
+  declare videoUrl: string
+}
+
 export class ParaformerTaskSchema extends BaseModel {
   static $columns = ['createdAt', 'id', 'reason', 'result', 'status', 'taskId', 'updatedAt', 'userId', 'videoId'] as const
   $columns = ParaformerTaskSchema.$columns

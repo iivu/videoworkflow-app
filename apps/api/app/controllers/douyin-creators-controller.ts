@@ -9,6 +9,13 @@ import { createDouyinCreatorValidator, douyinCreatorIdValidator, douyinCreatorTa
 export default class DouyinCreatorsController {
   constructor(private readonly creators: DouyinCreatorService) {}
 
+  async show(ctx: HttpContext) {
+    const user = await ctx.auth.getUserOrFail();
+    const { params } = await ctx.request.validateUsing(douyinCreatorIdValidator);
+    const creator = await this.creators.show(user.id, params.id);
+    return ctx.ok(await ctx.serialize.withoutWrapping(DouyinCreatorTransformer.transform(creator)));
+  }
+
   async list(ctx: HttpContext) {
     const user = await ctx.auth.getUserOrFail();
     const payload = await ctx.request.validateUsing(listDouyinCreatorsValidator);

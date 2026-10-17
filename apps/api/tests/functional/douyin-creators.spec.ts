@@ -17,6 +17,7 @@ test.group('Douyin creators persistence and ownership', (group) => {
   test('requires authentication', async ({ client }) => {
     const response = await client.get('/api/v1/douyin-creators');
     response.assertStatus(401);
+    (await client.get('/api/v1/douyin-creators/1')).assertStatus(401);
   });
 
   test('creates a placeholder with a null sec_uid and an internal task association', async ({ assert }) => {
@@ -92,9 +93,7 @@ test.group('Douyin creators persistence and ownership', (group) => {
     const creator = await DouyinCreator.findOrFail(task.creatorId);
     await service.remove(user.id, creator.id);
     await service.complete(task.id, { sec_uid: 'MS4wLjABAAAA_test', nickname: '已删除博主' }, null);
-    await task.refresh();
-    assert.equal(task.status, 'canceled');
-    assert.isNull(task.creatorId);
+    assert.isNull(await DouyinCreatorTask.find(task.id));
     assert.lengthOf(await DouyinCreator.query().where('userId', user.id), 0);
   });
 
@@ -105,6 +104,10 @@ test.group('Douyin creators persistence and ownership', (group) => {
     const task = await service.create(owner.id, 'MS4wLjABAAAA_test');
     const creator = await DouyinCreator.findOrFail(task.creatorId);
     const { paginated, hasProcessing } = await service.list(stranger.id, {});
+    const detail = await service.show(owner.id, creator.id);
+    assert.equal(detail.id, creator.id);
+    assert.equal(detail.currentTask.id, task.id);
+    await assert.rejects(() => service.show(stranger.id, creator.id), '博主不存在');
     assert.lengthOf(paginated.all(), 0);
     assert.isFalse(hasProcessing);
     await assert.rejects(() => service.task(stranger.id, task.id), '任务不存在');

@@ -196,6 +196,7 @@ export class GuaikaiApiService {
 
     const response = await (await this.getFetchClient()).json<GuaikaiResponse<T> | null>(endpoint, {
       method,
+      signal: AbortSignal.timeout(30000),
       headers: {
         TOKEN: this.token,
         ...(method === 'POST' ? { 'Content-Type': 'application/json' } : { Accept: 'application/json' }),

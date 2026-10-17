@@ -18,7 +18,7 @@ declare module '@adonisjs/core/types' {
 }
 export type PutStreamResponse = { name: string; res: OSS.NormalSuccessResponse; url: string };
 export interface OssClient {
-  putStream<T extends NodeJS.ReadableStream>(file: T, key: string): Promise<PutStreamResponse>;
+  putStream<T extends NodeJS.ReadableStream>(file: T, key: string, options?: { timeout?: number }): Promise<PutStreamResponse>;
   putURL(url: string, key: string): Promise<PutStreamResponse>;
   delete(key: string): Promise<unknown>;
 }
@@ -37,10 +37,10 @@ class OssService implements OssClient {
     });
   }
 
-  async putStream<T extends NodeJS.ReadableStream>(file: T, key: string): Promise<PutStreamResponse> {
+  async putStream<T extends NodeJS.ReadableStream>(file: T, key: string, options?: { timeout?: number }): Promise<PutStreamResponse> {
     const resp = (await this.client
       // @ts-expect-error
-      .putStream(`${env.get('OSS_DIR')}/${key}`, file, { timeout: 1000 * 60 * 10 })
+      .putStream(`${env.get('OSS_DIR')}/${key}`, file, { timeout: options?.timeout ?? 1000 * 60 * 10 })
       .catch((err) => {
         throw new BusinessException(err.message);
       })) as unknown as PutStreamResponse;

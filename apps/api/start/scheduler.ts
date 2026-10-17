@@ -1,3 +1,10 @@
+import DouyinPostJob from '#jobs/douyin-post-job';
+import env from '#start/env';
+
+if (env.get('QUEUE_DRIVER', 'redis') === 'redis') {
+  await DouyinPostJob.schedule({ cleanup: true }).every('1h').run();
+}
+
 /*
 |--------------------------------------------------------------------------
 | Scheduler

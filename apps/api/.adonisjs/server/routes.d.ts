@@ -12,10 +12,22 @@ export type ScannedRoutes = {
     'videos.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list': { paramsTuple?: []; params?: {} }
     'douyin_creators.list': { paramsTuple?: []; params?: {} }
+    'douyin_creators.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'douyin_creators.create': { paramsTuple?: []; params?: {} }
     'douyin_creators.retry': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'douyin_creators.remove': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'douyin_creators.task': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'douyin_posts.search': { paramsTuple?: []; params?: {} }
+    'douyin_posts.searches_list': { paramsTuple?: []; params?: {} }
+    'douyin_posts.search_show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.results': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.invalidate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.download': { paramsTuple?: []; params?: {} }
+    'douyin_posts.batches': { paramsTuple?: []; params?: {} }
+    'douyin_posts.tasks': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.retry': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.works': { paramsTuple?: []; params?: {} }
+    'douyin_posts.remove': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'voices.list': { paramsTuple?: []; params?: {} }
     'creative_audios.create': { paramsTuple?: []; params?: {} }
     'creative_audios.list': { paramsTuple?: []; params?: {} }
@@ -63,6 +75,10 @@ export type ScannedRoutes = {
     'videos.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'douyin_creators.create': { paramsTuple?: []; params?: {} }
     'douyin_creators.retry': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.search': { paramsTuple?: []; params?: {} }
+    'douyin_posts.invalidate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.download': { paramsTuple?: []; params?: {} }
+    'douyin_posts.retry': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'creative_audios.create': { paramsTuple?: []; params?: {} }
     'voices.clone_audio': { paramsTuple?: []; params?: {} }
     'voices.clone_video': { paramsTuple?: []; params?: {} }
@@ -86,7 +102,14 @@ export type ScannedRoutes = {
     'videos.check': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list': { paramsTuple?: []; params?: {} }
     'douyin_creators.list': { paramsTuple?: []; params?: {} }
+    'douyin_creators.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'douyin_creators.task': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'douyin_posts.searches_list': { paramsTuple?: []; params?: {} }
+    'douyin_posts.search_show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.results': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.batches': { paramsTuple?: []; params?: {} }
+    'douyin_posts.tasks': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.works': { paramsTuple?: []; params?: {} }
     'voices.list': { paramsTuple?: []; params?: {} }
     'creative_audios.list': { paramsTuple?: []; params?: {} }
     'voices.list_clone_tasks': { paramsTuple?: []; params?: {} }
@@ -112,7 +135,14 @@ export type ScannedRoutes = {
     'videos.check': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'videos.list': { paramsTuple?: []; params?: {} }
     'douyin_creators.list': { paramsTuple?: []; params?: {} }
+    'douyin_creators.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'douyin_creators.task': { paramsTuple: [ParamValue]; params: {'taskId': ParamValue} }
+    'douyin_posts.searches_list': { paramsTuple?: []; params?: {} }
+    'douyin_posts.search_show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.results': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.batches': { paramsTuple?: []; params?: {} }
+    'douyin_posts.tasks': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.works': { paramsTuple?: []; params?: {} }
     'voices.list': { paramsTuple?: []; params?: {} }
     'creative_audios.list': { paramsTuple?: []; params?: {} }
     'voices.list_clone_tasks': { paramsTuple?: []; params?: {} }
@@ -135,6 +165,7 @@ export type ScannedRoutes = {
   }
   DELETE: {
     'douyin_creators.remove': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'douyin_posts.remove': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'video_workspaces.remove': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PUT: {

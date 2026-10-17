@@ -17,10 +17,24 @@ export interface ApiDefinition {
   }
   douyinCreators: {
     list: typeof routes['douyin_creators.list']
+    show: typeof routes['douyin_creators.show']
     create: typeof routes['douyin_creators.create']
     retry: typeof routes['douyin_creators.retry']
     remove: typeof routes['douyin_creators.remove']
     task: typeof routes['douyin_creators.task']
+  }
+  douyinPosts: {
+    search: typeof routes['douyin_posts.search']
+    searchesList: typeof routes['douyin_posts.searches_list']
+    searchShow: typeof routes['douyin_posts.search_show']
+    results: typeof routes['douyin_posts.results']
+    invalidate: typeof routes['douyin_posts.invalidate']
+    download: typeof routes['douyin_posts.download']
+    batches: typeof routes['douyin_posts.batches']
+    tasks: typeof routes['douyin_posts.tasks']
+    retry: typeof routes['douyin_posts.retry']
+    works: typeof routes['douyin_posts.works']
+    remove: typeof routes['douyin_posts.remove']
   }
   voices: {
     list: typeof routes['voices.list']

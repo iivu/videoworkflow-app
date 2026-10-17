@@ -14,7 +14,7 @@ import {
   SidebarTrigger,
 } from '@r/ui';
 import { Link, useLocation, useMatches } from '@tanstack/react-router';
-import { AudioLinesIcon, UsersIcon, VideoIcon } from 'lucide-react';
+import { AudioLinesIcon, DownloadIcon, UsersIcon, VideoIcon } from 'lucide-react';
 import { useMemo } from 'react';
 import Logo from '#/assets/logo2-animated.webp';
 import { BreadcrumbBar } from '#/components/breadcrumb-bar';
@@ -25,6 +25,7 @@ import { UserProfileDropdown } from '#/components/user-profile-dropdown';
 const CONTENT_NAV_ITEMS = [
   { to: '/videos', label: '视频库', icon: VideoIcon },
   { to: '/douyin-creators', label: '抖音博主', icon: UsersIcon },
+  { to: '/douyin-download', label: '博主搜索下载', icon: DownloadIcon },
 ];
 const CREATIVE_NAV_ITEMS = [
   { to: '/creative/audio', label: '音频', icon: AudioLinesIcon },

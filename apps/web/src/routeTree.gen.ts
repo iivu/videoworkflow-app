@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as AuthIndexRouteImport } from './routes/_auth/index'
 import { Route as AuthDouyinCreatorsIndexRouteImport } from './routes/_auth/douyin-creators/index'
+import { Route as AuthDouyinCreatorsIdRouteImport } from './routes/_auth/douyin-creators/$id'
+import { Route as AuthDouyinDownloadIndexRouteImport } from './routes/_auth/douyin-download/index'
 import { Route as AuthVideoBreakdownIndexRouteImport } from './routes/_auth/video-breakdown/index'
 import { Route as AuthVideoBreakdownIdRouteImport } from './routes/_auth/video-breakdown/$id'
 import { Route as AuthVideosIndexRouteImport } from './routes/_auth/videos/index'
@@ -32,6 +34,16 @@ const AuthIndexRoute = AuthIndexRouteImport.update({
 const AuthDouyinCreatorsIndexRoute = AuthDouyinCreatorsIndexRouteImport.update({
   id: '/douyin-creators/',
   path: '/douyin-creators/',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthDouyinCreatorsIdRoute = AuthDouyinCreatorsIdRouteImport.update({
+  id: '/douyin-creators/$id',
+  path: '/douyin-creators/$id',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthDouyinDownloadIndexRoute = AuthDouyinDownloadIndexRouteImport.update({
+  id: '/douyin-download/',
+  path: '/douyin-download/',
   getParentRoute: () => AuthRouteRoute,
 } as any)
 const AuthVideoBreakdownIndexRoute = AuthVideoBreakdownIndexRouteImport.update({
@@ -72,10 +84,12 @@ const AuthCreativeVideoIndexRoute = AuthCreativeVideoIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthIndexRoute
+  '/douyin-creators/$id': typeof AuthDouyinCreatorsIdRoute
   '/video-breakdown/$id': typeof AuthVideoBreakdownIdRoute
   '/videos/$id': typeof AuthVideosIdRoute
   '/videos/create': typeof AuthVideosCreateRoute
   '/douyin-creators/': typeof AuthDouyinCreatorsIndexRoute
+  '/douyin-download/': typeof AuthDouyinDownloadIndexRoute
   '/video-breakdown/': typeof AuthVideoBreakdownIndexRoute
   '/videos/': typeof AuthVideosIndexRoute
   '/creative/audio/': typeof AuthCreativeAudioIndexRoute
@@ -83,10 +97,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof AuthIndexRoute
+  '/douyin-creators/$id': typeof AuthDouyinCreatorsIdRoute
   '/video-breakdown/$id': typeof AuthVideoBreakdownIdRoute
   '/videos/$id': typeof AuthVideosIdRoute
   '/videos/create': typeof AuthVideosCreateRoute
   '/douyin-creators': typeof AuthDouyinCreatorsIndexRoute
+  '/douyin-download': typeof AuthDouyinDownloadIndexRoute
   '/video-breakdown': typeof AuthVideoBreakdownIndexRoute
   '/videos': typeof AuthVideosIndexRoute
   '/creative/audio': typeof AuthCreativeAudioIndexRoute
@@ -96,10 +112,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_auth/': typeof AuthIndexRoute
+  '/_auth/douyin-creators/$id': typeof AuthDouyinCreatorsIdRoute
   '/_auth/video-breakdown/$id': typeof AuthVideoBreakdownIdRoute
   '/_auth/videos/$id': typeof AuthVideosIdRoute
   '/_auth/videos/create': typeof AuthVideosCreateRoute
   '/_auth/douyin-creators/': typeof AuthDouyinCreatorsIndexRoute
+  '/_auth/douyin-download/': typeof AuthDouyinDownloadIndexRoute
   '/_auth/video-breakdown/': typeof AuthVideoBreakdownIndexRoute
   '/_auth/videos/': typeof AuthVideosIndexRoute
   '/_auth/creative/audio/': typeof AuthCreativeAudioIndexRoute
@@ -109,10 +127,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/douyin-creators/$id'
     | '/video-breakdown/$id'
     | '/videos/$id'
     | '/videos/create'
     | '/douyin-creators/'
+    | '/douyin-download/'
     | '/video-breakdown/'
     | '/videos/'
     | '/creative/audio/'
@@ -120,10 +140,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/douyin-creators/$id'
     | '/video-breakdown/$id'
     | '/videos/$id'
     | '/videos/create'
     | '/douyin-creators'
+    | '/douyin-download'
     | '/video-breakdown'
     | '/videos'
     | '/creative/audio'
@@ -132,10 +154,12 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_auth'
     | '/_auth/'
+    | '/_auth/douyin-creators/$id'
     | '/_auth/video-breakdown/$id'
     | '/_auth/videos/$id'
     | '/_auth/videos/create'
     | '/_auth/douyin-creators/'
+    | '/_auth/douyin-download/'
     | '/_auth/video-breakdown/'
     | '/_auth/videos/'
     | '/_auth/creative/audio/'
@@ -167,6 +191,20 @@ declare module '@tanstack/react-router' {
       path: '/douyin-creators'
       fullPath: '/douyin-creators/'
       preLoaderRoute: typeof AuthDouyinCreatorsIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/douyin-creators/$id': {
+      id: '/_auth/douyin-creators/$id'
+      path: '/douyin-creators/$id'
+      fullPath: '/douyin-creators/$id'
+      preLoaderRoute: typeof AuthDouyinCreatorsIdRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/douyin-download/': {
+      id: '/_auth/douyin-download/'
+      path: '/douyin-download'
+      fullPath: '/douyin-download/'
+      preLoaderRoute: typeof AuthDouyinDownloadIndexRouteImport
       parentRoute: typeof AuthRouteRoute
     }
     '/_auth/video-breakdown/': {
@@ -223,10 +261,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthRouteRouteChildren {
   AuthIndexRoute: typeof AuthIndexRoute
+  AuthDouyinCreatorsIdRoute: typeof AuthDouyinCreatorsIdRoute
   AuthVideoBreakdownIdRoute: typeof AuthVideoBreakdownIdRoute
   AuthVideosIdRoute: typeof AuthVideosIdRoute
   AuthVideosCreateRoute: typeof AuthVideosCreateRoute
   AuthDouyinCreatorsIndexRoute: typeof AuthDouyinCreatorsIndexRoute
+  AuthDouyinDownloadIndexRoute: typeof AuthDouyinDownloadIndexRoute
   AuthVideoBreakdownIndexRoute: typeof AuthVideoBreakdownIndexRoute
   AuthVideosIndexRoute: typeof AuthVideosIndexRoute
   AuthCreativeAudioIndexRoute: typeof AuthCreativeAudioIndexRoute
@@ -235,10 +275,12 @@ interface AuthRouteRouteChildren {
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthIndexRoute: AuthIndexRoute,
+  AuthDouyinCreatorsIdRoute: AuthDouyinCreatorsIdRoute,
   AuthVideoBreakdownIdRoute: AuthVideoBreakdownIdRoute,
   AuthVideosIdRoute: AuthVideosIdRoute,
   AuthVideosCreateRoute: AuthVideosCreateRoute,
   AuthDouyinCreatorsIndexRoute: AuthDouyinCreatorsIndexRoute,
+  AuthDouyinDownloadIndexRoute: AuthDouyinDownloadIndexRoute,
   AuthVideoBreakdownIndexRoute: AuthVideoBreakdownIndexRoute,
   AuthVideosIndexRoute: AuthVideosIndexRoute,
   AuthCreativeAudioIndexRoute: AuthCreativeAudioIndexRoute,
