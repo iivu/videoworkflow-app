@@ -105,7 +105,7 @@ export function CreatorCard({ creator, onRemoved }: { creator: Creator; onRemove
             <span aria-hidden="true">·</span>
             <span>粉丝 {formatCount(creator.followerCount)}</span>
           </p>
-          <p className="line-clamp-2 text-xs leading-5 text-muted-foreground" title={creator.signature || undefined}>
+          <p className="line-clamp-2 h-10 shrink-0 break-all text-xs leading-5 text-muted-foreground" title={creator.signature || undefined}>
             {creator.signature || '—'}
           </p>
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
@@ -114,7 +114,7 @@ export function CreatorCard({ creator, onRemoved }: { creator: Creator; onRemove
           </div>
         </>
       ) : (
-        <p className="line-clamp-2 break-all text-xs leading-5 text-muted-foreground" title={creator.sourceUrl}>
+        <p className="line-clamp-2 h-10 shrink-0 break-all text-xs leading-5 text-muted-foreground" title={creator.sourceUrl}>
           {creator.sourceUrl}
         </p>
       )}
