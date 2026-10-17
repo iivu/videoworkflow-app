@@ -14,6 +14,11 @@ function formatCount(value: number) {
   return String(value);
 }
 
+function formatIpLocation(v: string | null) {
+  if (!v) return '-';
+  return v.replace('IP属地：', '');
+}
+
 export function CreatorCard({ creator, onRemoved }: { creator: Creator; onRemoved: () => void }) {
   const queryClient = useQueryClient();
   const { confirm } = useConfirm();
@@ -94,7 +99,7 @@ export function CreatorCard({ creator, onRemoved }: { creator: Creator; onRemove
             {creator.signature || '—'}
           </p>
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            <span>IP 属地：{creator.ipLocation || '—'}</span>
+            <span>IP 属地：{formatIpLocation(creator.ipLocation)}</span>
             <span className="break-all">UID：{creator.uid || '—'}</span>
           </div>
         </>
@@ -104,7 +109,7 @@ export function CreatorCard({ creator, onRemoved }: { creator: Creator; onRemove
         </p>
       )}
       {failed ? (
-        <p className="break-words text-xs text-destructive" role="alert">
+        <p className="wrap-break-word text-xs text-destructive" role="alert">
           {creator.currentTask?.reason || '采集失败，请重试'}
         </p>
       ) : null}
