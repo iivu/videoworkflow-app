@@ -76,13 +76,13 @@ export function DouyinCreatorsPage() {
         </Alert>
       ) : null}
       {list.isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" role="status" aria-label="博主列表加载中">
+        <div className="grid items-start gap-3 sm:grid-cols-2 xl:grid-cols-3" role="status" aria-label="博主列表加载中">
           {Array.from({ length: 6 }, (_, index) => (
-            <Skeleton key={index} className="h-72 rounded-lg" />
+            <Skeleton key={index} className="h-56 rounded-lg" />
           ))}
         </div>
       ) : creators.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid items-start gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {creators.map((creator) => (
             <CreatorCard
               key={creator.id}

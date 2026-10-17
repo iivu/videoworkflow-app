@@ -60,17 +60,17 @@ export function CreatorCard({ creator, onRemoved }: { creator: Creator; onRemove
   };
 
   return (
-    <article className="flex min-w-0 flex-col gap-4 rounded-lg border bg-card p-4 text-card-foreground shadow-xs">
-      <div className="flex items-center gap-3">
-        <Avatar className="size-14">
+    <article className="flex min-w-0 flex-col gap-2.5 rounded-lg border bg-card p-3 text-card-foreground shadow-xs">
+      <div className="flex items-center gap-2.5">
+        <Avatar className="size-11">
           {creator.avatarUrl ? <AvatarImage src={creator.avatarUrl} alt={creator.nickname || '博主头像'} /> : null}
-          <AvatarFallback className="bg-orange-100 text-xl text-orange-700 dark:bg-orange-950 dark:text-orange-200">{Array.from(creator.nickname || '?')[0]}</AvatarFallback>
+          <AvatarFallback className="bg-orange-100 text-lg text-orange-700 dark:bg-orange-950 dark:text-orange-200">{Array.from(creator.nickname || '?')[0]}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-sm font-semibold" title={name}>
             {name}
           </h2>
-          <p className="mt-1 truncate text-xs text-muted-foreground">抖音号 {creator.uniqueId || '—'}</p>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">抖音号 {creator.uniqueId || '—'}</p>
         </div>
         {processing ? (
           <Badge variant="secondary">
@@ -90,7 +90,7 @@ export function CreatorCard({ creator, onRemoved }: { creator: Creator; onRemove
             <span aria-hidden="true">·</span>
             <span>粉丝 {formatCount(creator.followerCount)}</span>
           </p>
-          <p className="line-clamp-2 min-h-10 text-xs leading-5 text-muted-foreground" title={creator.signature || undefined}>
+          <p className="line-clamp-2 text-xs leading-5 text-muted-foreground" title={creator.signature || undefined}>
             {creator.signature || '—'}
           </p>
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
@@ -99,14 +99,16 @@ export function CreatorCard({ creator, onRemoved }: { creator: Creator; onRemove
           </div>
         </>
       ) : (
-        <p className="min-h-20 break-all text-xs leading-5 text-muted-foreground">{creator.sourceUrl}</p>
+        <p className="line-clamp-2 break-all text-xs leading-5 text-muted-foreground" title={creator.sourceUrl}>
+          {creator.sourceUrl}
+        </p>
       )}
       {failed ? (
         <p className="break-words text-xs text-destructive" role="alert">
           {creator.currentTask?.reason || '采集失败，请重试'}
         </p>
       ) : null}
-      <div className="mt-auto space-y-3">
+      <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-2 text-xs">
           <span>
             作品 {hasSnapshot ? formatCount(creator.awemeCount) : '—'} · 已下载 {creator.downloadedCount}
@@ -115,8 +117,8 @@ export function CreatorCard({ creator, onRemoved }: { creator: Creator; onRemove
             查看详情
           </Button>
         </div>
-        <div className="flex items-center justify-between gap-2 border-t pt-3">
-          <span className="text-xs text-muted-foreground">{creator.lastSyncedAt ? `更新于 ${dayjs(creator.lastSyncedAt).format('MM-DD HH:mm')}` : '尚未同步'}</span>
+        <div className="flex items-center justify-between gap-2 border-t pt-1.5">
+          <span className="text-xs text-muted-foreground">{creator.lastSyncedAt ? `更新于 ${dayjs(creator.lastSyncedAt).format('YYYY-MM-DD HH:mm')}` : '尚未同步'}</span>
           <div className="flex gap-1">
             <Button
               type="button"
