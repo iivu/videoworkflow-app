@@ -50,24 +50,8 @@ const douyinVideoData = {
   work_url: 'https://cdn.example.com/video.mp4',
 };
 
-const sphVideoData = {
-  video_author: 'Author',
-  video_avatar: 'https://cdn.example.com/avatar.jpg',
-  video_commentNum: '199',
-  video_cover: 'https://cdn.example.com/cover.jpg',
-  video_createtime: '2026-04-10 16:30:00',
-  video_favNum: '3.4万',
-  video_forwardNum: '5842',
-  video_likeNum: '4.3万',
-  video_title: 'Video title',
-  video_url: 'https://cdn.example.com/video.mp4',
-};
-
 test.group('52API service', () => {
-  for (const scenario of [
-    { method: 'douyin' as const, path: '/douyin', data: douyinVideoData },
-    { method: 'sph' as const, path: '/sph', data: sphVideoData },
-  ]) {
+  for (const scenario of [{ method: 'douyin' as const, path: '/douyin', data: douyinVideoData }]) {
     test(`fetches ${scenario.method} video data`, async ({ assert }) => {
       const service = new Test52ApiService([{ code: 200, msg: 'success', data: scenario.data, exec_time: 1.2, ip: '127.0.0.1' }]);
       const sourceUrl = 'https://example.com/share?id=1&from=app';
@@ -94,7 +78,7 @@ test.group('52API service', () => {
   test('throws the remote message and code for an unsuccessful response', async ({ assert }) => {
     const service = new Test52ApiService([{ code: 401, msg: 'Invalid API key' }]);
 
-    const error = await service.sph('https://example.com/share').catch((caught) => caught);
+    const error = await service.douyin('https://example.com/share').catch((caught) => caught);
 
     assert.instanceOf(error, BusinessException);
     assert.equal((error as BusinessException).message, 'Invalid API key');

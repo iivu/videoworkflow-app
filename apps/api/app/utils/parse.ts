@@ -28,16 +28,16 @@ export function extractUrl(content: string) {
   return match ? match[0] : null;
 }
 
-export type VideoPlatform = 'douyin' | 'sph';
+export type VideoPlatform = 'douyin' | 'xhs';
 
 /**
- * 简单校验 URL 所属平台：抖音（douyin.com / iesdouyin.com）或微信视频号（weixin.qq.com）
+ * 简单校验 URL 所属平台：抖音（douyin.com / iesdouyin.com）或小红书（xiaohongshu.com / xhslink.com / xhslink.cn）
  */
 export function detectPlatformFromUrl(url: string) {
   try {
     const hostname = new URL(url).hostname;
     if (hostname.endsWith('douyin.com') || hostname.endsWith('iesdouyin.com')) return 'douyin';
-    if (hostname.endsWith('weixin.qq.com')) return 'sph';
+    if (hostname.endsWith('xiaohongshu.com') || hostname.endsWith('xhslink.com') || hostname.endsWith('xhslink.cn')) return 'xhs';
     return null;
   } catch {
     return null;

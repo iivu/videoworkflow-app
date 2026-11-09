@@ -152,7 +152,7 @@ class StubCrawlerVideoJob extends CrawlerVideoJob {
   }
 }
 
-function createJob(platform: 'douyin' | 'sph', ossClient: StubOssClient) {
+function createJob(platform: 'douyin' | 'xhs', ossClient: StubOssClient) {
   const apizeroService = new StubApizeroService(makeVideoData());
   const taskService = new StubTaskService();
   const videoService = new StubVideoService();
@@ -198,16 +198,16 @@ test.group('Crawler video job', () => {
     assert.deepEqual(taskService.updates, [{ payload: { status: TASK_STATUS.COMPLETED, taskId: 1 } }]);
   });
 
-  test('creates a video with the sph platform', async ({ assert }) => {
+  test('creates a video with the xhs platform', async ({ assert }) => {
     const ossClient = new StubOssClient();
-    const { job, apizeroService, taskService, videoService } = createJob('sph', ossClient);
+    const { job, apizeroService, taskService, videoService } = createJob('xhs', ossClient);
 
     await job.execute();
 
     assert.deepEqual(apizeroService.calls, [{ url: 'https://example.com/share' }]);
     const creation = videoService.creations[0] as { payload: Array<Record<string, unknown>> };
     const payload = creation.payload[0];
-    assert.equal(payload.platform, 'sph');
+    assert.equal(payload.platform, 'xhs');
     assert.equal(payload.title, 'Video title');
     assert.equal(payload.author, 'Author');
     assert.match(String(payload.fileUrl), /^https:\/\/cdn\.example\.com\/cv\//);
@@ -285,10 +285,10 @@ test.group('mapToVideoPayload', () => {
       makeVideoData({
         stats: { ...makeVideoData().stats, like_count: 43000, collect_count: 34000, share_count: 5842, comment_count: 199, play_count: 0 },
       }),
-      'sph',
+      'xhs',
     );
 
-    assert.equal(payload.platform, 'sph');
+    assert.equal(payload.platform, 'xhs');
     assert.equal(payload.likeCount, 43000);
     assert.equal(payload.favoriteCount, 34000);
     assert.equal(payload.shareCount, 5842);

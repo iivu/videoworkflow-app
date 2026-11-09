@@ -32,19 +32,6 @@ export type Api52DouyinVideoData = {
   work_url: string;
 };
 
-export type Api52SphVideoData = {
-  video_author: string;
-  video_avatar: string;
-  video_commentNum: string;
-  video_cover: string;
-  video_createtime: string;
-  video_favNum: string;
-  video_forwardNum: string;
-  video_likeNum: string;
-  video_title: string;
-  video_url: string;
-};
-
 type Api52Response<T> = {
   code: number;
   msg: string;
@@ -62,10 +49,6 @@ export class _52ApiService {
 
   douyin(url: string): Promise<Api52DouyinVideoData> {
     return this.fetchVideo<Api52DouyinVideoData>('douyin', url);
-  }
-
-  sph(url: string): Promise<Api52SphVideoData> {
-    return this.fetchVideo<Api52SphVideoData>('sph', url);
   }
 
   private async fetchVideo<T>(path: string, url: string): Promise<T> {

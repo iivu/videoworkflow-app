@@ -36,7 +36,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const PLATFORM_LABELS: Record<string, string> = {
   douyin: '抖音',
-  sph: '视频号',
+  xhs: '小红书',
 };
 
 function TaskStatus({ status }: { status: string }) {
